@@ -19,19 +19,25 @@ pip -q install --no-deps torchreid
 pip -q install gdown yacs
 
 echo "== SuperGlue (repo checkout, not a package) =="
+# crack_reid_baselines.py looks for the checkout next to ITSELF, not next to
+# the notebook's cwd, so clone by the script's own directory. Getting this
+# wrong is what produces "SuperGlue skipped: SuperGlue checkout not found".
 # Weights ship inside the repo, so no separate download.
 # Research / non-commercial licence -- check it before using in a paper.
-if [ ! -d third_party/SuperGluePretrainedNetwork ]; then
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SG="$HERE/third_party/SuperGluePretrainedNetwork"
+if [ ! -f "$SG/models/matching.py" ]; then
+  rm -rf "$SG"
   git clone -q --depth 1 \
-    https://github.com/magicleap/SuperGluePretrainedNetwork \
-    third_party/SuperGluePretrainedNetwork
+    https://github.com/magicleap/SuperGluePretrainedNetwork "$SG"
 fi
+echo "  checkout: $SG"
 
 echo
 echo "== what is actually importable =="
-python - <<'PY'
+SUPERGLUE_PATH="$SG" python - <<'PY'
 import importlib, os, sys, torch
-sys.path.insert(0, os.path.join("third_party", "SuperGluePretrainedNetwork"))
+sys.path.insert(0, os.environ["SUPERGLUE_PATH"])
 print(f"  torch {torch.__version__}  cuda={torch.cuda.is_available()} "
       f"({torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU ONLY - switch runtime to GPU'})")
 checks = {

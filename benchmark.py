@@ -280,6 +280,17 @@ def valid_mask(queries, gallery) -> np.ndarray:
     return build_validity_mask(queries, gallery, **PROTOCOL)
 
 
+def _missing(e: ImportError) -> str:
+    """Describe a failed import.
+
+    e.name is None whenever the ImportError was raised by hand rather than
+    by the import machinery -- which is exactly the case for the SuperGlue
+    checkout, whose message carries the clone command. Printing e.name
+    unconditionally turned that into "needs 'None'" and threw the useful
+    part away."""
+    return f"needs '{e.name}'" if e.name else str(e)
+
+
 def _progress(name: str, done: int, todo: int, t0: float):
     """One rewritten line. A full pairwise run is tens of thousands of
     forward passes; without this there is no way to tell a slow method
@@ -377,7 +388,7 @@ def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
             else:
                 print(f"  (unknown method '{key}', skipped)")
         except ImportError as e:
-            print(f"  ({key} needs '{e.name}', skipped)")
+            print(f"  ({key} skipped: {_missing(e)})")
     return scorers
 
 
@@ -498,7 +509,7 @@ def run(root: str, methods: list[str] | None = None,
             _dump_curves(res, out_dir)
         except ImportError as e:
             # Heavy backbones raise lazily, inside prepare(); skip cleanly.
-            print(f"  ({scorer.name} needs '{e.name}', skipped)")
+            print(f"  ({scorer.name} skipped: {_missing(e)})")
         except Exception as e:
             print(f"  ({scorer.name} error: {type(e).__name__}: {e}, skipped)")
 
