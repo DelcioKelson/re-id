@@ -69,6 +69,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import time
 from collections import defaultdict
 from dataclasses import dataclass
 
@@ -262,6 +263,37 @@ class Dataset:
         return "\n".join(lines)
 
 
+# The evaluation protocol, defined once. run() passes it to reid_eval, and
+# the expensive scorers below use it to skip cells the metrics discard.
+PROTOCOL = dict(same_wall_only=True, exclude_same_session=True)
+
+
+def valid_mask(queries, gallery) -> np.ndarray:
+    """Which (query, gallery) cells the metrics will actually read.
+
+    reid_eval masks every invalid cell out of CMC, mAP, the open-set curve
+    and the pair PR curve, so scoring them is pure waste -- and for the
+    genuinely pairwise matchers (SuperGlue/LoFTR) that waste is a network
+    forward pass each. Delegating to reid_eval's own function means the
+    two can never disagree about what "valid" means."""
+    from reid_eval import build_validity_mask
+    return build_validity_mask(queries, gallery, **PROTOCOL)
+
+
+def _progress(name: str, done: int, todo: int, t0: float):
+    """One rewritten line. A full pairwise run is tens of thousands of
+    forward passes; without this there is no way to tell a slow method
+    from a hung one."""
+    if done == 0:
+        return
+    el = time.time() - t0
+    eta = el * (todo - done) / done
+    print(f"\r    {name}: {done}/{todo} pairs  {el/60:.1f}m elapsed, "
+          f"{eta/60:.1f}m left   ", end="", flush=True)
+    if done >= todo:
+        print()
+
+
 # ===========================================================================
 # 3. Adapters that connect the baseline matchers to reid_eval's interface
 # ===========================================================================
@@ -277,10 +309,11 @@ class PairwiseMatcherScorer(DistanceScorer):
     cheap comparisons (or Q*G forward passes for the genuinely-pairwise
     SuperGlue/LoFTR, which is their real, reportable cost)."""
 
-    def __init__(self, matcher):
+    def __init__(self, matcher, prune: bool = True):
         self.matcher = matcher
         self.name = matcher.name
         self.input_scope = "crop"
+        self.prune = prune
         self._prep: dict[str, object] = {}
 
     def prepare(self, refs, data: Dataset):
@@ -299,11 +332,19 @@ class PairwiseMatcherScorer(DistanceScorer):
         # DistanceScorer negates, so return a distance: use -score.
         q = [self._prep[r.instance_id] for r in queries]
         g = [self._prep[r.instance_id] for r in gallery]
-        S = np.zeros((len(q), len(g)), dtype=float)
+        valid = valid_mask(queries, gallery) if self.prune else None
+        D = np.full((len(q), len(g)), np.inf, dtype=float)
+        todo = int(valid.sum()) if valid is not None else len(q) * len(g)
+        done = 0
+        t0 = time.time()
         for i, pa in enumerate(q):
-            for j, pb in enumerate(g):
-                S[i, j] = self.matcher.score_pair(pa, pb)
-        return -S
+            cols = np.nonzero(valid[i])[0] if valid is not None else range(len(g))
+            for j in cols:
+                D[i, j] = -self.matcher.score_pair(pa, g[j])
+                done += 1
+            if todo and (i % 25 == 0 or i == len(q) - 1):
+                _progress(self.name, done, todo, t0)
+        return D
 
 
 def _maybe_mask(inst: CrackInstance, apply: bool) -> CrackInstance:
@@ -313,7 +354,7 @@ def _maybe_mask(inst: CrackInstance, apply: bool) -> CrackInstance:
     return CrackInstance(crop=masked, mask_crop=inst.mask_crop, bbox=inst.bbox)
 
 
-def build_scorers(methods: list[str], data: Dataset):
+def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
     """Instantiate reid_eval scorers for the requested method keys,
     skipping any whose heavy dependency is not installed."""
     from crack_reid_baselines import REGISTRY
@@ -322,7 +363,7 @@ def build_scorers(methods: list[str], data: Dataset):
     for key in methods:
         try:
             if key in ("sift", "orb", "superglue", "loftr"):
-                scorers.append(PairwiseMatcherScorer(REGISTRY[key]()))
+                scorers.append(PairwiseMatcherScorer(REGISTRY[key](), prune=prune))
             elif key in ("deit", "vit", "clip", "osnet", "yolo"):
                 emb = REGISTRY[key]()
                 # wrap embed_batch as an embed_fn over BGR crops
@@ -332,7 +373,7 @@ def build_scorers(methods: list[str], data: Dataset):
                     input_scope="crop",
                 ))
             elif key == "registration":
-                scorers.append(_build_registration_scorer(data))
+                scorers.append(_build_registration_scorer(data, prune=prune))
             else:
                 print(f"  (unknown method '{key}', skipped)")
         except ImportError as e:
@@ -345,7 +386,41 @@ def _l2(x: np.ndarray) -> np.ndarray:
     return x / np.clip(np.linalg.norm(x, axis=1, keepdims=True), 1e-8, None)
 
 
-def _build_registration_scorer(data: Dataset):
+class PrunedRegistrationScorer(RegistrationScorer):
+    """RegistrationScorer that only registers image pairs the protocol can
+    score. The parent registers every (query image, gallery image) pair --
+    for a 74-photo test split that is 5,476 full-image SIFT+RANSAC
+    registrations, of which only the same-wall ones are ever read."""
+
+    def __init__(self, *a, prune: bool = True, **kw):
+        super().__init__(*a, **kw)
+        self.prune = prune
+
+    def distance_matrix(self, queries, gallery, data):
+        if not self.prune:
+            return super().distance_matrix(queries, gallery, data)
+        valid = valid_mask(queries, gallery)
+        d = np.full((len(queries), len(gallery)), self.fail_distance, dtype=float)
+        by_pair = defaultdict(list)
+        for i, q in enumerate(queries):
+            for j in np.nonzero(valid[i])[0]:
+                by_pair[(q.image_id, gallery[j].image_id)].append((i, int(j)))
+
+        todo, done, t0 = int(valid.sum()), 0, time.time()
+        for (a_id, b_id), cells in by_pair.items():
+            H = self._homography(a_id, b_id, data)
+            if H is None:
+                done += len(cells)
+                continue
+            for i, j in cells:
+                d[i, j] = self.chamfer_fn(queries[i], gallery[j], H, data)
+                done += 1
+            _progress(self.name, done, todo, t0)
+        _progress(self.name, todo, todo, t0)
+        return d
+
+
+def _build_registration_scorer(data: Dataset, prune: bool = True):
     """Wire the registration pipeline into reid_eval's RegistrationScorer."""
     from crack_registration_reid import register_images, symmetric_chamfer
 
@@ -382,7 +457,7 @@ def _build_registration_scorer(data: Dataset):
                          mask=(gfull > 0).astype(np.uint8))
         return symmetric_chamfer(q_w, g_full, (hb, wb))
 
-    return RegistrationScorer(register_fn, chamfer_fn)
+    return PrunedRegistrationScorer(register_fn, chamfer_fn, prune=prune)
 
 
 # ===========================================================================
@@ -390,7 +465,7 @@ def _build_registration_scorer(data: Dataset):
 # ===========================================================================
 
 def run(root: str, methods: list[str] | None = None,
-        out_dir: str = "benchmark_out"):
+        out_dir: str = "benchmark_out", prune: bool = True):
     methods = methods or ["sift", "orb", "loftr", "superglue",
                           "deit", "vit", "clip", "osnet", "yolo", "registration"]
     os.makedirs(out_dir, exist_ok=True)
@@ -405,7 +480,7 @@ def run(root: str, methods: list[str] | None = None,
         print("\nNo test split defined; evaluating on all walls (report as such).")
         test_walls = {r.wall_id for r in data.refs}
 
-    scorers = build_scorers(methods, data)
+    scorers = build_scorers(methods, data, prune=prune)
     results = []
 
     for scorer in scorers:
@@ -415,12 +490,10 @@ def run(root: str, methods: list[str] | None = None,
             if val_walls:
                 vq, vg = data.query_gallery(val_walls)
                 if vq:
-                    thr = calibrate_threshold(scorer, vq, vg, data,
-                                              same_wall_only=True, exclude_same_session=True)
+                    thr = calibrate_threshold(scorer, vq, vg, data, **PROTOCOL)
 
             tq, tg = data.query_gallery(test_walls)
-            res = evaluate(scorer, tq, tg, data, threshold=thr,
-                           same_wall_only=True, exclude_same_session=True)
+            res = evaluate(scorer, tq, tg, data, threshold=thr, **PROTOCOL)
             results.append(res)
             _dump_curves(res, out_dir)
         except ImportError as e:
@@ -459,5 +532,8 @@ if __name__ == "__main__":
     ap.add_argument("root", help="dataset root (contains walls.csv, images/, masks/, labels/)")
     ap.add_argument("--methods", nargs="*", default=None)
     ap.add_argument("--out", default="benchmark_out")
+    ap.add_argument("--no-prune", action="store_true",
+                    help="score every query-gallery cell, including the ones the "
+                         "protocol discards (slower; results are identical)")
     args = ap.parse_args()
-    run(args.root, methods=args.methods, out_dir=args.out)
+    run(args.root, methods=args.methods, out_dir=args.out, prune=not args.no_prune)

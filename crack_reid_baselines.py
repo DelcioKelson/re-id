@@ -359,6 +359,11 @@ class CLIPEmbeddingMatcher(EmbeddingMatcher):
         inputs = self._proc(images=imgs, return_tensors="pt").to(self._device)
         with torch.no_grad():
             feats = self._model.get_image_features(**inputs)
+        if not torch.is_tensor(feats):
+            # transformers >=5 wraps the result in BaseModelOutputWithPooling;
+            # its .pooler_output is the already-projected image embedding and
+            # is numerically identical to the bare tensor <5 returned here.
+            feats = feats.pooler_output
         return feats.cpu().numpy()
 
 
