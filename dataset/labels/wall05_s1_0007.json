@@ -1,0 +1,29 @@
+{
+  "image_id": "wall05_s1_0007",
+  "points": [
+    {
+      "identity": "wall05_crack04",
+      "xy": [
+        724,
+        1338
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall05_crack08",
+      "xy": [
+        2024,
+        1397
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall05_crack07",
+      "xy": [
+        892,
+        1584
+      ],
+      "provisional": true
+    }
+  ]
+}

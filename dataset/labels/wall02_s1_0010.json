@@ -1,0 +1,157 @@
+{
+  "image_id": "wall02_s1_0010",
+  "points": [
+    {
+      "identity": "wall02_crack36",
+      "xy": [
+        2546,
+        272
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack37",
+      "xy": [
+        2485,
+        603
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack38",
+      "xy": [
+        2415,
+        826
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack39",
+      "xy": [
+        2331,
+        1052
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack40",
+      "xy": [
+        2179,
+        1516
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack41",
+      "xy": [
+        1729,
+        1724
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack42",
+      "xy": [
+        2028,
+        1757
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack43",
+      "xy": [
+        1488,
+        2214
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack44",
+      "xy": [
+        1439,
+        2573
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack45",
+      "xy": [
+        2171,
+        2638
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack46",
+      "xy": [
+        1481,
+        2780
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack47",
+      "xy": [
+        2455,
+        2751
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack48",
+      "xy": [
+        1334,
+        3115
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack49",
+      "xy": [
+        1355,
+        3239
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack50",
+      "xy": [
+        943,
+        3534
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack51",
+      "xy": [
+        1350,
+        3472
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack52",
+      "xy": [
+        1213,
+        3563
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack53",
+      "xy": [
+        816,
+        3624
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack54",
+      "xy": [
+        581,
+        3984
+      ],
+      "provisional": true
+    }
+  ]
+}

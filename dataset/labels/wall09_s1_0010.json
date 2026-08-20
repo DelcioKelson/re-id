@@ -1,0 +1,85 @@
+{
+  "image_id": "wall09_s1_0010",
+  "points": [
+    {
+      "identity": "wall09_crack46",
+      "xy": [
+        1356,
+        227
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack52",
+      "xy": [
+        1377,
+        582
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack53",
+      "xy": [
+        1402,
+        638
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack47",
+      "xy": [
+        1404,
+        805
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack54",
+      "xy": [
+        1370,
+        1101
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack55",
+      "xy": [
+        1455,
+        1381
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack56",
+      "xy": [
+        1497,
+        2710
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack57",
+      "xy": [
+        1505,
+        2815
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack48",
+      "xy": [
+        1496,
+        3160
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack58",
+      "xy": [
+        1629,
+        4006
+      ],
+      "provisional": true
+    }
+  ]
+}

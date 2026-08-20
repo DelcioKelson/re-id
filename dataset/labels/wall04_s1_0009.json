@@ -1,0 +1,29 @@
+{
+  "image_id": "wall04_s1_0009",
+  "points": [
+    {
+      "identity": "wall04_crack24",
+      "xy": [
+        1081,
+        872
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall04_crack25",
+      "xy": [
+        1325,
+        1182
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall04_crack26",
+      "xy": [
+        3551,
+        1287
+      ],
+      "provisional": true
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "image_id": "wall09_s1_0001",
+  "points": [
+    {
+      "identity": "wall09_crack01",
+      "xy": [
+        1568,
+        664
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack02",
+      "xy": [
+        1527,
+        1178
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack03",
+      "xy": [
+        1485,
+        1777
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack04",
+      "xy": [
+        1527,
+        2210
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack05",
+      "xy": [
+        1523,
+        2522
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall09_crack06",
+      "xy": [
+        1494,
+        2740
+      ],
+      "provisional": true
+    }
+  ]
+}
