@@ -26,12 +26,39 @@ echo "== SuperGlue (repo checkout, not a package) =="
 # Research / non-commercial licence -- check it before using in a paper.
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SG="$HERE/third_party/SuperGluePretrainedNetwork"
-if [ ! -f "$SG/models/matching.py" ]; then
-  rm -rf "$SG"
-  git clone -q --depth 1 \
-    https://github.com/magicleap/SuperGluePretrainedNetwork "$SG"
+echo "  target: $SG"
+if [ -f "$SG/models/matching.py" ]; then
+  echo "  already present, left alone"
+else
+  # Clone into a temp dir and move it into place only on success, so a failed
+  # or half-finished clone can never leave a broken tree that the check above
+  # would then happily accept on the next run.
+  TMP="$(mktemp -d)"
+  # Redirect to a log rather than piping: a pipeline reports the LAST
+  # command's status, so `git clone ... | sed` would report sed's 0 and a
+  # failed clone would look like a success.
+  if git clone --depth 1 \
+       https://github.com/magicleap/SuperGluePretrainedNetwork \
+       "$TMP/sg" > "$TMP/log" 2>&1
+  then
+    mkdir -p "$HERE/third_party"
+    rm -rf "$SG"
+    mv "$TMP/sg" "$SG"
+    echo "  cloned OK"
+  else
+    sed 's/^/    git: /' "$TMP/log"
+    echo "  !! git clone FAILED -- superglue will be skipped."
+    echo "  !! Check network/proxy, or clone it yourself into the target above."
+  fi
+  rm -rf "$TMP"
 fi
-echo "  checkout: $SG"
+if [ -f "$SG/models/matching.py" ]; then
+  echo "  verified: $SG/models/matching.py"
+else
+  echo "  !! MISSING: $SG/models/matching.py"
+  echo "  !! contents of $HERE/third_party:"
+  ls -la "$HERE/third_party" 2>&1 | sed 's/^/    /'
+fi
 
 echo
 echo "== what is actually importable =="
@@ -58,5 +85,11 @@ for method, mod in checks.items():
     except Exception as e:
         bad.append(method)
         print(f"  FAIL  {method:<13} ({mod}): {type(e).__name__}: {e}")
+        if mod == "models.matching":
+            sg = os.environ["SUPERGLUE_PATH"]
+            print(f"        looked in: {sg}")
+            print(f"        exists: {os.path.isdir(sg)}  "
+                  f"has models/matching.py: "
+                  f"{os.path.isfile(os.path.join(sg, 'models', 'matching.py'))}")
 print("\nall backends ready" if not bad else f"\nwill be skipped: {' '.join(bad)}")
 PY
