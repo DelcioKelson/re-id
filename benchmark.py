@@ -219,14 +219,37 @@ class Dataset:
                 self._ref_to_instance[ref.instance_id] = inst
 
     # ---- crop service for scorers ----
-    def crop(self, ref: InstanceRef, apply_mask: bool = False) -> np.ndarray:
-        key = f"{ref.instance_id}_{apply_mask}"
+    def crop(self, ref: InstanceRef, apply_mask: bool = False,
+             context: float = 0.0) -> np.ndarray:
+        """The pixels a crop-scope method gets to see.
+
+        context: expand the instance bbox by this fraction of its own width
+            and height on every side before cropping. 0.0 is the tight crop
+            (reid_eval's "crop" scope); >0 is the "crop+ctx" scope, which
+            reid_eval declares but nothing previously implemented. Without
+            it every crop method competes on an isolated patch against a
+            registration method that sees the entire photo, so the
+            comparison measures field of view as much as it measures method.
+        """
+        key = f"{ref.instance_id}_{apply_mask}_{context:g}"
         if key not in self._crop_cache:
             inst = self._ref_to_instance[ref.instance_id]
-            if apply_mask:
-                self._crop_cache[key] = cv2.bitwise_and(inst.crop, inst.crop, mask=inst.mask_crop)
+            if context <= 0:
+                crop, mask = inst.crop, inst.mask_crop
             else:
-                self._crop_cache[key] = inst.crop
+                img = self.image(ref.image_id)
+                h_img, w_img = img.shape[:2]
+                x, y, w, h = inst.bbox
+                mx, my = int(round(w * context)), int(round(h * context))
+                x0, y0 = max(x - mx, 0), max(y - my, 0)
+                x1, y1 = min(x + w + mx, w_img), min(y + h + my, h_img)
+                crop = img[y0:y1, x0:x1].copy()
+                # Re-place the component mask inside the widened window, so
+                # apply_mask still isolates the same physical crack.
+                full = np.zeros((h_img, w_img), np.uint8)
+                full[y:y + inst.mask_crop.shape[0], x:x + inst.mask_crop.shape[1]] = inst.mask_crop
+                mask = full[y0:y1, x0:x1]
+            self._crop_cache[key] = cv2.bitwise_and(crop, crop, mask=mask) if apply_mask else crop
         return self._crop_cache[key]
 
     def instance_of(self, ref: InstanceRef) -> CrackInstance:
@@ -365,30 +388,72 @@ def _maybe_mask(inst: CrackInstance, apply: bool) -> CrackInstance:
     return CrackInstance(crop=masked, mask_crop=inst.mask_crop, bbox=inst.bbox)
 
 
+class ContextEmbeddingScorer(EmbeddingScorer):
+    """EmbeddingScorer that feeds the backbone a context-expanded crop.
+
+    Identical to its parent except for the field of view, which is the
+    whole point: holding the backbone fixed and varying only `context`
+    isolates how much of a method's score comes from seeing surrounding
+    wall rather than from the representation itself.
+    """
+
+    def __init__(self, name: str, embed_fn, context: float, input_scope: str):
+        super().__init__(name=name, embed_fn=embed_fn, input_scope=input_scope)
+        self.context = context
+
+    def prepare(self, refs, data):
+        todo = [r for r in refs if r.instance_id not in self._cache]
+        if not todo:
+            return
+        embs = self.embed_fn([data.crop(r, context=self.context) for r in todo])
+        for r, e in zip(todo, embs):
+            self._cache[r.instance_id] = e
+
+
+def parse_method_key(key: str) -> tuple[str, float]:
+    """'clip' -> ('clip', 0.0);  'clip@ctx1.5' -> ('clip', 1.5).
+
+    The @ctx suffix requests the crop+ctx scope: expand the bbox by that
+    fraction on each side. '@ctx' alone means 1.0 (bbox doubled).
+    """
+    if "@ctx" not in key:
+        return key, 0.0
+    base, _, amount = key.partition("@ctx")
+    return base, float(amount) if amount else 1.0
+
+
 def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
     """Instantiate reid_eval scorers for the requested method keys,
     skipping any whose heavy dependency is not installed."""
     from crack_reid_baselines import REGISTRY
 
     scorers = []
-    for key in methods:
+    for raw in methods:
+        key, context = parse_method_key(raw)
         try:
             if key in ("sift", "orb", "superglue", "loftr"):
+                if context:
+                    print(f"  (@ctx not supported for '{key}', running tight crop)")
                 scorers.append(PairwiseMatcherScorer(REGISTRY[key](), prune=prune))
             elif key in ("deit", "vit", "clip", "osnet", "yolo"):
                 emb = REGISTRY[key]()
                 # wrap embed_batch as an embed_fn over BGR crops
-                scorers.append(EmbeddingScorer(
-                    name=emb.name,
-                    embed_fn=lambda crops, e=emb: _l2(e.embed_batch(crops)),
-                    input_scope="crop",
-                ))
+                fn = lambda crops, e=emb: _l2(e.embed_batch(crops))
+                if context:
+                    scorers.append(ContextEmbeddingScorer(
+                        name=f"{emb.name}+ctx{context:g}", embed_fn=fn,
+                        context=context, input_scope="crop+ctx",
+                    ))
+                else:
+                    scorers.append(EmbeddingScorer(
+                        name=emb.name, embed_fn=fn, input_scope="crop",
+                    ))
             elif key == "registration":
                 scorers.append(_build_registration_scorer(data, prune=prune))
             else:
-                print(f"  (unknown method '{key}', skipped)")
+                print(f"  (unknown method '{raw}', skipped)")
         except ImportError as e:
-            print(f"  ({key} skipped: {_missing(e)})")
+            print(f"  ({raw} skipped: {_missing(e)})")
     return scorers
 
 
@@ -472,14 +537,90 @@ def _build_registration_scorer(data: Dataset, prune: bool = True):
 
 
 # ===========================================================================
-# 4. Driver
+# 4. Persisting score matrices
+# ===========================================================================
+# The score matrix is the only expensive artefact in this benchmark: hours
+# for SuperGlue/LoFTR/registration, seconds for every metric computed from
+# it. Saving it means a new metric, a bootstrap CI, a coverage-matched
+# comparison, or merging runs that happened on different days all become
+# free. reid_analysis.py consumes exactly these files.
+
+def _slug(name: str) -> str:
+    return "".join(c if c.isalnum() or c in "-_" else "_" for c in name)
+
+
+def _ref_arrays(prefix: str, refs: list[InstanceRef]) -> dict:
+    """Everything needed to rebuild the validity and relevance masks later,
+    so the analysis never has to reconstruct the Dataset."""
+    return {
+        f"{prefix}_instance_id": np.array([r.instance_id for r in refs]),
+        f"{prefix}_image_id":    np.array([r.image_id for r in refs]),
+        f"{prefix}_wall_id":     np.array([r.wall_id for r in refs]),
+        f"{prefix}_session":     np.array([r.session for r in refs]),
+        f"{prefix}_identity":    np.array([r.identity if r.identity else "" for r in refs]),
+    }
+
+
+def score_and_save(scorer, queries, gallery, data, out_dir: str, split: str):
+    """Score once, persist, return (scores, prepare_s, score_s)."""
+    t0 = time.perf_counter()
+    scorer.prepare(list(dict.fromkeys(list(queries) + list(gallery))), data)
+    t_prepare = time.perf_counter() - t0
+
+    t0 = time.perf_counter()
+    scores = np.asarray(scorer.score_matrix(queries, gallery, data), dtype=float)
+    t_score = time.perf_counter() - t0
+
+    d = os.path.join(out_dir, "scores")
+    os.makedirs(d, exist_ok=True)
+    path = os.path.join(d, f"{_slug(scorer.name)}__{split}.npz")
+    np.savez_compressed(
+        path,
+        scores=scores,
+        method=np.array(scorer.name),
+        input_scope=np.array(scorer.input_scope),
+        split=np.array(split),
+        prepare_seconds=np.array(t_prepare),
+        score_seconds=np.array(t_score),
+        **_ref_arrays("query", queries),
+        **_ref_arrays("gallery", gallery),
+    )
+    print(f"    saved {path}")
+    return scores, t_prepare, t_score
+
+
+def _threshold_from_scores(scores, queries, gallery) -> float:
+    """Best-F1 operating point on the validation matrix. Same logic as
+    reid_eval.calibrate_threshold, but reusing a matrix we already have
+    instead of recomputing it."""
+    from reid_eval import build_relevance, pair_pr_curve
+    valid = valid_mask(queries, gallery)
+    rel = build_relevance(queries, gallery)
+    pr = pair_pr_curve(np.asarray(scores, dtype=float), rel, valid)
+    if not pr["f1"]:
+        return 0.0
+    return float(pr["thresholds"][int(np.argmax(pr["f1"]))])
+
+
+# ===========================================================================
+# 5. Driver
 # ===========================================================================
 
 def run(root: str, methods: list[str] | None = None,
-        out_dir: str = "benchmark_out", prune: bool = True):
+        out_dir: str = "benchmark_out", prune: bool = True, seed: int = 0):
     methods = methods or ["sift", "orb", "loftr", "superglue",
                           "deit", "vit", "clip", "osnet", "yolo", "registration"]
     os.makedirs(out_dir, exist_ok=True)
+
+    # Measured, not assumed: registration's USAC_MAGSAC returns DIFFERENT
+    # homographies under different seeds, while ORB's plain RANSAC came out
+    # identical across seeds in this build. So the seed matters most for the
+    # method whose numbers the paper leans on. Fixing it makes a run
+    # reproducible; it does not make the number stable, so quote the
+    # seed-to-seed spread rather than a single decimal (run a few seeds into
+    # separate --out dirs and compare).
+    cv2.setRNGSeed(seed)
+    np.random.seed(seed)
 
     data = Dataset(root)
     print(data.labelled_summary())
@@ -497,14 +638,19 @@ def run(root: str, methods: list[str] | None = None,
     for scorer in scorers:
         try:
             # Calibrate the operating threshold on validation walls only, if any.
+            # The val matrix is saved too: it cost the same as the test one and
+            # is what any later re-calibration needs.
             thr = None
             if val_walls:
                 vq, vg = data.query_gallery(val_walls)
                 if vq:
-                    thr = calibrate_threshold(scorer, vq, vg, data, **PROTOCOL)
+                    v_scores, _, _ = score_and_save(scorer, vq, vg, data, out_dir, "val")
+                    thr = _threshold_from_scores(v_scores, vq, vg)
 
             tq, tg = data.query_gallery(test_walls)
-            res = evaluate(scorer, tq, tg, data, threshold=thr, **PROTOCOL)
+            t_scores, t_prep, t_sc = score_and_save(scorer, tq, tg, data, out_dir, "test")
+            res = evaluate(scorer, tq, tg, data, threshold=thr,
+                           scores=t_scores, timing=(t_prep, t_sc), **PROTOCOL)
             results.append(res)
             _dump_curves(res, out_dir)
         except ImportError as e:
@@ -518,7 +664,8 @@ def run(root: str, methods: list[str] | None = None,
     with open(os.path.join(out_dir, "results_table.txt"), "w") as f:
         f.write(table + "\n")
     with open(os.path.join(out_dir, "results.json"), "w") as f:
-        json.dump([{k: v for k, v in r.items() if k != "_curves"} for r in results], f, indent=2)
+        json.dump([{k: v for k, v in r.items() if not k.startswith("_")}
+                   for r in results], f, indent=2)
     print(f"\nWrote results to {out_dir}/")
     return results
 
@@ -543,8 +690,11 @@ if __name__ == "__main__":
     ap.add_argument("root", help="dataset root (contains walls.csv, images/, masks/, labels/)")
     ap.add_argument("--methods", nargs="*", default=None)
     ap.add_argument("--out", default="benchmark_out")
+    ap.add_argument("--seed", type=int, default=0,
+                    help="RNG seed for RANSAC (SIFT/ORB/SuperGlue/LoFTR/registration)")
     ap.add_argument("--no-prune", action="store_true",
                     help="score every query-gallery cell, including the ones the "
                          "protocol discards (slower; results are identical)")
     args = ap.parse_args()
-    run(args.root, methods=args.methods, out_dir=args.out, prune=not args.no_prune)
+    run(args.root, methods=args.methods, out_dir=args.out,
+        prune=not args.no_prune, seed=args.seed)

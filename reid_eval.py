@@ -353,18 +353,30 @@ def assignment_accuracy(scores: np.ndarray, relevant: np.ndarray,
 # ===========================================================================
 
 def evaluate(scorer: ReIDScorer, queries: list[InstanceRef], gallery: list[InstanceRef],
-             data, threshold: float | None = None, **protocol) -> dict:
-    """Run one method end to end and return every metric in one dict."""
+             data, threshold: float | None = None,
+             scores: np.ndarray | None = None,
+             timing: tuple[float, float] | None = None, **protocol) -> dict:
+    """Run one method end to end and return every metric in one dict.
+
+    scores/timing: pass a precomputed matrix to skip scoring entirely. The
+    matrix is the only expensive artefact here (hours for the pairwise
+    matchers); every metric below is milliseconds. Persisting it and
+    re-evaluating is what makes a new metric, a bootstrap CI or a
+    coverage-matched comparison free instead of an overnight re-run.
+    """
     valid = build_validity_mask(queries, gallery, **protocol)
     relevant = build_relevance(queries, gallery)
 
-    t0 = time.perf_counter()
-    scorer.prepare(list(dict.fromkeys(queries + gallery)), data)
-    t_prepare = time.perf_counter() - t0
+    if scores is None:
+        t0 = time.perf_counter()
+        scorer.prepare(list(dict.fromkeys(queries + gallery)), data)
+        t_prepare = time.perf_counter() - t0
 
-    t0 = time.perf_counter()
-    scores = scorer.score_matrix(queries, gallery, data)
-    t_score = time.perf_counter() - t0
+        t0 = time.perf_counter()
+        scores = scorer.score_matrix(queries, gallery, data)
+        t_score = time.perf_counter() - t0
+    else:
+        t_prepare, t_score = timing or (0.0, 0.0)
 
     scores = np.asarray(scores, dtype=float)
     assert scores.shape == (len(queries), len(gallery)), "score matrix has the wrong shape"
@@ -392,7 +404,15 @@ def evaluate(scorer: ReIDScorer, queries: list[InstanceRef], gallery: list[Insta
         "prepare_seconds": t_prepare,
         "score_seconds": t_score,
         "ms_per_pair": 1000 * t_score / max(n_pairs, 1),
+        # Embedding methods do all their work in prepare() and none in
+        # score_matrix() (a cached matmul), so ms_per_pair alone reports
+        # them as free next to a pairwise matcher. Total cost is the only
+        # comparable number.
+        "total_seconds": t_prepare + t_score,
+        "ms_per_pair_total": 1000 * (t_prepare + t_score) / max(n_pairs, 1),
+        "n_valid_pairs": n_pairs,
         "_curves": {"cmc": closed.cmc, "open_set": openset, "pr": pr},
+        "_scores": scores,
     }
 
 
@@ -415,17 +435,24 @@ def calibrate_threshold(scorer: ReIDScorer, val_queries, val_gallery, data, **pr
 
 def results_table(results: list[dict]) -> str:
     """Plain-text table, in roughly the shape the paper's main table needs."""
-    hdr = (f"{'method':<24}{'scope':<12}{'R@1':>7}{'R@5':>7}{'mAP':>7}"
-           f"{'DIR@FAR.1':>11}{'pairF1':>8}{'assF1':>8}{'scored':>8}{'ms/pair':>9}")
+    hdr = (f"{'method':<24}{'scope':<12}{'nQ':>5}{'R@1':>7}{'R@5':>7}{'mAP':>7}"
+           f"{'DIR@FAR.1':>11}{'pairF1':>8}{'assF1':>8}{'scored':>8}{'total_s':>9}")
     lines = [hdr, "-" * len(hdr)]
     for r in sorted(results, key=lambda x: -x["closed_set"]["mAP"]):
         lines.append(
             f"{r['method']:<24}{r['input_scope']:<12}"
+            f"{r['closed_set']['n_queries']:>5d}"
             f"{r['closed_set']['rank1']:>7.3f}{r['closed_set']['rank5']:>7.3f}"
             f"{r['closed_set']['mAP']:>7.3f}{r['open_set_dir_at_far10']:>11.3f}"
             f"{r['pair_best_f1']:>8.3f}{r['assignment']['f1']:>8.3f}"
-            f"{r['scoreable_pair_rate']:>8.2f}{r['ms_per_pair']:>9.2f}"
+            f"{r['scoreable_pair_rate']:>8.2f}"
+            f"{r.get('total_seconds', r.get('score_seconds', 0.0)):>9.1f}"
         )
+    lines.append("")
+    lines.append("nQ = queries with a correct answer (the only ones R@1/mAP average over).")
+    lines.append("scored = fraction of valid pairs the method returned a finite score for;")
+    lines.append("         a method below 1.00 is being ranked on an easier subset than the rest.")
+    lines.append("total_s = prepare + score. Embedding methods do all their work in prepare.")
     return "\n".join(lines)
 
 
