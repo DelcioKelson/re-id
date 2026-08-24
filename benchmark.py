@@ -310,7 +310,7 @@ class Dataset:
 
 # The evaluation protocol, defined once. run() passes it to reid_eval, and
 # the expensive scorers below use it to skip cells the metrics discard.
-PROTOCOL = dict(same_wall_only=True, exclude_same_session=True)
+PROTOCOL = dict(same_wall_only=True, exclude_same_session=True, min_frame_gap=0)
 
 
 def valid_mask(queries, gallery) -> np.ndarray:
@@ -438,6 +438,27 @@ def _maybe_mask(inst: CrackInstance, apply: bool) -> CrackInstance:
     return CrackInstance(crop=masked, mask_crop=inst.mask_crop, bbox=inst.bbox)
 
 
+class ShapeEmbeddingScorer(EmbeddingScorer):
+    """Embeds the crack MASK, not the photo pixels.
+
+    crack_shape_descriptor works on morphology, so it needs mask_crop
+    rather than the BGR crop every other embedder consumes. Everything
+    downstream (cosine similarity, caching, the metrics) is unchanged.
+    """
+
+    def __init__(self, name: str, embed_fn, context: float = 0.0):
+        super().__init__(name=name, embed_fn=embed_fn, input_scope="crop")
+        self.context = context
+
+    def prepare(self, refs, data):
+        todo = [r for r in refs if r.instance_id not in self._cache]
+        if not todo:
+            return
+        masks = [data.instance_with_context(r, self.context).mask_crop for r in todo]
+        for r, e in zip(todo, self.embed_fn(masks)):
+            self._cache[r.instance_id] = e
+
+
 class ContextEmbeddingScorer(EmbeddingScorer):
     """EmbeddingScorer that feeds the backbone a context-expanded crop.
 
@@ -522,6 +543,12 @@ def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
                     invert=invert,
                     name=m.name + _suffix(context, apply_mask, m.apply_mask, invert),
                 ))
+            elif key == "shape":
+                from crack_reid_baselines import crack_shape_descriptor
+                fn = lambda masks: _l2(np.stack([crack_shape_descriptor(m) for m in masks]))
+                scorers.append(ShapeEmbeddingScorer(
+                    name="CrackShape" + _suffix(context, None, None, invert),
+                    embed_fn=fn, context=context))
             elif key in ("deit", "vit", "clip", "osnet", "yolo"):
                 emb = REGISTRY[key]()
                 # wrap embed_batch as an embed_fn over BGR crops
@@ -574,9 +601,13 @@ class PrunedRegistrationScorer(RegistrationScorer):
                 by_pair[(q.image_id, gallery[j].image_id)].append((i, int(j)))
 
         todo, done, t0 = int(valid.sum()), 0, time.time()
+        n_pairs = n_reg_fail = n_cells_unregistered = 0
         for (a_id, b_id), cells in by_pair.items():
             H = self._homography(a_id, b_id, data)
+            n_pairs += 1
             if H is None:
+                n_reg_fail += 1
+                n_cells_unregistered += len(cells)
                 done += len(cells)
                 continue
             for i, j in cells:
@@ -584,6 +615,21 @@ class PrunedRegistrationScorer(RegistrationScorer):
                 done += 1
             _progress(self.name, done, todo, t0)
         _progress(self.name, todo, todo, t0)
+        # Reported separately because they mean opposite things: a failed
+        # registration is a non-answer, an out-of-frame crack is a confident
+        # rejection. Merging them into one `scored` column is what made
+        # `scored = 0.34` read as "registration fails two thirds of the time"
+        # when the true image-pair failure rate is what this records.
+        self.coverage = {
+            "image_pairs": n_pairs,
+            "registration_failures": n_reg_fail,
+            "registration_failure_rate": n_reg_fail / max(n_pairs, 1),
+            "cells_unregistered": n_cells_unregistered,
+            "cells_total": int(valid.sum()),
+        }
+        if n_pairs:
+            print(f"    {self.name}: registered {n_pairs - n_reg_fail}/{n_pairs} "
+                  f"image pairs ({1 - n_reg_fail / n_pairs:.0%})")
         return d
 
 
@@ -595,6 +641,16 @@ def _build_registration_scorer(data: Dataset, prune: bool = True):
         reg = register_images(data.image(img_a_id), data.image(img_b_id),
                               data.mask(img_a_id), data.mask(img_b_id))
         return reg.H if reg.ok else None
+
+    # A query crack that warps OUTSIDE the gallery photo is not an
+    # unanswerable pair -- it is a confident, geometrically grounded "this
+    # crack is not in that photo", which no crop-scope method can produce.
+    # Returning inf for it conflated two opposite events: "I could not
+    # register these images" and "I registered them and the crack is not
+    # there". Across the test split those are 63% and 10% of unscored
+    # cells respectively, and collapsing them made `scored` unreadable and
+    # handed registration an advantage disguised as a weakness.
+    OUT_OF_FRAME = 1e6            # finite: ranks last, but IS an answer
 
     def chamfer_fn(q_ref, g_ref, H, _data):
         # warp the query instance's mask into gallery frame, then Chamfer
@@ -608,7 +664,7 @@ def _build_registration_scorer(data: Dataset, prune: bool = True):
         warped = cv2.warpPerspective(full_q, H, (wb, hb), flags=cv2.INTER_NEAREST)
         ys, xs = np.nonzero(warped)
         if len(xs) == 0:
-            return np.inf
+            return OUT_OF_FRAME
         from crack_registration_reid import CrackInstance as RegInst
         q_w = RegInst(label=0, pixels=np.stack([xs, ys], 1),
                       bbox=(0, 0, wb, hb), area=len(xs),
@@ -698,9 +754,12 @@ def _threshold_from_scores(scores, queries, gallery) -> float:
 # ===========================================================================
 
 def run(root: str, methods: list[str] | None = None,
-        out_dir: str = "benchmark_out", prune: bool = True, seed: int = 0):
+        out_dir: str = "benchmark_out", prune: bool = True, seed: int = 0,
+        min_frame_gap: int = 0, min_area: int = 200, close_px: int = 5):
+    PROTOCOL["min_frame_gap"] = int(min_frame_gap)
     methods = methods or ["sift", "orb", "loftr", "superglue",
-                          "deit", "vit", "clip", "osnet", "yolo", "registration"]
+                          "deit", "vit", "clip", "osnet", "yolo",
+                          "shape", "registration"]
     os.makedirs(out_dir, exist_ok=True)
 
     # Measured, not assumed: registration's USAC_MAGSAC returns DIFFERENT
@@ -713,7 +772,7 @@ def run(root: str, methods: list[str] | None = None,
     cv2.setRNGSeed(seed)
     np.random.seed(seed)
 
-    data = Dataset(root)
+    data = Dataset(root, min_area=min_area, close_px=close_px)
     print(data.labelled_summary())
 
     splits = _load_splits(root)
@@ -761,6 +820,69 @@ def run(root: str, methods: list[str] | None = None,
     return results
 
 
+def run_lowo(root: str, methods: list[str] | None = None,
+             out_dir: str = "benchmark_out", prune: bool = True, seed: int = 0,
+             min_frame_gap: int = 0, min_area: int = 200, close_px: int = 5):
+    """Leave-one-wall-out over every wall, instead of a fixed val/test split.
+
+    The fixed split wastes the data and reports the weaker half: validation
+    carries 385 answerable queries over 6 walls while test carries 161 over
+    11, four of which contribute none at all -- so the headline numbers come
+    from the smaller, noisier partition while the larger one only picks a
+    threshold.
+
+    Here every wall is held out in turn, its operating threshold calibrated
+    on the other 16, and the per-fold score matrices saved under
+    <out>/lowo/<wall>/. Every query contributes exactly once, and the wall
+    stays the unit of replication for reid_analysis's cluster bootstrap --
+    which is the interval the paper should quote.
+    """
+    PROTOCOL["min_frame_gap"] = int(min_frame_gap)
+    cv2.setRNGSeed(seed)
+    np.random.seed(seed)
+
+    data = Dataset(root, min_area=min_area, close_px=close_px)
+    print(data.labelled_summary())
+    walls = sorted({r.wall_id for r in data.refs})
+    print(f"\nLeave-one-wall-out over {len(walls)} walls")
+
+    per_fold = {}
+    for held in walls:
+        rest = set(walls) - {held}
+        tq, tg = data.query_gallery({held})
+        if not any(r.identity for r in tq):
+            print(f"  ({held}: no labelled query, skipped)")
+            continue
+        fold_dir = os.path.join(out_dir, "lowo", held)
+        os.makedirs(fold_dir, exist_ok=True)
+        scorers = build_scorers(methods or ["sift"], data, prune=prune)
+        for scorer in scorers:
+            try:
+                thr = None
+                vq, vg = data.query_gallery(rest)
+                if vq:
+                    v, _, _ = score_and_save(scorer, vq, vg, data, fold_dir, "val")
+                    thr = _threshold_from_scores(v, vq, vg)
+                t, tp, ts = score_and_save(scorer, tq, tg, data, fold_dir, "test")
+                res = evaluate(scorer, tq, tg, data, threshold=thr,
+                               scores=t, timing=(tp, ts), **PROTOCOL)
+                per_fold.setdefault(scorer.name, []).append((held, res))
+            except Exception as e:
+                print(f"  ({held}/{scorer.name} error: {type(e).__name__}: {e})")
+
+    print("\nPooled over folds (mean +/- sd across walls):")
+    for name, folds in sorted(per_fold.items()):
+        r1 = np.array([r["closed_set"]["rank1"] for _, r in folds])
+        mp = np.array([r["closed_set"]["mAP"] for _, r in folds])
+        print(f"  {name:<24} R@1 {r1.mean():.3f}+/-{r1.std():.3f}   "
+              f"mAP {mp.mean():.3f}+/-{mp.std():.3f}   ({len(folds)} folds)")
+    with open(os.path.join(out_dir, "lowo_results.json"), "w") as f:
+        json.dump({k: [{"wall": w, **{kk: vv for kk, vv in r.items()
+                                      if not kk.startswith("_")}} for w, r in v]
+                   for k, v in per_fold.items()}, f, indent=2)
+    return per_fold
+
+
 def _load_splits(root: str) -> dict:
     path = os.path.join(root, "splits.json")
     if os.path.exists(path):
@@ -783,9 +905,33 @@ if __name__ == "__main__":
     ap.add_argument("--out", default="benchmark_out")
     ap.add_argument("--seed", type=int, default=0,
                     help="RNG seed for RANSAC (SIFT/ORB/SuperGlue/LoFTR/registration)")
+    ap.add_argument("--min-frame-gap", type=int, default=0,
+                    help="drop gallery photos within N frames of the query's own "
+                         "frame. Each wall was shot in one continuous pass and the "
+                         "nearest correct answer is the ADJACENT frame for 100%% of "
+                         "answerable queries, so 0 measures near-duplicate retrieval. "
+                         "Sweep 0..3 and report the curve.")
+    ap.add_argument("--min-area", type=int, default=200,
+                    help="minimum crack pixels for a connected component to count. "
+                         "On a 12 MP photo the 10th-percentile component is 236 px, "
+                         "which is the boundary between a hairline and segmentation "
+                         "speckle -- worth sweeping rather than assuming.")
+    ap.add_argument("--close-px", type=int, default=5,
+                    help="morphological closing before labelling. NOTE 5 px on a "
+                         "4080 px image is effectively no closing at all, so the "
+                         "'one crack, many components' case this was meant to merge "
+                         "is not merged; a fragmented crack becomes several "
+                         "identities instead. Raise it, or merge fragments at "
+                         "label time.")
+    ap.add_argument("--lowo", action="store_true",
+                    help="leave-one-wall-out over all walls instead of the fixed "
+                         "val/test split, so every wall contributes")
     ap.add_argument("--no-prune", action="store_true",
                     help="score every query-gallery cell, including the ones the "
                          "protocol discards (slower; results are identical)")
     args = ap.parse_args()
-    run(args.root, methods=args.methods, out_dir=args.out,
-        prune=not args.no_prune, seed=args.seed)
+    driver = run_lowo if args.lowo else run
+    driver(args.root, methods=args.methods, out_dir=args.out,
+           prune=not args.no_prune, seed=args.seed,
+           min_frame_gap=args.min_frame_gap,
+           min_area=args.min_area, close_px=args.close_px)

@@ -113,10 +113,28 @@ def load_runs(out_dir: str, split: str | None = None) -> list[ScoreRun]:
 # Protocol masks, rebuilt from the saved arrays
 # ===========================================================================
 
+def _frames(image_ids: np.ndarray) -> np.ndarray:
+    """Frame index per photo, or -1 where the name carries none."""
+    out = np.full(len(image_ids), -1, dtype=np.int64)
+    for i, iid in enumerate(image_ids):
+        tail = str(iid).rsplit("_", 1)[-1]
+        if tail.isdigit():
+            out[i] = int(tail)
+    return out
+
+
 def masks_for(run: ScoreRun, same_wall_only: bool = True,
-              exclude_same_session: bool = True) -> tuple[np.ndarray, np.ndarray]:
+              exclude_same_session: bool = True,
+              min_frame_gap: int = 0) -> tuple[np.ndarray, np.ndarray]:
     """(valid, relevant), matching reid_eval.build_validity_mask exactly but
-    vectorised, since the analysis rebuilds these for every bootstrap."""
+    vectorised, since the analysis rebuilds these for every bootstrap.
+
+    min_frame_gap drops gallery photos within N frames of the query's own.
+    Every answerable query's nearest correct answer is the ADJACENT frame,
+    so at 0 this measures near-duplicate retrieval across ~3 seconds. The
+    sweep costs nothing here: image_id is already in the saved matrix, so
+    no method has to be re-scored to produce the whole curve.
+    """
     q, g = run.query, run.gallery
     same_image = q["image_id"][:, None] == g["image_id"][None, :]
     valid = ~same_image
@@ -124,20 +142,29 @@ def masks_for(run: ScoreRun, same_wall_only: bool = True,
         valid &= q["session"][:, None] != g["session"][None, :]
     if same_wall_only:
         valid &= q["wall_id"][:, None] == g["wall_id"][None, :]
+    if min_frame_gap > 0:
+        qf, gf = _frames(q["image_id"]), _frames(g["image_id"])
+        known = (qf[:, None] >= 0) & (gf[None, :] >= 0)
+        near = np.abs(qf[:, None] - gf[None, :]) <= min_frame_gap
+        same_wall = q["wall_id"][:, None] == g["wall_id"][None, :]
+        valid &= ~(known & near & same_wall)
 
     q_id, g_id = q["identity"], g["identity"]
     relevant = (q_id[:, None] == g_id[None, :]) & (q_id[:, None] != "")
     return valid, relevant
 
 
-def _metrics(scores, relevant, valid, threshold=None) -> dict:
+def _metrics(scores, relevant, valid, threshold=None,
+             q_image=None, g_image=None) -> dict:
     closed = closed_set_metrics(scores, relevant, valid)
     openset = open_set_curve(scores, relevant, valid)
     pr = pair_pr_curve(scores, relevant, valid)
     if threshold is None:
         idx = int(np.argmax(pr["f1"])) if pr["f1"] else 0
         threshold = pr["thresholds"][idx] if pr["thresholds"] else 0.0
-    assign = assignment_accuracy(scores, relevant, valid, threshold)
+    # per-image-pair assignment, matching reid_eval/benchmark
+    assign = assignment_accuracy(scores, relevant, valid, threshold,
+                                 q_image=q_image, g_image=g_image)
     n_pairs = int(valid.sum())
     return {
         "n_queries": closed.n_queries,
@@ -305,6 +332,161 @@ def _calibrate(val_run: "ScoreRun | None", norm_mode: str = "none") -> float | N
 
 
 # ===========================================================================
+# Fusion  (finding 16: free, from matrices already on disk)
+# ===========================================================================
+
+def fuse(primary: ScoreRun, backup: ScoreRun, valid: np.ndarray) -> np.ndarray:
+    """Cascade two saved score matrices: use `primary` wherever it answered,
+    fall back to `backup` elsewhere.
+
+    registration+chamfer answers a minority of pairs very well; the
+    appearance methods answer all of them moderately. Neither alone is the
+    best available system, and the combination needs no re-scoring at all --
+    check_aligned() guarantees the two matrices share a query/gallery
+    ordering, so this is a masked combination of two arrays already on disk.
+
+    The two score scales are unrelated, so the backup is mapped onto the
+    primary's within-row scale before substitution: primary answers keep
+    their ordering and always outrank a fallback, which is the intended
+    semantics of a cascade.
+    """
+    P, B = primary.scores, backup.scores
+    out = np.full_like(P, -np.inf, dtype=float)
+    for i in range(P.shape[0]):
+        m = valid[i]
+        if not m.any():
+            continue
+        p_ok = m & np.isfinite(P[i])
+        b_ok = m & np.isfinite(B[i]) & ~p_ok
+        if p_ok.any():
+            out[i][p_ok] = P[i][p_ok]
+        if b_ok.any():
+            bb = B[i][b_ok]
+            rng = bb.max() - bb.min()
+            unit = (bb - bb.min()) / rng if rng > 0 else np.zeros_like(bb)
+            if p_ok.any():
+                lo = P[i][p_ok].min()
+                span = (P[i][p_ok].max() - lo) or 1.0
+                # strictly below every primary answer
+                out[i][b_ok] = lo - span * (1.0 + (1.0 - unit))
+            else:
+                out[i][b_ok] = unit
+    return out
+
+
+def frame_gap_sweep(out_dir: str, split: str = "test",
+                    gaps=(0, 1, 2, 3)) -> dict:
+    """R@1 / mAP for every method as adjacent frames are excluded.
+
+    This is the answer to the benchmark's biggest confound. Each wall was
+    captured in a single continuous pass, and for 100% of answerable
+    queries the nearest correct answer is the immediately adjacent frame.
+    Excluding a widening neighbourhood turns that into a difficulty axis,
+    and a curve of R@1 against baseline separation is a stronger result
+    than any single number.
+    """
+    runs = load_runs(out_dir, split=split)
+    table = {}
+    for r in runs:
+        row = []
+        for k in gaps:
+            valid, relevant = masks_for(r, min_frame_gap=k)
+            m = _metrics(r.scores, relevant, valid)
+            row.append({"gap": k, "n_queries": m["n_queries"],
+                        "rank1": m["rank1"], "mAP": m["mAP"]})
+        table[r.method] = row
+    return table
+
+
+def format_frame_gap(table: dict, gaps=(0, 1, 2, 3)) -> str:
+    L = ["", "=" * 92,
+         "FRAME-GAP SWEEP -- gallery photos within +/-N frames of the query are excluded",
+         "gap 0 is the published setting; every query's nearest correct answer is at gap 1,",
+         "so gap 0 measures near-duplicate retrieval (~3 s apart), not re-identification.",
+         "=" * 92]
+    hdr = f"{'method':<24}" + "".join(f"{'gap' + str(k):>18}" for k in gaps)
+    L += [hdr, "-" * len(hdr)]
+    for meth, row in sorted(table.items(), key=lambda kv: -kv[1][0]["mAP"]):
+        cells = "".join(f"{r['rank1']:>9.3f}/{r['n_queries']:<8d}" for r in row)
+        L.append(f"{meth:<24}{cells}")
+    L.append("")
+    L.append("cells are R@1 / number of queries that still have an answer at that gap.")
+    return "\n".join(L)
+
+
+# ===========================================================================
+# Surface stratification  (finding 20)
+# ===========================================================================
+
+def load_surface_map(path: str) -> dict:
+    """wall_id -> surface class, from a CSV with a `surface` column.
+
+    The dataset holds two physically distinct populations and nearly every
+    anomaly in this benchmark traces back to which one a wall belongs to.
+    Textured render: registration near-perfect, label propagation works,
+    identities exist. Smooth painted plaster: registration impossible
+    (0 of 330 pairs on walls 10/13/14/16/17), propagation mints a fresh
+    identity per photo, the wall contributes only distractors.
+
+    That is the mechanism behind the correlation between registration rate
+    and matchable-identity count -- not a coincidence between two methods,
+    but surface texture driving both. Reporting the table once per regime
+    turns the most awkward finding in the review into a stated domain of
+    validity.
+
+    Add the column with e.g.
+        wall_id,surface
+        wall09,textured
+        wall13,smooth
+    """
+    import csv as _csv
+    out = {}
+    with open(path) as f:
+        for row in _csv.DictReader(f):
+            if row.get("surface"):
+                out[row["wall_id"]] = row["surface"].strip()
+    return out
+
+
+def stratified(out_dir: str, surface_map: dict, split: str = "test") -> dict:
+    """Metrics per method per surface class."""
+    runs = load_runs(out_dir, split=split)
+    table = {}
+    for r in runs:
+        valid, relevant = masks_for(r)
+        wall = r.query["wall_id"]
+        rows = {}
+        for surf in sorted(set(surface_map.values())):
+            keep = np.array([surface_map.get(str(w)) == surf for w in wall])
+            if not keep.any():
+                continue
+            v = valid.copy()
+            v[~keep] = False
+            rows[surf] = _metrics(r.scores, relevant, v)
+        table[r.method] = rows
+    return table
+
+
+def format_stratified(table: dict) -> str:
+    classes = sorted({c for rows in table.values() for c in rows})
+    L = ["", "=" * 92,
+         "BY SURFACE REGIME -- the dataset holds two physically different populations",
+         "=" * 92]
+    hdr = f"{'method':<24}" + "".join(f"{c:>22}" for c in classes)
+    L += [hdr, "-" * len(hdr)]
+    for meth, rows in sorted(table.items(),
+                             key=lambda kv: -max((m["mAP"] for m in kv[1].values()), default=0)):
+        cells = ""
+        for c in classes:
+            m = rows.get(c)
+            cells += (f"{m['rank1']:>10.3f}/{m['n_queries']:<11d}" if m else f"{'-':>22}")
+        L.append(f"{meth:<24}{cells}")
+    L.append("")
+    L.append("cells are R@1 / queries with an answer, within that surface class.")
+    return "\n".join(L)
+
+
+# ===========================================================================
 # Reporting
 # ===========================================================================
 
@@ -332,7 +514,8 @@ def analyse(out_dir: str, split: str = "test", n_boot: int = 1000,
     for r in runs:
         valid, relevant = masks_for(r)
         thr = _calibrate(calib.get(r.method), norm_mode="none")
-        m = _metrics(r.scores, relevant, valid, threshold=thr)
+        m = _metrics(r.scores, relevant, valid, threshold=thr,
+                     q_image=r.query["image_id"], g_image=r.gallery["image_id"])
         m["method"] = r.method
         m["input_scope"] = r.input_scope
         m["total_seconds"] = r.prepare_seconds + r.score_seconds
@@ -352,7 +535,8 @@ def analyse(out_dir: str, split: str = "test", n_boot: int = 1000,
             valid, relevant = masks_for(r)
             ns = normalize_scores(r.scores, valid, mode=norm_mode)
             thr = _calibrate(calib.get(r.method), norm_mode=norm_mode)
-            m = _metrics(ns, relevant, valid, threshold=thr)
+            m = _metrics(ns, relevant, valid, threshold=thr,
+                         q_image=r.query["image_id"], g_image=r.gallery["image_id"])
             m["method"] = r.method
             m["input_scope"] = r.input_scope
             norm_rows.append(m)
@@ -366,7 +550,8 @@ def analyse(out_dir: str, split: str = "test", n_boot: int = 1000,
         for r in runs:
             valid, relevant = masks_for(r)
             v = valid & common
-            m = _metrics(r.scores, relevant, v)
+            m = _metrics(r.scores, relevant, v,
+                         q_image=r.query["image_id"], g_image=r.gallery["image_id"])
             m["method"] = r.method
             m["input_scope"] = r.input_scope
             matched.append(m)
@@ -486,6 +671,14 @@ if __name__ == "__main__":
     ap.add_argument("--bootstrap", type=int, default=1000,
                     help="bootstrap resamples for CIs; 0 disables")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--frame-gap-sweep", action="store_true",
+                    help="report R@1/mAP as adjacent frames are excluded (0..3). "
+                         "Free: works off the saved matrices.")
+    ap.add_argument("--fuse", nargs=2, metavar=("PRIMARY", "BACKUP"),
+                    help="cascade two saved methods by name and report the result")
+    ap.add_argument("--surfaces", metavar="WALLS_CSV",
+                    help="path to a CSV with wall_id,surface -- reports the table "
+                         "once per surface regime (textured render vs smooth paint)")
     ap.add_argument("--norm", default="row", choices=["none", "row", "rank"],
                     help="per-query score normalisation to report alongside raw")
     args = ap.parse_args()
@@ -493,6 +686,41 @@ if __name__ == "__main__":
     rep = analyse(args.out_dir, split=args.split, n_boot=args.bootstrap,
                   seed=args.seed, norm_mode=args.norm)
     text = format_report(rep)
+
+    if args.frame_gap_sweep:
+        tbl = frame_gap_sweep(args.out_dir, split=args.split)
+        text += "\n" + format_frame_gap(tbl)
+        rep["frame_gap_sweep"] = tbl
+
+    if args.surfaces:
+        smap = load_surface_map(args.surfaces)
+        if not smap:
+            text += f"\n\n(stratification skipped: no `surface` column in {args.surfaces})"
+        else:
+            st = stratified(args.out_dir, smap, split=args.split)
+            text += "\n" + format_stratified(st)
+            rep["stratified"] = st
+
+    if args.fuse:
+        runs = {r.method: r for r in load_runs(args.out_dir, split=args.split)}
+        missing = [m for m in args.fuse if m not in runs]
+        if missing:
+            text += f"\n\n(fusion skipped: no saved matrix for {missing})"
+        else:
+            pr, bk = runs[args.fuse[0]], runs[args.fuse[1]]
+            problems = check_aligned([pr, bk])
+            if problems:
+                text += f"\n\n(fusion skipped: {problems})"
+            else:
+                valid, relevant = masks_for(pr)
+                m = _metrics(fuse(pr, bk, valid), relevant, valid)
+                text += (f"\n\nFUSION  {args.fuse[0]} -> {args.fuse[1]}\n"
+                         f"  R@1={m['rank1']:.3f}  mAP={m['mAP']:.3f}  "
+                         f"DIR@.1={m['dir_at_far10']:.3f}  scored={m['scoreable_pair_rate']:.2f}\n"
+                         f"  (vs {args.fuse[0]} alone: "
+                         f"R@1={_metrics(pr.scores, relevant, valid)['rank1']:.3f})")
+                rep["fusion"] = {"primary": args.fuse[0], "backup": args.fuse[1], **m}
+
     print(text)
     with open(os.path.join(args.out_dir, f"analysis_{args.split}.txt"), "w") as f:
         f.write(text + "\n")

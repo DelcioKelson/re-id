@@ -196,6 +196,44 @@ class BaseMatcher(ABC):
 # Family 1: classical keypoint matching (SIFT / ORB)
 # ---------------------------------------------------------------------------
 
+def _tiebreak(*qualities: float) -> float:
+    """Fold continuous quality signals into a fraction strictly below 1.
+
+    Every keypoint and learned-pairwise matcher here scores in RANSAC
+    inlier COUNTS -- small integers, so a query's row is mostly exact
+    ties. Measured on walls 07/08/11/12: 94% of ORB's valid pairs score
+    exactly 0.0, and the median query has 30 gallery entries tied for top
+    place. reid_eval now charges ties their expected rank rather than
+    their list position, which stops the ordering being an artefact, but
+    a tie the matcher could have broken is still information thrown away.
+
+    Adding a sub-integer quality term keeps the inlier count as the
+    primary criterion (the published, interpretable number) while letting
+    genuinely better-supported matches win among equals. Capped just
+    under 1.0 so it can never promote a pair past one with a higher
+    inlier count.
+    """
+    q = [float(x) for x in qualities if x is not None and np.isfinite(x)]
+    if not q:
+        return 0.0
+    return float(min(sum(q) / len(q), 1.0)) * 0.999
+
+
+def _match_margin(pairs, ratio: float) -> float:
+    """Mean Lowe-ratio margin over knn pairs, in [0, 1).
+
+    How decisively the best match beat the runner-up, averaged. Near 0
+    means every match was ambiguous; near 1 means they were distinctive.
+    Defined even when no match survives the ratio test, which is exactly
+    the case (score 0) that needs separating.
+    """
+    if not pairs:
+        return 0.0
+    m = np.array([p[0].distance for p in pairs], dtype=float)
+    n = np.array([p[1].distance for p in pairs], dtype=float)
+    return float(np.clip(1.0 - m / np.maximum(n, 1e-6), 0.0, 1.0).mean())
+
+
 class KeypointMatcher(BaseMatcher):
     """SIFT or ORB keypoints + ratio test + RANSAC inlier count as score.
 
@@ -249,22 +287,49 @@ class KeypointMatcher(BaseMatcher):
             return 0.0
 
         knn = self.matcher.knnMatch(des_a, des_b, k=2)
-        good = [m for pair in knn if len(pair) == 2
-                for m, n in [pair] if m.distance < self.ratio * n.distance]
+        pairs = [pair for pair in knn if len(pair) == 2]
+        good = [m for m, n in pairs if m.distance < self.ratio * n.distance]
+        margin = _match_margin(pairs, self.ratio)
         if len(good) < 4:
-            return float(len(good))
+            return len(good) + margin
 
         pts_a = np.float32([kp_a[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
         pts_b = np.float32([kp_b[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
         _, inliers = cv2.findHomography(pts_a, pts_b, cv2.RANSAC, self.ransac_thresh)
         if inliers is None:
-            return 0.0
-        return float(int(inliers.sum()))
+            return margin
+        n_in = int(inliers.sum())
+        return n_in + _tiebreak(n_in / len(good), margin)
 
 
 # ---------------------------------------------------------------------------
 # Family 2: global embeddings + cosine similarity
 # ---------------------------------------------------------------------------
+
+def letterbox(crop: np.ndarray, size: int, pad_value: int = 114) -> np.ndarray:
+    """Resize to a square keeping aspect ratio, padding the short side.
+
+    The crops here are long and thin -- median aspect ratio 1.93, 90th
+    percentile 4.14, median size 85x129 px cut from a 3072x4080 photo.
+    A plain Resize((224, 224)) squashes them anisotropically, which
+    destroys the crack's proportions: the single most identifying thing
+    about a crack is its shape, and a 4:1 crack and a 1:1 crack become
+    the same picture. Padding preserves it.
+    """
+    h, w = crop.shape[:2]
+    if h == 0 or w == 0:
+        return np.full((size, size, 3), pad_value, np.uint8)
+    s = size / max(h, w)
+    nh, nw = max(1, int(round(h * s))), max(1, int(round(w * s)))
+    interp = cv2.INTER_AREA if s < 1 else cv2.INTER_CUBIC
+    r = cv2.resize(crop, (nw, nh), interpolation=interp)
+    if r.ndim == 2:
+        r = cv2.cvtColor(r, cv2.COLOR_GRAY2BGR)
+    out = np.full((size, size, 3), pad_value, np.uint8)
+    y0, x0 = (size - nh) // 2, (size - nw) // 2
+    out[y0:y0 + nh, x0:x0 + nw] = r
+    return out
+
 
 class EmbeddingMatcher(BaseMatcher):
     """Base for any 'one vector per crop, cosine similarity' method.
@@ -315,9 +380,10 @@ class TimmEmbeddingMatcher(EmbeddingMatcher):
         self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._model = timm.create_model(self.model_name, pretrained=True, num_classes=0)
         self._model.eval().to(self._device)
+        # No Resize here: crops are letterboxed to a square in embed_batch,
+        # so the aspect ratio survives. Resize((S, S)) would squash it.
         self._tf = transforms.Compose([
             transforms.ToPILImage(),
-            transforms.Resize((self.image_size, self.image_size)),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
@@ -325,7 +391,9 @@ class TimmEmbeddingMatcher(EmbeddingMatcher):
     def embed_batch(self, crops):
         self._lazy()
         torch = self._torch
-        batch = torch.stack([self._tf(cv2.cvtColor(c, cv2.COLOR_BGR2RGB)) for c in crops])
+        batch = torch.stack([
+            self._tf(cv2.cvtColor(letterbox(c, self.image_size), cv2.COLOR_BGR2RGB))
+            for c in crops])
         with torch.no_grad():
             feats = self._model(batch.to(self._device))
         return feats.cpu().numpy()
@@ -355,8 +423,15 @@ class CLIPEmbeddingMatcher(EmbeddingMatcher):
         self._lazy()
         torch = self._torch
         from PIL import Image
-        imgs = [Image.fromarray(cv2.cvtColor(c, cv2.COLOR_BGR2RGB)) for c in crops]
-        inputs = self._proc(images=imgs, return_tensors="pt").to(self._device)
+        # CLIPProcessor resizes the SHORT edge to 224 and then centre-crops,
+        # which on an 85x400 crop keeps roughly the middle half of the crack
+        # and discards the rest. Letterboxing to a square first makes the
+        # resize a no-op and the centre crop harmless; do_center_crop=False
+        # is belt and braces for processor versions that ignore that.
+        imgs = [Image.fromarray(cv2.cvtColor(letterbox(c, 224), cv2.COLOR_BGR2RGB))
+                for c in crops]
+        inputs = self._proc(images=imgs, return_tensors="pt",
+                            do_center_crop=False).to(self._device)
         with torch.no_grad():
             feats = self._model.get_image_features(**inputs)
         if not torch.is_tensor(feats):
@@ -434,8 +509,8 @@ class YOLOEmbeddingMatcher(EmbeddingMatcher):
         out = []
         with torch.no_grad():
             for c in crops:
-                img = cv2.resize(cv2.cvtColor(c, cv2.COLOR_BGR2RGB),
-                                 (self.image_size, self.image_size)).astype(np.float32) / 255.0
+                img = cv2.cvtColor(letterbox(c, self.image_size),
+                                   cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
                 t = torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0).to(self._device)
                 _ = self._model(t)
                 v = F.adaptive_avg_pool2d(self._feat, 1).flatten(1)
@@ -485,8 +560,12 @@ class SuperGlueMatcher(BaseMatcher):
 
     apply_mask = True
 
-    def __init__(self, weights: str = "outdoor", resize: int = 256,
+    def __init__(self, weights: str = "indoor", resize: int = 512,
                  min_inliers: int = 6):
+        # resize was 256, on crops whose median long side is 140 px -- the
+        # network was being fed upsampled blur. weights was "outdoor";
+        # these are flat, low-texture, close-range interior surfaces, which
+        # is what the indoor model was trained on.
         self.weights = weights
         self.resize = resize
         self.min_inliers = min_inliers
@@ -529,12 +608,17 @@ class SuperGlueMatcher(BaseMatcher):
         matches = pred["matches0"]
         valid = matches > -1
         n = int(valid.sum())
+        conf = pred.get("matching_scores0")
+        q = float(conf[valid].mean()) if conf is not None and n else 0.0
         if n < 4:                        # too few points to verify geometrically
-            return float(n)
+            return n + _tiebreak(q)
         mk0 = pred["keypoints0"][valid]
         mk1 = pred["keypoints1"][matches[valid]]
         _, inl = cv2.findHomography(mk0, mk1, cv2.RANSAC, 5.0)
-        return float(int(inl.sum())) if inl is not None else float(n)
+        if inl is None:
+            return n + _tiebreak(q)
+        n_in = int(inl.sum())
+        return n_in + _tiebreak(n_in / n, q)
 
 
 class LoFTRMatcher(BaseMatcher):
@@ -544,8 +628,12 @@ class LoFTRMatcher(BaseMatcher):
 
     apply_mask = True
 
-    def __init__(self, pretrained: str = "outdoor", resize: int = 256,
+    def __init__(self, pretrained: str = "indoor", resize: int = 512,
                  conf_thresh: float = 0.5, min_inliers: int = 10):
+        # At resize=256 LoFTR's coarse grid is ~32 cells on the long side,
+        # so only a handful of matches are geometrically possible before
+        # RANSAC ever sees them. "indoor" (ScanNet) is far closer to smooth
+        # painted plaster than the outdoor landmark model.
         self.pretrained = pretrained
         self.resize = resize
         self.conf_thresh = conf_thresh
@@ -590,10 +678,136 @@ class LoFTRMatcher(BaseMatcher):
         keep = conf > self.conf_thresh
         mk0, mk1 = mk0[keep], mk1[keep]
         n = len(mk0)
+        q = float(conf[keep].mean()) if n else 0.0
         if n < 4:
-            return float(n)
+            return n + _tiebreak(q)
         _, inl = cv2.findHomography(mk0, mk1, cv2.RANSAC, 3.0)
-        return float(int(inl.sum())) if inl is not None else float(n)
+        if inl is None:
+            return n + _tiebreak(q)
+        n_in = int(inl.sum())
+        return n_in + _tiebreak(n_in / n, q)
+
+
+
+
+# ---------------------------------------------------------------------------
+# Family 4: crack morphology  (the shape of the crack itself)
+# ---------------------------------------------------------------------------
+
+def crack_shape_descriptor(mask_crop: np.ndarray, n_bins: int = 48,
+                           n_freq: int = 16) -> np.ndarray:
+    """A viewpoint-tolerant description of a crack's own geometry.
+
+    Every other baseline here is either generic appearance (ImageNet,
+    CLIP, person re-ID) or geometric registration of the surrounding
+    wall. None of them describes the thing that actually identifies a
+    crack: its shape. On a smooth painted wall there is no texture to
+    fall back on, so shape is all there is.
+
+    Construction, chosen so the descriptor survives the transformations a
+    second photo applies:
+
+      1. PCA-align the crack pixels, so the long axis is horizontal.
+         Removes in-plane rotation.
+      2. Resample the centreline into `n_bins` bins along that axis and
+         take the mean perpendicular offset in each. This is the crack's
+         waviness signature.
+      3. Divide offsets by the crack's length. Removes scale.
+      4. Take |FFT| of the offset profile. A second photo may traverse
+         the crack in the opposite direction; the magnitude spectrum is
+         invariant to that reversal, where the raw profile is not.
+
+    Plus scale-free scalars that carry what the spectrum drops:
+    tortuosity, elongation, relative thickness, and the spread of local
+    turning angles.
+
+    Returns an L2-normalised vector, so cosine similarity is the score.
+    """
+    ys, xs = np.nonzero(mask_crop > 0)
+    n = len(xs)
+    out_dim = n_freq + 8
+    if n < 12:
+        return np.zeros(out_dim, dtype=np.float32)
+
+    P = np.stack([xs, ys], 1).astype(np.float64)
+    P -= P.mean(0)
+    # principal axis
+    w, V = np.linalg.eigh(np.cov(P.T) + 1e-9 * np.eye(2))
+    axis, perp = V[:, 1], V[:, 0]
+    u = P @ axis                     # along the crack
+    v = P @ perp                     # across it
+
+    length = float(u.max() - u.min())
+    if length < 1e-6:
+        return np.zeros(out_dim, dtype=np.float32)
+
+    # centreline profile: mean offset per bin along the axis
+    idx = np.clip(((u - u.min()) / length * n_bins).astype(int), 0, n_bins - 1)
+    prof = np.zeros(n_bins)
+    thick = np.zeros(n_bins)
+    for b in range(n_bins):
+        sel = idx == b
+        if sel.any():
+            prof[b] = v[sel].mean()
+            thick[b] = v[sel].max() - v[sel].min()
+    filled = prof != 0
+    if filled.sum() >= 2:            # interpolate across empty bins
+        prof = np.interp(np.arange(n_bins), np.flatnonzero(filled), prof[filled])
+    prof /= length                   # scale-free
+
+    spec = np.abs(np.fft.rfft(prof - prof.mean()))[1:n_freq + 1]
+    if len(spec) < n_freq:
+        spec = np.pad(spec, (0, n_freq - len(spec)))
+
+    d = np.diff(prof)
+    ang = np.arctan2(d, 1.0 / max(n_bins, 1))
+    arc = float(np.sum(np.hypot(np.diff(prof) * length, length / n_bins)))
+    end_to_end = float(np.hypot(length, (prof[-1] - prof[0]) * length))
+
+    scalars = np.array([
+        arc / max(end_to_end, 1e-6) - 1.0,        # tortuosity above straight
+        np.log1p(np.sqrt(w[1] / max(w[0], 1e-9))),  # elongation
+        thick.mean() / length,                    # relative thickness
+        thick.std() / max(thick.mean(), 1e-6),
+        np.abs(d).mean() * n_bins,                # mean |slope|
+        ang.std(),                                # turning-angle spread
+        n / max(length ** 2, 1e-6),               # fill / raggedness
+        np.abs(prof).max(),                       # peak excursion (scale-free)
+    ], dtype=np.float64)
+    scalars = np.nan_to_num(scalars, nan=0.0, posinf=0.0, neginf=0.0)
+
+    # Normalise the two blocks SEPARATELY before joining them. Concatenating
+    # raw values and L2-normalising once let whichever block happened to have
+    # the larger magnitude dominate the cosine -- with the scalars winning,
+    # the waviness spectrum contributed almost nothing and two cracks of
+    # completely different frequency scored 0.999 alike. Each block is now a
+    # unit vector, and `shape_weight` sets how much the spectrum is worth.
+    shape_weight = 0.75
+    spec = np.nan_to_num(spec, nan=0.0, posinf=0.0, neginf=0.0)
+    ns, nc = np.linalg.norm(spec), np.linalg.norm(scalars)
+    spec = spec / ns if ns > 1e-8 else spec
+    scalars = scalars / nc if nc > 1e-8 else scalars
+
+    vec = np.concatenate([shape_weight * spec,
+                          (1.0 - shape_weight) * scalars]).astype(np.float32)
+    nrm = np.linalg.norm(vec)
+    return vec / nrm if nrm > 1e-8 else vec
+
+
+class CrackShapeMatcher(EmbeddingMatcher):
+    """Cosine similarity over crack_shape_descriptor. No weights, no GPU."""
+
+    def __init__(self, min_score: float = 0.9):
+        self.min_score = min_score
+        self.name = "CrackShape"
+
+    def embed_batch(self, crops):        # unused; prepare() needs the MASK
+        raise NotImplementedError
+
+    def prepare(self, instances):
+        if not instances:
+            return np.zeros((0, 24), dtype=np.float32)
+        return np.stack([crack_shape_descriptor(i.mask_crop) for i in instances])
 
 
 # ===========================================================================
@@ -612,6 +826,7 @@ REGISTRY: dict[str, Callable[[], BaseMatcher]] = {
     "clip":      lambda: CLIPEmbeddingMatcher(),
     "osnet":     lambda: OSNetEmbeddingMatcher(),
     "yolo":      lambda: YOLOEmbeddingMatcher(),
+    "shape":     lambda: CrackShapeMatcher(),
 }
 
 

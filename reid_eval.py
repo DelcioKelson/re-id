@@ -106,9 +106,20 @@ class DistanceScorer(ReIDScorer):
 # Protocol: which gallery entries are valid for which query
 # ===========================================================================
 
+def frame_index(image_id: str) -> int | None:
+    """Position of a photo within its wall's capture sequence.
+
+    Photos are named <wall>_<s?>_<NNNN> in capture order, so the trailing
+    number is the frame index. Returns None if the name does not carry one.
+    """
+    tail = image_id.rsplit("_", 1)[-1]
+    return int(tail) if tail.isdigit() else None
+
+
 def build_validity_mask(queries: list[InstanceRef], gallery: list[InstanceRef],
                         exclude_same_session: bool = True,
-                        same_wall_only: bool = True) -> np.ndarray:
+                        same_wall_only: bool = True,
+                        min_frame_gap: int = 0) -> np.ndarray:
     """Boolean (n_query, n_gallery): True where the pair may be compared.
 
     exclude_same_session: a query must be matched against a DIFFERENT
@@ -120,8 +131,24 @@ def build_validity_mask(queries: list[InstanceRef], gallery: list[InstanceRef],
         the honest setting - the hard negatives are cracks on the same
         wall in the same material under the same light. Set False to also
         report the easier cross-wall gallery.
+
+    min_frame_gap: drop gallery photos within this many frames of the
+        query's own frame. This exists because each wall was captured in
+        one continuous pass, and measurement showed that for 100% of
+        answerable queries -- in BOTH splits -- the nearest correct answer
+        is the immediately adjacent frame, a median of one frame away.
+        At min_frame_gap=0 the benchmark therefore reports near-duplicate
+        retrieval across roughly three seconds, not re-identification.
+
+        Sweeping 0, 1, 2, 3 turns that confound into a controlled
+        difficulty axis: R@1 against baseline separation is a far more
+        informative result than a single number, and it is the first thing
+        a reviewer will ask for. Costs nothing to compute -- the saved
+        score matrices already carry image_id.
     """
     valid = np.ones((len(queries), len(gallery)), dtype=bool)
+    q_frame = [frame_index(q.image_id) for q in queries]
+    g_frame = [frame_index(g.image_id) for g in gallery]
     for i, q in enumerate(queries):
         for j, g in enumerate(gallery):
             if g.image_id == q.image_id:
@@ -129,6 +156,10 @@ def build_validity_mask(queries: list[InstanceRef], gallery: list[InstanceRef],
             elif exclude_same_session and g.session == q.session:
                 valid[i, j] = False
             elif same_wall_only and g.wall_id != q.wall_id:
+                valid[i, j] = False
+            elif (min_frame_gap > 0 and q.wall_id == g.wall_id
+                  and q_frame[i] is not None and g_frame[j] is not None
+                  and abs(q_frame[i] - g_frame[j]) <= min_frame_gap):
                 valid[i, j] = False
     return valid
 
@@ -157,6 +188,77 @@ class ClosedSetResult:
     cmc: list
 
 
+def _average_ranks(s_desc: np.ndarray) -> np.ndarray:
+    """1-based ranks for an already descending-sorted score vector, with
+    exact ties sharing the mean of the ranks they span.
+
+    [9, 5, 5, 5, 1] -> [1, 3, 3, 3, 5]
+
+    Non-finite scores (a method that structurally cannot answer a pair)
+    are all mutually tied at the bottom, which is the honest treatment:
+    they carry no ordering information between themselves.
+    """
+    n = len(s_desc)
+    ranks = np.arange(1, n + 1, dtype=float)
+    if n == 0:
+        return ranks
+    key = np.where(np.isfinite(s_desc), s_desc, -np.inf)
+    # group boundaries: a new group starts wherever the score changes
+    new = np.empty(n, dtype=bool)
+    new[0] = True
+    new[1:] = key[1:] != key[:-1]
+    start = np.flatnonzero(new)
+    stop = np.append(start[1:], n)
+    out = np.empty(n, dtype=float)
+    for a, b in zip(start, stop):
+        out[a:b] = ranks[a:b].mean()
+    return out
+
+
+def _expected_cmc(s_desc: np.ndarray, r_desc: np.ndarray, max_rank: int) -> np.ndarray:
+    """CMC contribution of one query, in expectation over random tie-breaks.
+
+    A method that scores several gallery entries EXACTLY equal has not
+    ranked them; it has declined to. Crediting or denying it rank-1 based
+    on their list order measures the list, not the method. The honest
+    quantity is the probability that a correct entry lands within the top
+    k once the tie is broken uniformly at random.
+
+    Let the first tie group containing a correct entry span ranks
+    (a, a+m], with c of its m members correct (every entry above it is,
+    by construction, incorrect). Drawing without replacement,
+
+        P(no correct entry in the first k of the group)
+            = prod_{i<k} (m - c - i) / (m - i)
+
+    so P(hit by rank a+k) is one minus that. Exact, and computed as a
+    running product so it stays stable for large tie groups.
+    """
+    out = np.zeros(max_rank)
+    key = np.where(np.isfinite(s_desc), s_desc, -np.inf)
+    n = len(key)
+    start = 0
+    while start < n:
+        stop = start + 1
+        while stop < n and key[stop] == key[start]:
+            stop += 1
+        grp = r_desc[start:stop]
+        if grp.any():
+            a, m, c = start, stop - start, int(grp.sum())
+            miss = 1.0
+            for k in range(1, min(max_rank - a, m) + 1):
+                if k <= m - c:
+                    miss *= (m - c - (k - 1)) / (m - (k - 1))
+                else:
+                    miss = 0.0
+                out[a + k - 1] = 1.0 - miss
+            if a + m < max_rank:
+                out[a + m:] = 1.0
+            break
+        start = stop
+    return out
+
+
 def closed_set_metrics(scores: np.ndarray, relevant: np.ndarray,
                        valid: np.ndarray, max_rank: int = 20) -> ClosedSetResult:
     """CMC and mAP over queries that have at least one correct answer.
@@ -182,15 +284,28 @@ def closed_set_metrics(scores: np.ndarray, relevant: np.ndarray,
 
         order = np.argsort(-s, kind="stable")
         r_sorted = r[order]
+        s_sorted = s[order]
 
-        first = np.flatnonzero(r_sorted)
-        if len(first):
-            cmc_hits[min(first[0], len(cmc_hits) - 1):] += 1
+        # TIE HANDLING. Several methods score in integer inlier counts, so a
+        # query's row is mostly exact ties (measured: 94% of ORB's valid pairs
+        # score exactly 0.0, and the median query has 30 gallery entries tied
+        # for first). A stable argsort then ranks those ties by gallery index,
+        # which is not a measurement -- it is an artefact of instance ordering,
+        # and a deterministic one, so it does not average out.
+        #
+        # Instead every member of a tie group is charged the group's AVERAGE
+        # rank, which is what that method has actually earned: it cannot
+        # separate them, so it gets the expected result over a random
+        # tie-break rather than whatever the list order happens to give.
+        eff_rank = _average_ranks(s_sorted)
 
-        # Average precision with multiple relevant items
+        if r_sorted.any():
+            cmc_hits += _expected_cmc(s_sorted, r_sorted, len(cmc_hits))
+
+        # Average precision with multiple relevant items. Precision is
+        # evaluated at the tie-averaged rank for the same reason.
         cum_hits = np.cumsum(r_sorted)
-        ranks = np.arange(1, len(r_sorted) + 1)
-        precision_at_hits = (cum_hits / ranks)[r_sorted]
+        precision_at_hits = (cum_hits / eff_rank)[r_sorted]
         aps.append(float(precision_at_hits.mean()) if len(precision_at_hits) else 0.0)
         counted += 1
 
@@ -205,6 +320,36 @@ def closed_set_metrics(scores: np.ndarray, relevant: np.ndarray,
         mAP=float(np.mean(aps)),
         cmc=cmc,
     )
+
+
+def _threshold_grid(s: np.ndarray, n: int = 200) -> np.ndarray:
+    """Thresholds placed by QUANTILE of the observed scores, not linearly
+    across their range.
+
+    A linear grid assumes the scores are roughly uniform over [min, max].
+    They never are here, and for one method the assumption is fatal:
+    registration+chamfer scores are negated Chamfer distance capped at
+    1e4 px, while all of its discriminative power lives in 0-20 px. Two
+    hundred thresholds spread linearly over a span of several thousand
+    then put the entire useful range inside one or two bins, which is why
+    it reported DIR@FAR.1 = 0.006 next to R@1 = 0.727 -- a curve sampled
+    too coarsely to see the operating point, read as a detection failure.
+
+    The inlier-count methods have the mirror problem: 200 thresholds over
+    an integer range of 0-30 mostly land between achievable values.
+
+    Quantile placement fixes both, because it puts thresholds where the
+    scores actually are. Duplicates are dropped, so a heavily tied score
+    distribution simply yields fewer, well-placed thresholds.
+    """
+    s = s[np.isfinite(s)]
+    if len(s) == 0:
+        return np.asarray([], dtype=float)
+    q = np.quantile(s, np.linspace(0.0, 1.0, n))
+    grid = np.unique(np.concatenate([[s.min()], q, [s.max()]]))
+    # Nudge the top threshold above the max so "predict nothing" is reachable.
+    span = float(grid[-1] - grid[0]) or 1.0
+    return np.append(grid, grid[-1] + span * 1e-6)
 
 
 def open_set_curve(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
@@ -242,7 +387,7 @@ def open_set_curve(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
     if len(pool) == 0:
         return {"thresholds": [], "dir": [], "far": []}
 
-    thresholds = np.linspace(pool.min(), pool.max(), n_thresholds)
+    thresholds = _threshold_grid(pool, n_thresholds)
     dir_rate, far_rate = [], []
     for t in thresholds:
         if len(known_best):
@@ -283,7 +428,7 @@ def pair_pr_curve(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
     if len(s) == 0 or not y.any():
         return {"thresholds": [], "precision": [], "recall": [], "f1": []}
 
-    thresholds = np.linspace(s.min(), s.max(), n_thresholds)
+    thresholds = _threshold_grid(s, n_thresholds)
     precision, recall, f1 = [], [], []
     for t in thresholds:
         pred = s >= t
@@ -305,28 +450,71 @@ def pair_pr_curve(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
 # ===========================================================================
 
 def assignment_accuracy(scores: np.ndarray, relevant: np.ndarray,
-                        valid: np.ndarray, threshold: float) -> dict:
-    """Global one-to-one matching, evaluated per image pair.
+                        valid: np.ndarray, threshold: float,
+                        queries: list[InstanceRef] | None = None,
+                        gallery: list[InstanceRef] | None = None,
+                        q_image=None, g_image=None) -> dict:
+    """One-to-one matching solved PER IMAGE PAIR, the operational setting.
 
     Ranking metrics let two queries claim the same gallery entry.
     Deployment does not. Any method can be evaluated here by thresholding
     its score matrix and solving the assignment - so a method that
     natively produces assignments gets no special treatment.
+
+    The assignment is solved independently for each (query image, gallery
+    image) block. Solving it once GLOBALLY -- which this used to do, in
+    contradiction of its own docstring -- forces one-to-one across the
+    entire split, so a crack correctly visible in five gallery photos can
+    be claimed exactly once and the other four become false negatives no
+    method can avoid. That penalises hardest the methods that find the
+    most correct matches, which is precisely backwards, and it is why
+    every reported assF1 sat at or below 0.51.
+
+    Pass either queries/gallery (InstanceRefs) or q_image/g_image (arrays
+    of image ids) to say which cells belong to which photo pair. With
+    neither, this falls back to the old global solve so old callers keep
+    working - but the number they get is not the one the paper should
+    quote.
     """
+    if q_image is None and queries is not None:
+        q_image = [r.image_id for r in queries]
+    if g_image is None and gallery is not None:
+        g_image = [r.image_id for r in gallery]
     from scipy.optimize import linear_sum_assignment
 
     work = np.where(valid & np.isfinite(scores), scores, -np.inf)
-    finite = work[np.isfinite(work)]
-    floor = (finite.min() - 1.0) if finite.size else 0.0
-    cost = -np.where(np.isfinite(work), work, floor)
 
-    rows, cols = linear_sum_assignment(cost)
+    def solve(rows_idx, cols_idx):
+        """Hungarian over one block; yields accepted (i, j) pairs."""
+        sub = work[np.ix_(rows_idx, cols_idx)]
+        finite = sub[np.isfinite(sub)]
+        if finite.size == 0:
+            return []
+        floor = finite.min() - 1.0
+        r, c = linear_sum_assignment(-np.where(np.isfinite(sub), sub, floor))
+        out = []
+        for a, b in zip(r, c):
+            i, j = rows_idx[a], cols_idx[b]
+            if valid[i, j] and np.isfinite(scores[i, j]) and scores[i, j] >= threshold:
+                out.append((i, j))
+        return out
+
+    accepted = []
+    if q_image is not None and g_image is not None:
+        blocks = defaultdict(lambda: (set(), set()))
+        qi, gj = np.nonzero(valid)
+        for i, j in zip(qi.tolist(), gj.tolist()):
+            qs, gs = blocks[(q_image[i], g_image[j])]
+            qs.add(i)
+            gs.add(j)
+        for (qs, gs) in blocks.values():
+            accepted.extend(solve(sorted(qs), sorted(gs)))
+    else:
+        accepted = solve(list(range(scores.shape[0])), list(range(scores.shape[1])))
 
     tp = fp = 0
     matched_q = set()
-    for i, j in zip(rows, cols):
-        if not valid[i, j] or not np.isfinite(scores[i, j]) or scores[i, j] < threshold:
-            continue
+    for i, j in accepted:
         matched_q.add(i)
         if relevant[i, j]:
             tp += 1
@@ -389,7 +577,8 @@ def evaluate(scorer: ReIDScorer, queries: list[InstanceRef], gallery: list[Insta
         idx = int(np.argmax(pr["f1"])) if pr["f1"] else 0
         threshold = pr["thresholds"][idx] if pr["thresholds"] else 0.0
 
-    assign = assignment_accuracy(scores, relevant, valid, threshold)
+    assign = assignment_accuracy(scores, relevant, valid, threshold,
+                                 queries=queries, gallery=gallery)
 
     n_pairs = int(valid.sum())
     return {

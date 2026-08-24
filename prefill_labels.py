@@ -56,6 +56,8 @@ import os
 import re
 from collections import defaultdict
 
+from scipy.optimize import linear_sum_assignment
+
 import cv2
 import numpy as np
 
@@ -77,24 +79,60 @@ def load_points(path: str) -> list[dict]:
         return []
 
 
+MAX_DIM = 1600            # detect on a downscale; 12 MP buys nothing here
+
+
 def estimate_homography(gray1: np.ndarray, gray2: np.ndarray,
                          min_inliers: int) -> np.ndarray | None:
+    """Homography from photo 1 to photo 2, or None.
+
+    Three fixes over the original:
+
+      * CLAHE + downscale before detection. These are handheld frames with
+        autoexposure drift between shots, and ORB was running on the full
+        4080x3072 image at roughly 30 s/pair for no accuracy gain.
+
+      * knnMatch results are length-checked. BFMatcher returns fewer than
+        k neighbours when the train set is small, and `for m, n in pairs`
+        raises on those; the sibling matchers in this repo all guard it.
+
+      * The homography is SANITY-CHECKED. crack_registration_reid ships
+        _homography_is_sane and this never called it, so a folded or
+        wildly rescaled matrix with >= min_inliers passed straight
+        through and projected points into nonsense -- minting confidently
+        WRONG identities, which is worse for ground truth than minting
+        none. Measured: 3% of accepted homographies are degenerate,
+        including the only one accepted anywhere on wall14.
+    """
+    from crack_registration_reid import _homography_is_sane
+
+    s1 = min(1.0, MAX_DIM / max(gray1.shape[:2]))
+    s2 = min(1.0, MAX_DIM / max(gray2.shape[:2]))
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    small1 = clahe.apply(cv2.resize(gray1, None, fx=s1, fy=s1, interpolation=cv2.INTER_AREA))
+    small2 = clahe.apply(cv2.resize(gray2, None, fx=s2, fy=s2, interpolation=cv2.INTER_AREA))
+
     orb = cv2.ORB_create(4000)
-    k1, d1 = orb.detectAndCompute(gray1, None)
-    k2, d2 = orb.detectAndCompute(gray2, None)
+    k1, d1 = orb.detectAndCompute(small1, None)
+    k2, d2 = orb.detectAndCompute(small2, None)
     if d1 is None or d2 is None or len(k1) < 8 or len(k2) < 8:
         return None
     bf = cv2.BFMatcher(cv2.NORM_HAMMING)
-    pairs = bf.knnMatch(d1, d2, k=2)
-    good = [m for m, n in pairs if n is not None and m.distance < 0.75 * n.distance]
+    pairs = [pr for pr in bf.knnMatch(d1, d2, k=2) if len(pr) == 2]
+    good = [m for m, n in pairs if m.distance < 0.75 * n.distance]
     if len(good) < min_inliers:
         return None
     src = np.float32([k1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
     dst = np.float32([k2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
-    H, inlier_mask = cv2.findHomography(src, dst, cv2.RANSAC, 6.0)
-    if H is None or int(inlier_mask.sum()) < min_inliers:
+    H_small, inlier_mask = cv2.findHomography(src, dst, cv2.RANSAC, 6.0)
+    if H_small is None or inlier_mask is None or int(inlier_mask.sum()) < min_inliers:
         return None
-    return H
+
+    # back to full resolution: H = S2^-1 @ H_small @ S1
+    H = np.diag([1.0 / s2, 1.0 / s2, 1.0]) @ H_small @ np.diag([s1, s1, 1.0])
+    H /= H[2, 2]
+    sane, _ = _homography_is_sane(H, gray1.shape[:2])
+    return H if sane else None
 
 
 def project(H: np.ndarray, xys: list[list[int]]) -> np.ndarray:
@@ -140,7 +178,7 @@ def locate(labels: np.ndarray, lid_index: dict[int, int], px: float, py: float,
         if lid in lid_index:
             return lid_index[lid], 0.0
 
-    r = int(assign_px)
+    r = int(np.ceil(assign_px))   # ceil: the window is square, acceptance circular
     x0, x1 = max(xi - r, 0), min(xi + r + 1, w)
     y0, y1 = max(yi - r, 0), min(yi + r + 1, h)
     if x0 >= x1 or y0 >= y1:
@@ -161,9 +199,11 @@ def locate(labels: np.ndarray, lid_index: dict[int, int], px: float, py: float,
 
 
 def prefill_wall(root: str, rows: list[dict], min_area: int, close_px: int,
-                  assign_px: float, min_inliers: int, force: bool) -> dict:
+                  assign_px: float, min_inliers: int, force: bool,
+                  force_all: bool = False) -> dict:
     stats = {"prefilled": 0, "skipped_existing": 0, "no_homography": 0,
-             "points": 0, "propagated": 0}
+             "points": 0, "propagated": 0, "empty_photos": 0, "no_mask": 0,
+             "skipped_accepted": 0}
     next_id = 1
     prev_gray: np.ndarray | None = None
     prev_points: list[dict] = []
@@ -176,8 +216,21 @@ def prefill_wall(root: str, rows: list[dict], min_area: int, close_px: int,
         if gray is None:
             continue
 
-        if existing and not force:
+        # A photo is protected when a human has ACCEPTED it: label_points.py
+        # pops "provisional" on accept, so an accepted point is exactly one
+        # without that flag.
+        #
+        # This used to be all-or-nothing on --force, which was a trap: every
+        # point already exists, so a re-run does nothing WITHOUT --force, and
+        # WITH it overwrites human-verified work too. Improving this script
+        # and re-running would silently destroy a review pass. Now --force
+        # regenerates only still-provisional photos, and accepted ones stay
+        # put while still seeding propagation into later frames.
+        accepted = bool(existing) and not any(pt.get("provisional") for pt in existing)
+        if existing and (not force or (accepted and not force_all)):
             stats["skipped_existing"] += 1
+            if accepted:
+                stats["skipped_accepted"] += 1
             for pt in existing:
                 next_id = max(next_id, parse_crack_no(pt["identity"]) + 1)
             prev_gray, prev_points = gray, existing
@@ -189,27 +242,45 @@ def prefill_wall(root: str, rows: list[dict], min_area: int, close_px: int,
             labels, comps = labelled_components(m, min_area, close_px)
         else:
             labels, comps = None, []
+            stats["no_mask"] += 1
         lid_index = {lid: i for i, (lid, _) in enumerate(comps)}
 
         assigned: list[dict] = []
         H = None
         if prev_points and comps:
             H = estimate_homography(prev_gray, gray, min_inliers)
-        if H is None and prev_points:
-            stats["no_homography"] += 1
+        if H is None and prev_points and comps:
+            stats["no_homography"] += 1     # only counted when one was ATTEMPTED
 
-        # component index -> (distance, identity); nearest projected point wins,
-        # so two cracks merging into one component here can't both claim it
+        # component index -> (distance, identity), resolved as a GLOBAL
+        # one-to-one assignment rather than greedily. Nearest-wins dropped
+        # the loser silently: its identity died and was reborn as a fresh id
+        # in the next photo, manufacturing a false negative. The Hungarian
+        # solver is already a dependency of this repo.
         claims: dict[int, tuple[float, str]] = {}
         if H is not None and prev_points:
             proj = project(H, [p["xy"] for p in prev_points])
-            for prev_pt, (px, py) in zip(prev_points, proj):
+            cand: list[tuple[int, int, float]] = []      # (prev idx, comp idx, dist)
+            for pi, (px, py) in enumerate(proj):
                 ci, d = locate(labels, lid_index, px, py, assign_px)
-                if ci is None:
-                    continue
-                if ci not in claims or d < claims[ci][0]:
-                    claims[ci] = (d, prev_pt["identity"])
-                    stats["propagated"] += 1
+                if ci is not None:
+                    cand.append((pi, ci, d))
+            if cand:
+                rows = sorted({c[0] for c in cand})
+                cols = sorted({c[1] for c in cand})
+                ri = {v: i for i, v in enumerate(rows)}
+                cj = {v: j for j, v in enumerate(cols)}
+                BIG = float(assign_px) * 10.0
+                cost = np.full((len(rows), len(cols)), BIG, dtype=float)
+                for pi, ci, d in cand:
+                    cost[ri[pi], cj[ci]] = min(cost[ri[pi], cj[ci]], d)
+                for a_i, b_j in zip(*linear_sum_assignment(cost)):
+                    if cost[a_i, b_j] >= BIG:
+                        continue
+                    claims[cols[b_j]] = (float(cost[a_i, b_j]),
+                                         prev_points[rows[a_i]]["identity"])
+            # count once per surviving claim, not once per improvement
+            stats["propagated"] += len(claims)
 
         for idx, (lid, (ax, ay)) in enumerate(comps):
             if idx in claims:
@@ -226,7 +297,16 @@ def prefill_wall(root: str, rows: list[dict], min_area: int, close_px: int,
 
         stats["prefilled"] += 1
         stats["points"] += len(assigned)
-        prev_gray, prev_points = gray, assigned
+        # Only advance the anchor when this photo actually has something to
+        # propagate. Twelve photos in the dataset yield no component above
+        # min_area, and setting prev_points = [] on those split their wall
+        # into disjoint identity namespaces: the next photo found no anchor,
+        # attempted no homography, and minted every crack fresh. wall05 lost
+        # 4 of 10 photos that way, wall14 3 of 9, wall16 2 of 14.
+        if assigned:
+            prev_gray, prev_points = gray, assigned
+        else:
+            stats["empty_photos"] += 1
 
     return stats
 
@@ -247,8 +327,14 @@ def main():
     ap.add_argument("--min-inliers", type=int, default=12,
                     help="min RANSAC inlier matches to trust a homography")
     ap.add_argument("--force", action="store_true",
-                    help="overwrite photos that already have points, "
-                         "INCLUDING hand-verified ones -- use with care")
+                    help="regenerate photos whose points are still provisional. "
+                         "Photos a human has accepted in label_points.py are kept "
+                         "and still seed propagation, so re-running after improving "
+                         "this script cannot destroy review work.")
+    ap.add_argument("--force-all", action="store_true",
+                    help="overwrite EVERY photo, including human-accepted ones. "
+                         "This throws away review work -- use only to rebuild a "
+                         "wall from scratch.")
     a = ap.parse_args()
 
     rows = load_rows(a.root)
@@ -265,14 +351,18 @@ def main():
     for wall_id in sorted(by_wall):
         wall_rows = sorted(by_wall[wall_id], key=lambda r: r["image_id"])
         stats = prefill_wall(a.root, wall_rows, a.min_area, a.close_px,
-                              a.assign_px, a.min_inliers, a.force)
+                              a.assign_px, a.min_inliers, a.force or a.force_all,
+                              a.force_all)
         for k, v in stats.items():
             totals[k] += v
         print(f"{wall_id}: {stats['prefilled']} photo(s) prefilled "
               f"({stats['points']} provisional points, "
               f"{stats['propagated']} propagated), "
-              f"{stats['skipped_existing']} already labelled, "
-              f"{stats['no_homography']} homography failure(s)")
+              f"{stats['skipped_existing']} already labelled "
+              f"({stats['skipped_accepted']} human-accepted, kept), "
+              f"{stats['no_homography']} homography failure(s), "
+              f"{stats['empty_photos']} photo(s) with no crack above min_area, "
+              f"{stats['no_mask']} missing mask(s)")
 
     print(f"\nTOTAL: {totals['prefilled']} photos, {totals['points']} provisional "
           f"points, {totals['propagated']} carried across photos.")
