@@ -1,0 +1,2508 @@
+{
+  "wall01": {
+    "identities": {
+      "wall01_crack01": {
+        "n_components": 59,
+        "n_photos": 8,
+        "max_merge_gap": 311.6,
+        "absorbed_prefill_ids": [
+          "wall01_crack01",
+          "wall01_crack02",
+          "wall01_crack03",
+          "wall01_crack04",
+          "wall01_crack05",
+          "wall01_crack06",
+          "wall01_crack08",
+          "wall01_crack09",
+          "wall01_crack11",
+          "wall01_crack12",
+          "wall01_crack15",
+          "wall01_crack16",
+          "wall01_crack17",
+          "wall01_crack18",
+          "wall01_crack19",
+          "wall01_crack21",
+          "wall01_crack24",
+          "wall01_crack25",
+          "wall01_crack26",
+          "wall01_crack27",
+          "wall01_crack28",
+          "wall01_crack29",
+          "wall01_crack30",
+          "wall01_crack32",
+          "wall01_crack33",
+          "wall01_crack34",
+          "wall01_crack35",
+          "wall01_crack40",
+          "wall01_crack41",
+          "wall01_crack42"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack02": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 296.3,
+        "absorbed_prefill_ids": [
+          "wall01_crack36",
+          "wall01_crack37"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack03": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 285.6,
+        "absorbed_prefill_ids": [
+          "wall01_crack38",
+          "wall01_crack39"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack04": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall01_crack07"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack05": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall01_crack10"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack06": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall01_crack13"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack07": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall01_crack14"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack08": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall01_crack20"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack09": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall01_crack22"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack10": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall01_crack23"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack11": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall01_crack31"
+        ],
+        "ecc_links": []
+      },
+      "wall01_crack12": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall01_crack43"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 71,
+    "prefill_links": 29,
+    "ecc_links": 0
+  },
+  "wall02": {
+    "identities": {
+      "wall02_crack01": {
+        "n_components": 121,
+        "n_photos": 12,
+        "max_merge_gap": 316.8,
+        "absorbed_prefill_ids": [
+          "wall02_crack100",
+          "wall02_crack101",
+          "wall02_crack103",
+          "wall02_crack106",
+          "wall02_crack113",
+          "wall02_crack115",
+          "wall02_crack41",
+          "wall02_crack43",
+          "wall02_crack44",
+          "wall02_crack46",
+          "wall02_crack48",
+          "wall02_crack56",
+          "wall02_crack60",
+          "wall02_crack61",
+          "wall02_crack63",
+          "wall02_crack64",
+          "wall02_crack66",
+          "wall02_crack67",
+          "wall02_crack68",
+          "wall02_crack69",
+          "wall02_crack72",
+          "wall02_crack73",
+          "wall02_crack75",
+          "wall02_crack76",
+          "wall02_crack78",
+          "wall02_crack79",
+          "wall02_crack80",
+          "wall02_crack87",
+          "wall02_crack88",
+          "wall02_crack90",
+          "wall02_crack92",
+          "wall02_crack95",
+          "wall02_crack96",
+          "wall02_crack97",
+          "wall02_crack98",
+          "wall02_crack99"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack02": {
+        "n_components": 83,
+        "n_photos": 8,
+        "max_merge_gap": 316.9,
+        "absorbed_prefill_ids": [
+          "wall02_crack01",
+          "wall02_crack02",
+          "wall02_crack03",
+          "wall02_crack04",
+          "wall02_crack05",
+          "wall02_crack06",
+          "wall02_crack07",
+          "wall02_crack08",
+          "wall02_crack09",
+          "wall02_crack10",
+          "wall02_crack11",
+          "wall02_crack12",
+          "wall02_crack13",
+          "wall02_crack14",
+          "wall02_crack15",
+          "wall02_crack19",
+          "wall02_crack20",
+          "wall02_crack21",
+          "wall02_crack22",
+          "wall02_crack23",
+          "wall02_crack25",
+          "wall02_crack26",
+          "wall02_crack28",
+          "wall02_crack29",
+          "wall02_crack30"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack03": {
+        "n_components": 29,
+        "n_photos": 5,
+        "max_merge_gap": 320.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack36",
+          "wall02_crack37",
+          "wall02_crack38",
+          "wall02_crack39",
+          "wall02_crack40",
+          "wall02_crack42",
+          "wall02_crack55",
+          "wall02_crack57",
+          "wall02_crack58",
+          "wall02_crack59",
+          "wall02_crack62",
+          "wall02_crack70",
+          "wall02_crack71",
+          "wall02_crack77"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack04": {
+        "n_components": 18,
+        "n_photos": 4,
+        "max_merge_gap": 305.9,
+        "absorbed_prefill_ids": [
+          "wall02_crack105",
+          "wall02_crack107",
+          "wall02_crack111",
+          "wall02_crack112",
+          "wall02_crack114",
+          "wall02_crack116",
+          "wall02_crack91",
+          "wall02_crack93",
+          "wall02_crack94"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack05": {
+        "n_components": 3,
+        "n_photos": 3,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack108"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack06": {
+        "n_components": 2,
+        "n_photos": 2,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack16"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack07": {
+        "n_components": 6,
+        "n_photos": 1,
+        "max_merge_gap": 286.7,
+        "absorbed_prefill_ids": [
+          "wall02_crack49",
+          "wall02_crack50",
+          "wall02_crack51",
+          "wall02_crack52",
+          "wall02_crack53",
+          "wall02_crack54"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack08": {
+        "n_components": 4,
+        "n_photos": 1,
+        "max_merge_gap": 211.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack81",
+          "wall02_crack82",
+          "wall02_crack84",
+          "wall02_crack85"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack09": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 200.5,
+        "absorbed_prefill_ids": [
+          "wall02_crack31",
+          "wall02_crack32",
+          "wall02_crack33"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack10": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 73.4,
+        "absorbed_prefill_ids": [
+          "wall02_crack17",
+          "wall02_crack18"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack11": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 171.7,
+        "absorbed_prefill_ids": [
+          "wall02_crack34",
+          "wall02_crack35"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack12": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 315.8,
+        "absorbed_prefill_ids": [
+          "wall02_crack102",
+          "wall02_crack104"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack13": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack24"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack14": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack27"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack15": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack45"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack16": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack47"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack17": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack65"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack18": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack74"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack19": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack83"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack20": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack86"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack21": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack89"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack22": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack109"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack23": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack110"
+        ],
+        "ecc_links": []
+      },
+      "wall02_crack24": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall02_crack117"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 279,
+    "prefill_links": 170,
+    "ecc_links": 0
+  },
+  "wall03": {
+    "identities": {
+      "wall03_crack01": {
+        "n_components": 28,
+        "n_photos": 7,
+        "max_merge_gap": 303.7,
+        "absorbed_prefill_ids": [
+          "wall03_crack04",
+          "wall03_crack05",
+          "wall03_crack06",
+          "wall03_crack08",
+          "wall03_crack09",
+          "wall03_crack10",
+          "wall03_crack11",
+          "wall03_crack12",
+          "wall03_crack13"
+        ],
+        "ecc_links": []
+      },
+      "wall03_crack02": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall03_crack01"
+        ],
+        "ecc_links": []
+      },
+      "wall03_crack03": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall03_crack02"
+        ],
+        "ecc_links": []
+      },
+      "wall03_crack04": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall03_crack03"
+        ],
+        "ecc_links": []
+      },
+      "wall03_crack05": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall03_crack07"
+        ],
+        "ecc_links": []
+      },
+      "wall03_crack06": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall03_crack14"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 33,
+    "prefill_links": 19,
+    "ecc_links": 0
+  },
+  "wall04": {
+    "identities": {
+      "wall04_crack01": {
+        "n_components": 49,
+        "n_photos": 6,
+        "max_merge_gap": 319.0,
+        "absorbed_prefill_ids": [
+          "wall04_crack01",
+          "wall04_crack02",
+          "wall04_crack03",
+          "wall04_crack04",
+          "wall04_crack05",
+          "wall04_crack06",
+          "wall04_crack07",
+          "wall04_crack08",
+          "wall04_crack09",
+          "wall04_crack10",
+          "wall04_crack11",
+          "wall04_crack12",
+          "wall04_crack14",
+          "wall04_crack15",
+          "wall04_crack16",
+          "wall04_crack17",
+          "wall04_crack18",
+          "wall04_crack19"
+        ],
+        "ecc_links": []
+      },
+      "wall04_crack02": {
+        "n_components": 10,
+        "n_photos": 3,
+        "max_merge_gap": 265.3,
+        "absorbed_prefill_ids": [
+          "wall04_crack25",
+          "wall04_crack27",
+          "wall04_crack29",
+          "wall04_crack32",
+          "wall04_crack33",
+          "wall04_crack34"
+        ],
+        "ecc_links": []
+      },
+      "wall04_crack03": {
+        "n_components": 3,
+        "n_photos": 3,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall04_crack13"
+        ],
+        "ecc_links": []
+      },
+      "wall04_crack04": {
+        "n_components": 3,
+        "n_photos": 3,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall04_crack24"
+        ],
+        "ecc_links": []
+      },
+      "wall04_crack05": {
+        "n_components": 4,
+        "n_photos": 1,
+        "max_merge_gap": 233.1,
+        "absorbed_prefill_ids": [
+          "wall04_crack20",
+          "wall04_crack21",
+          "wall04_crack22",
+          "wall04_crack23"
+        ],
+        "ecc_links": []
+      },
+      "wall04_crack06": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall04_crack26"
+        ],
+        "ecc_links": []
+      },
+      "wall04_crack07": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall04_crack28"
+        ],
+        "ecc_links": []
+      },
+      "wall04_crack08": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall04_crack30"
+        ],
+        "ecc_links": []
+      },
+      "wall04_crack09": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall04_crack31"
+        ],
+        "ecc_links": []
+      },
+      "wall04_crack10": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall04_crack35"
+        ],
+        "ecc_links": []
+      },
+      "wall04_crack11": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall04_crack36"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 71,
+    "prefill_links": 39,
+    "ecc_links": 0
+  },
+  "wall05": {
+    "identities": {
+      "wall05_crack01": {
+        "n_components": 10,
+        "n_photos": 3,
+        "max_merge_gap": 313.2,
+        "absorbed_prefill_ids": [
+          "wall05_crack02",
+          "wall05_crack04",
+          "wall05_crack06",
+          "wall05_crack07",
+          "wall05_crack09"
+        ],
+        "ecc_links": []
+      },
+      "wall05_crack02": {
+        "n_components": 6,
+        "n_photos": 3,
+        "max_merge_gap": 189.5,
+        "absorbed_prefill_ids": [
+          "wall05_crack03",
+          "wall05_crack05",
+          "wall05_crack08"
+        ],
+        "ecc_links": []
+      },
+      "wall05_crack03": {
+        "n_components": 6,
+        "n_photos": 2,
+        "max_merge_gap": 140.1,
+        "absorbed_prefill_ids": [
+          "wall05_crack12",
+          "wall05_crack14",
+          "wall05_crack15"
+        ],
+        "ecc_links": []
+      },
+      "wall05_crack04": {
+        "n_components": 3,
+        "n_photos": 2,
+        "max_merge_gap": 11.4,
+        "absorbed_prefill_ids": [
+          "wall05_crack11",
+          "wall05_crack13"
+        ],
+        "ecc_links": []
+      },
+      "wall05_crack05": {
+        "n_components": 2,
+        "n_photos": 2,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall05_crack10"
+        ],
+        "ecc_links": []
+      },
+      "wall05_crack06": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall05_crack01"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 28,
+    "prefill_links": 13,
+    "ecc_links": 0
+  },
+  "wall06": {
+    "identities": {
+      "wall06_crack01": {
+        "n_components": 4,
+        "n_photos": 3,
+        "max_merge_gap": 19.2,
+        "absorbed_prefill_ids": [
+          "wall06_crack04",
+          "wall06_crack05"
+        ],
+        "ecc_links": []
+      },
+      "wall06_crack02": {
+        "n_components": 6,
+        "n_photos": 1,
+        "max_merge_gap": 228.1,
+        "absorbed_prefill_ids": [
+          "wall06_crack10",
+          "wall06_crack11",
+          "wall06_crack12",
+          "wall06_crack13",
+          "wall06_crack14",
+          "wall06_crack15"
+        ],
+        "ecc_links": []
+      },
+      "wall06_crack03": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 314.7,
+        "absorbed_prefill_ids": [
+          "wall06_crack07",
+          "wall06_crack08",
+          "wall06_crack09"
+        ],
+        "ecc_links": []
+      },
+      "wall06_crack04": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 17.1,
+        "absorbed_prefill_ids": [
+          "wall06_crack01",
+          "wall06_crack02"
+        ],
+        "ecc_links": []
+      },
+      "wall06_crack05": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall06_crack03"
+        ],
+        "ecc_links": []
+      },
+      "wall06_crack06": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall06_crack06"
+        ],
+        "ecc_links": []
+      },
+      "wall06_crack07": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall06_crack16"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 17,
+    "prefill_links": 2,
+    "ecc_links": 0
+  },
+  "wall07": {
+    "identities": {
+      "wall07_crack01": {
+        "n_components": 30,
+        "n_photos": 4,
+        "max_merge_gap": 311.7,
+        "absorbed_prefill_ids": [
+          "wall07_crack01",
+          "wall07_crack02",
+          "wall07_crack03",
+          "wall07_crack04",
+          "wall07_crack05",
+          "wall07_crack08",
+          "wall07_crack09",
+          "wall07_crack11",
+          "wall07_crack12",
+          "wall07_crack13",
+          "wall07_crack14",
+          "wall07_crack21"
+        ],
+        "ecc_links": []
+      },
+      "wall07_crack02": {
+        "n_components": 7,
+        "n_photos": 3,
+        "max_merge_gap": 152.6,
+        "absorbed_prefill_ids": [
+          "wall07_crack15",
+          "wall07_crack16",
+          "wall07_crack17",
+          "wall07_crack23"
+        ],
+        "ecc_links": []
+      },
+      "wall07_crack03": {
+        "n_components": 5,
+        "n_photos": 2,
+        "max_merge_gap": 246.7,
+        "absorbed_prefill_ids": [
+          "wall07_crack10",
+          "wall07_crack18",
+          "wall07_crack19",
+          "wall07_crack20"
+        ],
+        "ecc_links": []
+      },
+      "wall07_crack04": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 116.9,
+        "absorbed_prefill_ids": [
+          "wall07_crack06",
+          "wall07_crack07"
+        ],
+        "ecc_links": []
+      },
+      "wall07_crack05": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall07_crack22"
+        ],
+        "ecc_links": []
+      },
+      "wall07_crack06": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall07_crack24"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 42,
+    "prefill_links": 22,
+    "ecc_links": 0
+  },
+  "wall08": {
+    "identities": {
+      "wall08_crack01": {
+        "n_components": 11,
+        "n_photos": 2,
+        "max_merge_gap": 307.7,
+        "absorbed_prefill_ids": [
+          "wall08_crack01",
+          "wall08_crack02",
+          "wall08_crack03",
+          "wall08_crack04",
+          "wall08_crack05",
+          "wall08_crack06",
+          "wall08_crack07",
+          "wall08_crack08",
+          "wall08_crack09"
+        ],
+        "ecc_links": []
+      },
+      "wall08_crack02": {
+        "n_components": 4,
+        "n_photos": 1,
+        "max_merge_gap": 277.0,
+        "absorbed_prefill_ids": [
+          "wall08_crack10",
+          "wall08_crack11",
+          "wall08_crack12",
+          "wall08_crack13"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 14,
+    "prefill_links": 2,
+    "ecc_links": 0
+  },
+  "wall09": {
+    "identities": {
+      "wall09_crack01": {
+        "n_components": 46,
+        "n_photos": 8,
+        "max_merge_gap": 316.3,
+        "absorbed_prefill_ids": [
+          "wall09_crack01",
+          "wall09_crack02",
+          "wall09_crack03",
+          "wall09_crack04",
+          "wall09_crack05",
+          "wall09_crack06",
+          "wall09_crack07",
+          "wall09_crack08",
+          "wall09_crack09",
+          "wall09_crack10",
+          "wall09_crack11",
+          "wall09_crack12",
+          "wall09_crack13",
+          "wall09_crack14",
+          "wall09_crack15",
+          "wall09_crack17",
+          "wall09_crack18",
+          "wall09_crack29",
+          "wall09_crack30",
+          "wall09_crack31",
+          "wall09_crack38",
+          "wall09_crack39",
+          "wall09_crack40",
+          "wall09_crack41",
+          "wall09_crack42"
+        ],
+        "ecc_links": []
+      },
+      "wall09_crack02": {
+        "n_components": 25,
+        "n_photos": 6,
+        "max_merge_gap": 295.4,
+        "absorbed_prefill_ids": [
+          "wall09_crack16",
+          "wall09_crack19",
+          "wall09_crack20",
+          "wall09_crack22",
+          "wall09_crack23",
+          "wall09_crack24",
+          "wall09_crack25",
+          "wall09_crack26",
+          "wall09_crack27",
+          "wall09_crack28",
+          "wall09_crack32",
+          "wall09_crack33",
+          "wall09_crack34",
+          "wall09_crack35",
+          "wall09_crack36",
+          "wall09_crack37"
+        ],
+        "ecc_links": []
+      },
+      "wall09_crack03": {
+        "n_components": 39,
+        "n_photos": 4,
+        "max_merge_gap": 318.7,
+        "absorbed_prefill_ids": [
+          "wall09_crack43",
+          "wall09_crack44",
+          "wall09_crack45",
+          "wall09_crack46",
+          "wall09_crack47",
+          "wall09_crack48",
+          "wall09_crack49",
+          "wall09_crack50",
+          "wall09_crack51",
+          "wall09_crack52",
+          "wall09_crack53",
+          "wall09_crack54",
+          "wall09_crack55",
+          "wall09_crack56",
+          "wall09_crack57",
+          "wall09_crack58",
+          "wall09_crack59",
+          "wall09_crack60",
+          "wall09_crack61",
+          "wall09_crack62",
+          "wall09_crack63",
+          "wall09_crack64",
+          "wall09_crack65",
+          "wall09_crack66",
+          "wall09_crack67",
+          "wall09_crack69",
+          "wall09_crack70"
+        ],
+        "ecc_links": []
+      },
+      "wall09_crack04": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall09_crack21"
+        ],
+        "ecc_links": []
+      },
+      "wall09_crack05": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall09_crack68"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 111,
+    "prefill_links": 42,
+    "ecc_links": 0
+  },
+  "wall10": {
+    "identities": {
+      "wall10_crack01": {
+        "n_components": 8,
+        "n_photos": 1,
+        "max_merge_gap": 274.1,
+        "absorbed_prefill_ids": [
+          "wall10_crack12",
+          "wall10_crack13",
+          "wall10_crack14",
+          "wall10_crack15",
+          "wall10_crack16",
+          "wall10_crack17",
+          "wall10_crack18",
+          "wall10_crack19"
+        ],
+        "ecc_links": []
+      },
+      "wall10_crack02": {
+        "n_components": 5,
+        "n_photos": 1,
+        "max_merge_gap": 299.1,
+        "absorbed_prefill_ids": [
+          "wall10_crack01",
+          "wall10_crack02",
+          "wall10_crack03",
+          "wall10_crack04",
+          "wall10_crack05"
+        ],
+        "ecc_links": []
+      },
+      "wall10_crack03": {
+        "n_components": 5,
+        "n_photos": 1,
+        "max_merge_gap": 215.2,
+        "absorbed_prefill_ids": [
+          "wall10_crack06",
+          "wall10_crack07",
+          "wall10_crack08",
+          "wall10_crack09",
+          "wall10_crack10"
+        ],
+        "ecc_links": []
+      },
+      "wall10_crack04": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall10_crack11"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 18,
+    "prefill_links": 0,
+    "ecc_links": 0
+  },
+  "wall11": {
+    "identities": {
+      "wall11_crack01": {
+        "n_components": 9,
+        "n_photos": 3,
+        "max_merge_gap": 230.4,
+        "absorbed_prefill_ids": [
+          "wall11_crack02",
+          "wall11_crack03",
+          "wall11_crack04",
+          "wall11_crack05",
+          "wall11_crack10",
+          "wall11_crack11"
+        ],
+        "ecc_links": []
+      },
+      "wall11_crack02": {
+        "n_components": 2,
+        "n_photos": 2,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall11_crack07"
+        ],
+        "ecc_links": []
+      },
+      "wall11_crack03": {
+        "n_components": 2,
+        "n_photos": 2,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall11_crack08"
+        ],
+        "ecc_links": []
+      },
+      "wall11_crack04": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall11_crack01"
+        ],
+        "ecc_links": []
+      },
+      "wall11_crack05": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall11_crack06"
+        ],
+        "ecc_links": []
+      },
+      "wall11_crack06": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall11_crack09"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 16,
+    "prefill_links": 5,
+    "ecc_links": 0
+  },
+  "wall12": {
+    "identities": {
+      "wall12_crack01": {
+        "n_components": 37,
+        "n_photos": 9,
+        "max_merge_gap": 307.6,
+        "absorbed_prefill_ids": [
+          "wall12_crack02",
+          "wall12_crack03",
+          "wall12_crack04",
+          "wall12_crack05",
+          "wall12_crack06",
+          "wall12_crack07",
+          "wall12_crack08",
+          "wall12_crack14",
+          "wall12_crack15",
+          "wall12_crack16",
+          "wall12_crack21",
+          "wall12_crack22",
+          "wall12_crack30",
+          "wall12_crack31",
+          "wall12_crack32",
+          "wall12_crack33",
+          "wall12_crack34",
+          "wall12_crack35",
+          "wall12_crack38"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack02": {
+        "n_components": 16,
+        "n_photos": 5,
+        "max_merge_gap": 294.3,
+        "absorbed_prefill_ids": [
+          "wall12_crack10",
+          "wall12_crack11",
+          "wall12_crack12",
+          "wall12_crack13",
+          "wall12_crack18",
+          "wall12_crack19",
+          "wall12_crack20",
+          "wall12_crack23",
+          "wall12_crack24"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack03": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 232.1,
+        "absorbed_prefill_ids": [
+          "wall12_crack28",
+          "wall12_crack29"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack04": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 10.0,
+        "absorbed_prefill_ids": [
+          "wall12_crack39",
+          "wall12_crack40"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack05": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall12_crack01"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack06": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall12_crack09"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack07": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall12_crack17"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack08": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall12_crack25"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack09": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall12_crack26"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack10": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall12_crack27"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack11": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall12_crack36"
+        ],
+        "ecc_links": []
+      },
+      "wall12_crack12": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall12_crack37"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 65,
+    "prefill_links": 25,
+    "ecc_links": 0
+  },
+  "wall13": {
+    "identities": {
+      "wall13_crack01": {
+        "n_components": 12,
+        "n_photos": 2,
+        "max_merge_gap": 240.6,
+        "absorbed_prefill_ids": [
+          "wall13_crack01",
+          "wall13_crack02",
+          "wall13_crack03",
+          "wall13_crack04",
+          "wall13_crack05",
+          "wall13_crack06",
+          "wall13_crack07",
+          "wall13_crack08",
+          "wall13_crack10",
+          "wall13_crack17",
+          "wall13_crack18",
+          "wall13_crack19"
+        ],
+        "ecc_links": [
+          {
+            "a": "wall13_s1_0001",
+            "b": "wall13_s1_0002",
+            "ecc_corr": 0.955,
+            "overlap": 0.554
+          }
+        ]
+      },
+      "wall13_crack02": {
+        "n_components": 6,
+        "n_photos": 2,
+        "max_merge_gap": 272.4,
+        "absorbed_prefill_ids": [
+          "wall13_crack09",
+          "wall13_crack11",
+          "wall13_crack12",
+          "wall13_crack20",
+          "wall13_crack21",
+          "wall13_crack22"
+        ],
+        "ecc_links": [
+          {
+            "a": "wall13_s1_0001",
+            "b": "wall13_s1_0002",
+            "ecc_corr": 0.955,
+            "overlap": 0.849
+          }
+        ]
+      },
+      "wall13_crack03": {
+        "n_components": 7,
+        "n_photos": 1,
+        "max_merge_gap": 242.1,
+        "absorbed_prefill_ids": [
+          "wall13_crack25",
+          "wall13_crack26",
+          "wall13_crack27",
+          "wall13_crack28",
+          "wall13_crack29",
+          "wall13_crack30",
+          "wall13_crack31"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack04": {
+        "n_components": 7,
+        "n_photos": 1,
+        "max_merge_gap": 283.1,
+        "absorbed_prefill_ids": [
+          "wall13_crack41",
+          "wall13_crack42",
+          "wall13_crack43",
+          "wall13_crack44",
+          "wall13_crack45",
+          "wall13_crack46",
+          "wall13_crack47"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack05": {
+        "n_components": 7,
+        "n_photos": 1,
+        "max_merge_gap": 267.2,
+        "absorbed_prefill_ids": [
+          "wall13_crack50",
+          "wall13_crack51",
+          "wall13_crack52",
+          "wall13_crack53",
+          "wall13_crack54",
+          "wall13_crack55",
+          "wall13_crack56"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack06": {
+        "n_components": 4,
+        "n_photos": 1,
+        "max_merge_gap": 18.4,
+        "absorbed_prefill_ids": [
+          "wall13_crack32",
+          "wall13_crack33",
+          "wall13_crack34",
+          "wall13_crack35"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack07": {
+        "n_components": 4,
+        "n_photos": 1,
+        "max_merge_gap": 151.1,
+        "absorbed_prefill_ids": [
+          "wall13_crack36",
+          "wall13_crack37",
+          "wall13_crack38",
+          "wall13_crack39"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack08": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 19.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack14",
+          "wall13_crack15"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack09": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack13"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack10": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack16"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack11": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack23"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack12": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack24"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack13": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack40"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack14": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack48"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack15": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack49"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack16": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack57"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack17": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack58"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack18": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack59"
+        ],
+        "ecc_links": []
+      },
+      "wall13_crack19": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall13_crack60"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 59,
+    "prefill_links": 0,
+    "ecc_links": 2
+  },
+  "wall14": {
+    "identities": {
+      "wall14_crack01": {
+        "n_components": 14,
+        "n_photos": 2,
+        "max_merge_gap": 307.3,
+        "absorbed_prefill_ids": [
+          "wall14_crack01",
+          "wall14_crack02",
+          "wall14_crack03",
+          "wall14_crack04",
+          "wall14_crack05",
+          "wall14_crack06",
+          "wall14_crack07",
+          "wall14_crack08",
+          "wall14_crack09",
+          "wall14_crack10",
+          "wall14_crack13",
+          "wall14_crack14",
+          "wall14_crack15"
+        ],
+        "ecc_links": []
+      },
+      "wall14_crack02": {
+        "n_components": 5,
+        "n_photos": 1,
+        "max_merge_gap": 282.8,
+        "absorbed_prefill_ids": [
+          "wall14_crack18",
+          "wall14_crack19",
+          "wall14_crack20",
+          "wall14_crack21",
+          "wall14_crack22"
+        ],
+        "ecc_links": []
+      },
+      "wall14_crack03": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 227.8,
+        "absorbed_prefill_ids": [
+          "wall14_crack25",
+          "wall14_crack26",
+          "wall14_crack27"
+        ],
+        "ecc_links": []
+      },
+      "wall14_crack04": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 25.0,
+        "absorbed_prefill_ids": [
+          "wall14_crack11",
+          "wall14_crack12"
+        ],
+        "ecc_links": []
+      },
+      "wall14_crack05": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 76.5,
+        "absorbed_prefill_ids": [
+          "wall14_crack29",
+          "wall14_crack30"
+        ],
+        "ecc_links": []
+      },
+      "wall14_crack06": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall14_crack16"
+        ],
+        "ecc_links": []
+      },
+      "wall14_crack07": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall14_crack17"
+        ],
+        "ecc_links": []
+      },
+      "wall14_crack08": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall14_crack23"
+        ],
+        "ecc_links": []
+      },
+      "wall14_crack09": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall14_crack24"
+        ],
+        "ecc_links": []
+      },
+      "wall14_crack10": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall14_crack28"
+        ],
+        "ecc_links": []
+      },
+      "wall14_crack11": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall14_crack31"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 30,
+    "prefill_links": 1,
+    "ecc_links": 0
+  },
+  "wall15": {
+    "identities": {
+      "wall15_crack01": {
+        "n_components": 7,
+        "n_photos": 2,
+        "max_merge_gap": 257.3,
+        "absorbed_prefill_ids": [
+          "wall15_crack21",
+          "wall15_crack22",
+          "wall15_crack23",
+          "wall15_crack35",
+          "wall15_crack36",
+          "wall15_crack37"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack02": {
+        "n_components": 4,
+        "n_photos": 2,
+        "max_merge_gap": 116.8,
+        "absorbed_prefill_ids": [
+          "wall15_crack24",
+          "wall15_crack38",
+          "wall15_crack39"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack03": {
+        "n_components": 4,
+        "n_photos": 2,
+        "max_merge_gap": 39.1,
+        "absorbed_prefill_ids": [
+          "wall15_crack25",
+          "wall15_crack27"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack04": {
+        "n_components": 4,
+        "n_photos": 2,
+        "max_merge_gap": 206.9,
+        "absorbed_prefill_ids": [
+          "wall15_crack26",
+          "wall15_crack28",
+          "wall15_crack30"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack05": {
+        "n_components": 6,
+        "n_photos": 1,
+        "max_merge_gap": 257.9,
+        "absorbed_prefill_ids": [
+          "wall15_crack53",
+          "wall15_crack54",
+          "wall15_crack55",
+          "wall15_crack56",
+          "wall15_crack57",
+          "wall15_crack58"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack06": {
+        "n_components": 5,
+        "n_photos": 1,
+        "max_merge_gap": 278.2,
+        "absorbed_prefill_ids": [
+          "wall15_crack82",
+          "wall15_crack83",
+          "wall15_crack84",
+          "wall15_crack85",
+          "wall15_crack86"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack07": {
+        "n_components": 4,
+        "n_photos": 1,
+        "max_merge_gap": 314.8,
+        "absorbed_prefill_ids": [
+          "wall15_crack06",
+          "wall15_crack09",
+          "wall15_crack11",
+          "wall15_crack12"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack08": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 175.6,
+        "absorbed_prefill_ids": [
+          "wall15_crack02",
+          "wall15_crack04",
+          "wall15_crack05"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack09": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 301.7,
+        "absorbed_prefill_ids": [
+          "wall15_crack41",
+          "wall15_crack43",
+          "wall15_crack45"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack10": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 161.1,
+        "absorbed_prefill_ids": [
+          "wall15_crack59",
+          "wall15_crack63",
+          "wall15_crack66"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack11": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 177.7,
+        "absorbed_prefill_ids": [
+          "wall15_crack60",
+          "wall15_crack61",
+          "wall15_crack64"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack12": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 296.6,
+        "absorbed_prefill_ids": [
+          "wall15_crack67",
+          "wall15_crack68",
+          "wall15_crack70"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack13": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 54.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack07",
+          "wall15_crack08"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack14": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 27.2,
+        "absorbed_prefill_ids": [
+          "wall15_crack14",
+          "wall15_crack15"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack15": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 100.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack17",
+          "wall15_crack18"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack16": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 164.6,
+        "absorbed_prefill_ids": [
+          "wall15_crack19",
+          "wall15_crack20"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack17": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 184.5,
+        "absorbed_prefill_ids": [
+          "wall15_crack29",
+          "wall15_crack31"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack18": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 22.2,
+        "absorbed_prefill_ids": [
+          "wall15_crack40",
+          "wall15_crack42"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack19": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 28.3,
+        "absorbed_prefill_ids": [
+          "wall15_crack48",
+          "wall15_crack49"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack20": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 29.2,
+        "absorbed_prefill_ids": [
+          "wall15_crack62",
+          "wall15_crack65"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack21": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 14.3,
+        "absorbed_prefill_ids": [
+          "wall15_crack77",
+          "wall15_crack80"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack22": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 171.2,
+        "absorbed_prefill_ids": [
+          "wall15_crack79",
+          "wall15_crack81"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack23": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 7.1,
+        "absorbed_prefill_ids": [
+          "wall15_crack91",
+          "wall15_crack92"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack24": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 312.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack93",
+          "wall15_crack94"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack25": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack01"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack26": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack03"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack27": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack10"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack28": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack13"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack29": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack16"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack30": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack32"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack31": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack33"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack32": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack34"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack33": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack44"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack34": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack46"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack35": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack47"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack36": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack50"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack37": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack51"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack38": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack52"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack39": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack69"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack40": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack71"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack41": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack72"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack42": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack73"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack43": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack74"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack44": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack75"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack45": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack76"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack46": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack78"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack47": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack87"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack48": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack88"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack49": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack89"
+        ],
+        "ecc_links": []
+      },
+      "wall15_crack50": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall15_crack90"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 98,
+    "prefill_links": 5,
+    "ecc_links": 0
+  },
+  "wall16": {
+    "identities": {
+      "wall16_crack01": {
+        "n_components": 7,
+        "n_photos": 1,
+        "max_merge_gap": 261.3,
+        "absorbed_prefill_ids": [
+          "wall16_crack36",
+          "wall16_crack37",
+          "wall16_crack38",
+          "wall16_crack39",
+          "wall16_crack40",
+          "wall16_crack41",
+          "wall16_crack42"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack02": {
+        "n_components": 5,
+        "n_photos": 1,
+        "max_merge_gap": 283.4,
+        "absorbed_prefill_ids": [
+          "wall16_crack21",
+          "wall16_crack22",
+          "wall16_crack23",
+          "wall16_crack24",
+          "wall16_crack25"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack03": {
+        "n_components": 5,
+        "n_photos": 1,
+        "max_merge_gap": 219.2,
+        "absorbed_prefill_ids": [
+          "wall16_crack29",
+          "wall16_crack30",
+          "wall16_crack31",
+          "wall16_crack32",
+          "wall16_crack33"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack04": {
+        "n_components": 4,
+        "n_photos": 1,
+        "max_merge_gap": 293.4,
+        "absorbed_prefill_ids": [
+          "wall16_crack12",
+          "wall16_crack13",
+          "wall16_crack14",
+          "wall16_crack15"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack05": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 27.3,
+        "absorbed_prefill_ids": [
+          "wall16_crack05",
+          "wall16_crack06",
+          "wall16_crack07"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack06": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 115.2,
+        "absorbed_prefill_ids": [
+          "wall16_crack18",
+          "wall16_crack19",
+          "wall16_crack20"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack07": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 310.2,
+        "absorbed_prefill_ids": [
+          "wall16_crack45",
+          "wall16_crack46",
+          "wall16_crack47"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack08": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 65.1,
+        "absorbed_prefill_ids": [
+          "wall16_crack49",
+          "wall16_crack50",
+          "wall16_crack51"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack09": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 6.7,
+        "absorbed_prefill_ids": [
+          "wall16_crack01",
+          "wall16_crack02"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack10": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 46.5,
+        "absorbed_prefill_ids": [
+          "wall16_crack09",
+          "wall16_crack10"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack11": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 18.1,
+        "absorbed_prefill_ids": [
+          "wall16_crack16",
+          "wall16_crack17"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack12": {
+        "n_components": 2,
+        "n_photos": 1,
+        "max_merge_gap": 296.6,
+        "absorbed_prefill_ids": [
+          "wall16_crack53",
+          "wall16_crack54"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack13": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack03"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack14": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack04"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack15": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack08"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack16": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack11"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack17": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack26"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack18": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack27"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack19": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack28"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack20": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack34"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack21": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack35"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack22": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack43"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack23": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack44"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack24": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack48"
+        ],
+        "ecc_links": []
+      },
+      "wall16_crack25": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall16_crack52"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 52,
+    "prefill_links": 0,
+    "ecc_links": 0
+  },
+  "wall17": {
+    "identities": {
+      "wall17_crack01": {
+        "n_components": 7,
+        "n_photos": 1,
+        "max_merge_gap": 303.4,
+        "absorbed_prefill_ids": [
+          "wall17_crack01",
+          "wall17_crack02",
+          "wall17_crack05",
+          "wall17_crack07",
+          "wall17_crack08",
+          "wall17_crack10",
+          "wall17_crack12"
+        ],
+        "ecc_links": []
+      },
+      "wall17_crack02": {
+        "n_components": 5,
+        "n_photos": 1,
+        "max_merge_gap": 265.4,
+        "absorbed_prefill_ids": [
+          "wall17_crack16",
+          "wall17_crack17",
+          "wall17_crack18",
+          "wall17_crack19",
+          "wall17_crack20"
+        ],
+        "ecc_links": []
+      },
+      "wall17_crack03": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 170.2,
+        "absorbed_prefill_ids": [
+          "wall17_crack03",
+          "wall17_crack04",
+          "wall17_crack06"
+        ],
+        "ecc_links": []
+      },
+      "wall17_crack04": {
+        "n_components": 3,
+        "n_photos": 1,
+        "max_merge_gap": 228.5,
+        "absorbed_prefill_ids": [
+          "wall17_crack09",
+          "wall17_crack11",
+          "wall17_crack13"
+        ],
+        "ecc_links": []
+      },
+      "wall17_crack05": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall17_crack14"
+        ],
+        "ecc_links": []
+      },
+      "wall17_crack06": {
+        "n_components": 1,
+        "n_photos": 1,
+        "max_merge_gap": 0.0,
+        "absorbed_prefill_ids": [
+          "wall17_crack15"
+        ],
+        "ecc_links": []
+      }
+    },
+    "points_reassigned": 18,
+    "prefill_links": 0,
+    "ecc_links": 0
+  }
+}

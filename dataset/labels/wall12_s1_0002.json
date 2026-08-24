@@ -2,60 +2,88 @@
   "image_id": "wall12_s1_0002",
   "points": [
     {
-      "identity": "wall12_crack04",
+      "identity": "wall12_crack01",
       "xy": [
         1566,
         246
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack04",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack02",
+      "identity": "wall12_crack01",
       "xy": [
         1576,
         346
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack02",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack05",
+      "identity": "wall12_crack01",
       "xy": [
         1515,
         666
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack05",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack06",
+      "identity": "wall12_crack01",
       "xy": [
         1512,
         777
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack06",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack07",
+      "identity": "wall12_crack01",
       "xy": [
         1454,
         932
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack07",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack08",
+      "identity": "wall12_crack01",
       "xy": [
         1441,
         1091
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack08",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack09",
+      "identity": "wall12_crack06",
       "xy": [
         1987,
         3997
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack09",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

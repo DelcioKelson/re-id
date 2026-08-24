@@ -2,28 +2,40 @@
   "image_id": "wall05_s1_0007",
   "points": [
     {
-      "identity": "wall05_crack04",
+      "identity": "wall05_crack01",
       "xy": [
         724,
         1338
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall05_crack04",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall05_crack08",
+      "identity": "wall05_crack02",
       "xy": [
         2024,
         1397
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall05_crack08",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall05_crack07",
+      "identity": "wall05_crack01",
       "xy": [
         892,
         1584
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall05_crack07",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

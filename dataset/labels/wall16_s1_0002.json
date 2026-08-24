@@ -7,39 +7,59 @@
         904,
         908
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall16_crack05",
+        "verdict": "unchanged"
+      }
     },
     {
-      "identity": "wall16_crack06",
+      "identity": "wall16_crack05",
       "xy": [
         1034,
         1113
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall16_crack06",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall16_crack07",
+      "identity": "wall16_crack05",
       "xy": [
         1690,
         1738
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall16_crack07",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall16_crack08",
+      "identity": "wall16_crack15",
       "xy": [
         1343,
         2462
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall16_crack08",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall16_crack09",
+      "identity": "wall16_crack10",
       "xy": [
         1673,
         2988
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall16_crack09",
+        "verdict": "reassigned"
+      }
     },
     {
       "identity": "wall16_crack10",
@@ -47,15 +67,23 @@
         1586,
         3063
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall16_crack10",
+        "verdict": "unchanged"
+      }
     },
     {
-      "identity": "wall16_crack11",
+      "identity": "wall16_crack16",
       "xy": [
         523,
         4003
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall16_crack11",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

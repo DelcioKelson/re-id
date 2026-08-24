@@ -1,0 +1,77 @@
+{
+  "image_id": "wall04_s1_0011",
+  "points": [
+    {
+      "identity": "wall04_crack32",
+      "xy": [
+        2249,
+        329
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall04_crack33",
+      "xy": [
+        2113,
+        585
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall04_crack27",
+      "xy": [
+        1917,
+        966
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall04_crack34",
+      "xy": [
+        1878,
+        1088
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall04_crack25",
+      "xy": [
+        1790,
+        1415
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall04_crack29",
+      "xy": [
+        1671,
+        1711
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall04_crack24",
+      "xy": [
+        1276,
+        1727
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall04_crack35",
+      "xy": [
+        1018,
+        2527
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall04_crack36",
+      "xy": [
+        1272,
+        2637
+      ],
+      "provisional": true
+    }
+  ]
+}

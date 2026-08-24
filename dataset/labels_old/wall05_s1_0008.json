@@ -1,0 +1,53 @@
+{
+  "image_id": "wall05_s1_0008",
+  "points": [
+    {
+      "identity": "wall05_crack10",
+      "xy": [
+        967,
+        709
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall05_crack11",
+      "xy": [
+        1845,
+        1168
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall05_crack12",
+      "xy": [
+        309,
+        1388
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall05_crack13",
+      "xy": [
+        2078,
+        1394
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall05_crack14",
+      "xy": [
+        407,
+        1575
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall05_crack15",
+      "xy": [
+        499,
+        1632
+      ],
+      "provisional": true
+    }
+  ]
+}

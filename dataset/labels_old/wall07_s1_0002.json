@@ -1,0 +1,125 @@
+{
+  "image_id": "wall07_s1_0002",
+  "points": [
+    {
+      "identity": "wall07_crack08",
+      "xy": [
+        1646,
+        157
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack09",
+      "xy": [
+        1584,
+        271
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack10",
+      "xy": [
+        1748,
+        347
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack01",
+      "xy": [
+        1525,
+        961
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack11",
+      "xy": [
+        1539,
+        1002
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack02",
+      "xy": [
+        1645,
+        1392
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack03",
+      "xy": [
+        1695,
+        1476
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack12",
+      "xy": [
+        1741,
+        1586
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack04",
+      "xy": [
+        1669,
+        2008
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack13",
+      "xy": [
+        1598,
+        2468
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack05",
+      "xy": [
+        1514,
+        3095
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack14",
+      "xy": [
+        1542,
+        3240
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack15",
+      "xy": [
+        1475,
+        3729
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack16",
+      "xy": [
+        1467,
+        3934
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall07_crack17",
+      "xy": [
+        1466,
+        4051
+      ],
+      "provisional": true
+    }
+  ]
+}

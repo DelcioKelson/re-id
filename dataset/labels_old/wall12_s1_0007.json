@@ -1,0 +1,53 @@
+{
+  "image_id": "wall12_s1_0007",
+  "points": [
+    {
+      "identity": "wall12_crack23",
+      "xy": [
+        1512,
+        508
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall12_crack10",
+      "xy": [
+        1498,
+        646
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall12_crack24",
+      "xy": [
+        1407,
+        777
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall12_crack22",
+      "xy": [
+        1406,
+        1461
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall12_crack28",
+      "xy": [
+        2693,
+        3466
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall12_crack29",
+      "xy": [
+        2379,
+        3477
+      ],
+      "provisional": true
+    }
+  ]
+}

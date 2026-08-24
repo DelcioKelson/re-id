@@ -2,28 +2,40 @@
   "image_id": "wall03_s1_0001",
   "points": [
     {
-      "identity": "wall03_crack01",
+      "identity": "wall03_crack02",
       "xy": [
         1506,
         571
       ],
-      "provisional": true
-    },
-    {
-      "identity": "wall03_crack02",
-      "xy": [
-        1333,
-        2792
-      ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall03_crack01",
+        "verdict": "reassigned"
+      }
     },
     {
       "identity": "wall03_crack03",
       "xy": [
+        1333,
+        2792
+      ],
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall03_crack02",
+        "verdict": "reassigned"
+      }
+    },
+    {
+      "identity": "wall03_crack04",
+      "xy": [
         1437,
         3385
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall03_crack03",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

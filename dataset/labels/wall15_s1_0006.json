@@ -2,108 +2,160 @@
   "image_id": "wall15_s1_0006",
   "points": [
     {
-      "identity": "wall15_crack74",
+      "identity": "wall15_crack43",
       "xy": [
         1641,
         85
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack74",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack75",
+      "identity": "wall15_crack44",
       "xy": [
         1516,
         563
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack75",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack76",
+      "identity": "wall15_crack45",
       "xy": [
         1459,
         1447
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack76",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack77",
+      "identity": "wall15_crack21",
       "xy": [
         785,
         2103
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack77",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack78",
+      "identity": "wall15_crack46",
       "xy": [
         1498,
         2082
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack78",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack79",
+      "identity": "wall15_crack22",
       "xy": [
         1596,
         2182
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack79",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack80",
+      "identity": "wall15_crack21",
       "xy": [
         697,
         2685
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack80",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack81",
+      "identity": "wall15_crack22",
       "xy": [
         1763,
         2732
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack81",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack82",
+      "identity": "wall15_crack06",
       "xy": [
         489,
         2567
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack82",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack83",
+      "identity": "wall15_crack06",
       "xy": [
         916,
         2712
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack83",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack84",
+      "identity": "wall15_crack06",
       "xy": [
         1403,
         2717
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack84",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack85",
+      "identity": "wall15_crack06",
       "xy": [
         1290,
         2726
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack85",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall15_crack86",
+      "identity": "wall15_crack06",
       "xy": [
         963,
         2745
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall15_crack86",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

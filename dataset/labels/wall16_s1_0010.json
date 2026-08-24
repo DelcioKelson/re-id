@@ -2,20 +2,28 @@
   "image_id": "wall16_s1_0010",
   "points": [
     {
-      "identity": "wall16_crack43",
+      "identity": "wall16_crack22",
       "xy": [
         96,
         2182
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall16_crack43",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall16_crack44",
+      "identity": "wall16_crack23",
       "xy": [
         475,
         3063
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall16_crack44",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

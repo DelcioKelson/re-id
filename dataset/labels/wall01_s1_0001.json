@@ -7,55 +7,83 @@
         1189,
         2
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall01_crack01",
+        "verdict": "unchanged"
+      }
     },
     {
-      "identity": "wall01_crack02",
+      "identity": "wall01_crack01",
       "xy": [
         1221,
         84
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall01_crack02",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall01_crack03",
+      "identity": "wall01_crack01",
       "xy": [
         1192,
         681
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall01_crack03",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall01_crack04",
+      "identity": "wall01_crack01",
       "xy": [
         1425,
         1452
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall01_crack04",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall01_crack05",
+      "identity": "wall01_crack01",
       "xy": [
         1233,
         952
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall01_crack05",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall01_crack06",
+      "identity": "wall01_crack01",
       "xy": [
         1741,
         3373
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall01_crack06",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall01_crack07",
+      "identity": "wall01_crack04",
       "xy": [
         2281,
         3839
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall01_crack07",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

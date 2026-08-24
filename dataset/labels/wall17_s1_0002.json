@@ -2,44 +2,64 @@
   "image_id": "wall17_s1_0002",
   "points": [
     {
-      "identity": "wall17_crack16",
+      "identity": "wall17_crack02",
       "xy": [
         1532,
         733
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall17_crack16",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall17_crack17",
+      "identity": "wall17_crack02",
       "xy": [
         1147,
         946
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall17_crack17",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall17_crack18",
+      "identity": "wall17_crack02",
       "xy": [
         995,
         1028
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall17_crack18",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall17_crack19",
+      "identity": "wall17_crack02",
       "xy": [
         811,
         1131
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall17_crack19",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall17_crack20",
+      "identity": "wall17_crack02",
       "xy": [
         557,
         1274
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall17_crack20",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

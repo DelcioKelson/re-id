@@ -1,0 +1,165 @@
+{
+  "image_id": "wall02_s1_0016",
+  "points": [
+    {
+      "identity": "wall02_crack81",
+      "xy": [
+        2661,
+        16
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack82",
+      "xy": [
+        2519,
+        275
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack83",
+      "xy": [
+        1775,
+        324
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack84",
+      "xy": [
+        2459,
+        444
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack85",
+      "xy": [
+        2414,
+        647
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack60",
+      "xy": [
+        1640,
+        922
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack66",
+      "xy": [
+        1572,
+        1064
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack86",
+      "xy": [
+        2237,
+        1126
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack87",
+      "xy": [
+        1529,
+        1140
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack63",
+      "xy": [
+        1347,
+        1649
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack44",
+      "xy": [
+        1325,
+        1767
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack67",
+      "xy": [
+        1486,
+        2488
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack79",
+      "xy": [
+        1525,
+        2537
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack80",
+      "xy": [
+        1546,
+        2715
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack78",
+      "xy": [
+        1476,
+        2984
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack88",
+      "xy": [
+        1295,
+        3082
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack73",
+      "xy": [
+        1236,
+        3473
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack89",
+      "xy": [
+        2840,
+        3518
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack90",
+      "xy": [
+        1147,
+        3835
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack75",
+      "xy": [
+        1107,
+        4011
+      ],
+      "provisional": true
+    }
+  ]
+}

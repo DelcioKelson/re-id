@@ -2,60 +2,88 @@
   "image_id": "wall04_s1_0010",
   "points": [
     {
-      "identity": "wall04_crack24",
+      "identity": "wall04_crack04",
       "xy": [
         1669,
         1122
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall04_crack24",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall04_crack27",
+      "identity": "wall04_crack02",
       "xy": [
         3026,
         1234
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall04_crack27",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall04_crack25",
+      "identity": "wall04_crack02",
       "xy": [
         2262,
         1415
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall04_crack25",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall04_crack28",
+      "identity": "wall04_crack07",
       "xy": [
         274,
         1460
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall04_crack28",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall04_crack29",
+      "identity": "wall04_crack02",
       "xy": [
         1844,
         1483
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall04_crack29",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall04_crack30",
+      "identity": "wall04_crack08",
       "xy": [
         1092,
         1637
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall04_crack30",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall04_crack31",
+      "identity": "wall04_crack09",
       "xy": [
         839,
         2050
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall04_crack31",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

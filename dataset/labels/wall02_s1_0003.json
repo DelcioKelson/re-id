@@ -2,36 +2,52 @@
   "image_id": "wall02_s1_0003",
   "points": [
     {
-      "identity": "wall02_crack17",
+      "identity": "wall02_crack10",
       "xy": [
         144,
         319
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack17",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack18",
+      "identity": "wall02_crack10",
       "xy": [
         282,
         434
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack18",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack19",
+      "identity": "wall02_crack02",
       "xy": [
         540,
         829
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack19",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack01",
+      "identity": "wall02_crack02",
       "xy": [
         903,
         1088
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack01",
+        "verdict": "reassigned"
+      }
     },
     {
       "identity": "wall02_crack02",
@@ -39,79 +55,119 @@
         1062,
         1276
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack02",
+        "verdict": "unchanged"
+      }
     },
     {
-      "identity": "wall02_crack10",
+      "identity": "wall02_crack02",
       "xy": [
         1115,
         1349
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack10",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack03",
+      "identity": "wall02_crack02",
       "xy": [
         1197,
         1458
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack03",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack04",
+      "identity": "wall02_crack02",
       "xy": [
         1305,
         1630
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack04",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack11",
+      "identity": "wall02_crack02",
       "xy": [
         1588,
         2107
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack11",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack08",
+      "identity": "wall02_crack02",
       "xy": [
         1725,
         2361
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack08",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack20",
+      "identity": "wall02_crack02",
       "xy": [
         1771,
         2442
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack20",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack12",
+      "identity": "wall02_crack02",
       "xy": [
         2008,
         2907
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack12",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack13",
+      "identity": "wall02_crack02",
       "xy": [
         2184,
         3139
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack13",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall02_crack16",
+      "identity": "wall02_crack06",
       "xy": [
         2769,
         3822
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall02_crack16",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

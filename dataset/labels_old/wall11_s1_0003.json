@@ -1,0 +1,45 @@
+{
+  "image_id": "wall11_s1_0003",
+  "points": [
+    {
+      "identity": "wall11_crack07",
+      "xy": [
+        1102,
+        723
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall11_crack03",
+      "xy": [
+        865,
+        1769
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall11_crack05",
+      "xy": [
+        1020,
+        2064
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall11_crack08",
+      "xy": [
+        1516,
+        1974
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall11_crack09",
+      "xy": [
+        2145,
+        2008
+      ],
+      "provisional": true
+    }
+  ]
+}

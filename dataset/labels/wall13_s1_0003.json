@@ -2,12 +2,16 @@
   "image_id": "wall13_s1_0003",
   "points": [
     {
-      "identity": "wall13_crack23",
+      "identity": "wall13_crack11",
       "xy": [
         2159,
         1811
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall13_crack23",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

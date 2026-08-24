@@ -1,0 +1,29 @@
+{
+  "image_id": "wall16_s1_0006",
+  "points": [
+    {
+      "identity": "wall16_crack26",
+      "xy": [
+        2106,
+        703
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall16_crack27",
+      "xy": [
+        2696,
+        854
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall16_crack28",
+      "xy": [
+        1002,
+        1506
+      ],
+      "provisional": true
+    }
+  ]
+}

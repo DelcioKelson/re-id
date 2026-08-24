@@ -1,0 +1,221 @@
+{
+  "image_id": "wall15_s1_0005",
+  "points": [
+    {
+      "identity": "wall15_crack47",
+      "xy": [
+        1830,
+        1379
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack48",
+      "xy": [
+        1042,
+        1548
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack49",
+      "xy": [
+        849,
+        1660
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack50",
+      "xy": [
+        2275,
+        1750
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack51",
+      "xy": [
+        106,
+        1785
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack52",
+      "xy": [
+        302,
+        1827
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack53",
+      "xy": [
+        2091,
+        1943
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack54",
+      "xy": [
+        1799,
+        2029
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack55",
+      "xy": [
+        1721,
+        2091
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack56",
+      "xy": [
+        1092,
+        2091
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack57",
+      "xy": [
+        897,
+        2119
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack58",
+      "xy": [
+        1078,
+        2120
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack59",
+      "xy": [
+        1917,
+        2214
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack60",
+      "xy": [
+        1432,
+        2292
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack61",
+      "xy": [
+        1367,
+        2344
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack62",
+      "xy": [
+        445,
+        2396
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack63",
+      "xy": [
+        1998,
+        2439
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack64",
+      "xy": [
+        1033,
+        2587
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack65",
+      "xy": [
+        470,
+        2499
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack66",
+      "xy": [
+        2058,
+        2626
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack67",
+      "xy": [
+        1053,
+        2850
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack68",
+      "xy": [
+        1082,
+        3032
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack69",
+      "xy": [
+        839,
+        3201
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack70",
+      "xy": [
+        1099,
+        3287
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack71",
+      "xy": [
+        1358,
+        3324
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack72",
+      "xy": [
+        2097,
+        3293
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall15_crack73",
+      "xy": [
+        635,
+        3325
+      ],
+      "provisional": true
+    }
+  ]
+}

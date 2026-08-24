@@ -2,68 +2,100 @@
   "image_id": "wall13_s1_0004",
   "points": [
     {
-      "identity": "wall13_crack24",
+      "identity": "wall13_crack12",
       "xy": [
         603,
         847
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall13_crack24",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall13_crack25",
+      "identity": "wall13_crack03",
       "xy": [
         996,
         936
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall13_crack25",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall13_crack26",
+      "identity": "wall13_crack03",
       "xy": [
         1267,
         995
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall13_crack26",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall13_crack27",
+      "identity": "wall13_crack03",
       "xy": [
         1652,
         1091
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall13_crack27",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall13_crack28",
+      "identity": "wall13_crack03",
       "xy": [
         1842,
         1135
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall13_crack28",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall13_crack29",
+      "identity": "wall13_crack03",
       "xy": [
         2036,
         1194
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall13_crack29",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall13_crack30",
+      "identity": "wall13_crack03",
       "xy": [
         2506,
         1302
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall13_crack30",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall13_crack31",
+      "identity": "wall13_crack03",
       "xy": [
         4081,
         1714
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall13_crack31",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

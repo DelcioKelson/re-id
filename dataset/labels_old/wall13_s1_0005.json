@@ -1,0 +1,37 @@
+{
+  "image_id": "wall13_s1_0005",
+  "points": [
+    {
+      "identity": "wall13_crack32",
+      "xy": [
+        518,
+        140
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall13_crack33",
+      "xy": [
+        738,
+        872
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall13_crack34",
+      "xy": [
+        1259,
+        2442
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall13_crack35",
+      "xy": [
+        1589,
+        3590
+      ],
+      "provisional": true
+    }
+  ]
+}

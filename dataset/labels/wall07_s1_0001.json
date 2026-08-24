@@ -7,55 +7,83 @@
         1456,
         1294
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall07_crack01",
+        "verdict": "unchanged"
+      }
     },
     {
-      "identity": "wall07_crack02",
+      "identity": "wall07_crack01",
       "xy": [
         1487,
         1382
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall07_crack02",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall07_crack03",
+      "identity": "wall07_crack01",
       "xy": [
         1559,
         1564
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall07_crack03",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall07_crack04",
+      "identity": "wall07_crack01",
       "xy": [
         1555,
         1716
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall07_crack04",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall07_crack05",
+      "identity": "wall07_crack01",
       "xy": [
         1496,
         2301
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall07_crack05",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall07_crack06",
+      "identity": "wall07_crack04",
       "xy": [
         1500,
         2820
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall07_crack06",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall07_crack07",
+      "identity": "wall07_crack04",
       "xy": [
         1591,
         3101
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall07_crack07",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

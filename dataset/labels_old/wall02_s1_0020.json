@@ -1,0 +1,125 @@
+{
+  "image_id": "wall02_s1_0020",
+  "points": [
+    {
+      "identity": "wall02_crack111",
+      "xy": [
+        2319,
+        8
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack112",
+      "xy": [
+        2306,
+        245
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack105",
+      "xy": [
+        2082,
+        600
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack92",
+      "xy": [
+        1506,
+        723
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack91",
+      "xy": [
+        1944,
+        792
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack94",
+      "xy": [
+        1844,
+        1018
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack106",
+      "xy": [
+        1319,
+        1128
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack113",
+      "xy": [
+        1260,
+        1215
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack95",
+      "xy": [
+        1121,
+        1436
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack97",
+      "xy": [
+        1024,
+        2092
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack80",
+      "xy": [
+        1027,
+        2377
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack108",
+      "xy": [
+        2511,
+        2377
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack99",
+      "xy": [
+        753,
+        2941
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack101",
+      "xy": [
+        649,
+        3119
+      ],
+      "provisional": true
+    },
+    {
+      "identity": "wall02_crack75",
+      "xy": [
+        604,
+        3221
+      ],
+      "provisional": true
+    }
+  ]
+}

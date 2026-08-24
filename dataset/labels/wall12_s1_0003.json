@@ -2,108 +2,160 @@
   "image_id": "wall12_s1_0003",
   "points": [
     {
-      "identity": "wall12_crack10",
+      "identity": "wall12_crack02",
       "xy": [
         1350,
         86
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack10",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack11",
+      "identity": "wall12_crack02",
       "xy": [
         1336,
         182
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack11",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack12",
+      "identity": "wall12_crack02",
       "xy": [
         1207,
         525
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack12",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack13",
+      "identity": "wall12_crack02",
       "xy": [
         1159,
         632
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack13",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack14",
+      "identity": "wall12_crack01",
       "xy": [
         1514,
         1262
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack14",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack15",
+      "identity": "wall12_crack01",
       "xy": [
         1556,
         1436
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack15",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack04",
+      "identity": "wall12_crack01",
       "xy": [
         1578,
         1709
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack04",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack05",
+      "identity": "wall12_crack01",
       "xy": [
         1525,
         1986
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack05",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack06",
+      "identity": "wall12_crack01",
       "xy": [
         1531,
         2059
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack06",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack16",
+      "identity": "wall12_crack01",
       "xy": [
         1512,
         2151
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack16",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack07",
+      "identity": "wall12_crack01",
       "xy": [
         1482,
         2186
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack07",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack08",
+      "identity": "wall12_crack01",
       "xy": [
         1462,
         2355
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack08",
+        "verdict": "reassigned"
+      }
     },
     {
-      "identity": "wall12_crack17",
+      "identity": "wall12_crack07",
       "xy": [
         1541,
         3160
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall12_crack17",
+        "verdict": "reassigned"
+      }
     }
   ]
 }

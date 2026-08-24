@@ -2,12 +2,16 @@
   "image_id": "wall05_s1_0001",
   "points": [
     {
-      "identity": "wall05_crack01",
+      "identity": "wall05_crack06",
       "xy": [
         1180,
         1073
       ],
-      "provisional": true
+      "provisional": true,
+      "model_review": {
+        "prefill_identity": "wall05_crack01",
+        "verdict": "reassigned"
+      }
     }
   ]
 }
