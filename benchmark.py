@@ -220,7 +220,7 @@ class Dataset:
 
     # ---- crop service for scorers ----
     def crop(self, ref: InstanceRef, apply_mask: bool = False,
-             context: float = 0.0) -> np.ndarray:
+             context: float = 0.0, invert: bool = False) -> np.ndarray:
         """The pixels a crop-scope method gets to see.
 
         context: expand the instance bbox by this fraction of its own width
@@ -231,26 +231,48 @@ class Dataset:
             registration method that sees the entire photo, so the
             comparison measures field of view as much as it measures method.
         """
-        key = f"{ref.instance_id}_{apply_mask}_{context:g}"
+        key = f"{ref.instance_id}_{apply_mask}_{context:g}_{invert}"
         if key not in self._crop_cache:
-            inst = self._ref_to_instance[ref.instance_id]
-            if context <= 0:
-                crop, mask = inst.crop, inst.mask_crop
-            else:
-                img = self.image(ref.image_id)
-                h_img, w_img = img.shape[:2]
-                x, y, w, h = inst.bbox
-                mx, my = int(round(w * context)), int(round(h * context))
-                x0, y0 = max(x - mx, 0), max(y - my, 0)
-                x1, y1 = min(x + w + mx, w_img), min(y + h + my, h_img)
-                crop = img[y0:y1, x0:x1].copy()
-                # Re-place the component mask inside the widened window, so
-                # apply_mask still isolates the same physical crack.
-                full = np.zeros((h_img, w_img), np.uint8)
-                full[y:y + inst.mask_crop.shape[0], x:x + inst.mask_crop.shape[1]] = inst.mask_crop
-                mask = full[y0:y1, x0:x1]
-            self._crop_cache[key] = cv2.bitwise_and(crop, crop, mask=mask) if apply_mask else crop
+            crop, mask, _ = self._window(ref, context)
+            if invert:
+                crop = _erase_crack(crop, mask)
+            elif apply_mask:
+                crop = cv2.bitwise_and(crop, crop, mask=mask)
+            self._crop_cache[key] = crop
         return self._crop_cache[key]
+
+    def _window(self, ref: InstanceRef, context: float):
+        """(crop, mask, bbox) for this instance at the requested context."""
+        inst = self._ref_to_instance[ref.instance_id]
+        if context <= 0:
+            return inst.crop, inst.mask_crop, inst.bbox
+        img = self.image(ref.image_id)
+        h_img, w_img = img.shape[:2]
+        x, y, w, h = inst.bbox
+        mx, my = int(round(w * context)), int(round(h * context))
+        x0, y0 = max(x - mx, 0), max(y - my, 0)
+        x1, y1 = min(x + w + mx, w_img), min(y + h + my, h_img)
+        crop = img[y0:y1, x0:x1].copy()
+        # Re-place the component mask inside the widened window, so
+        # apply_mask still isolates the same physical crack.
+        full = np.zeros((h_img, w_img), np.uint8)
+        full[y:y + inst.mask_crop.shape[0], x:x + inst.mask_crop.shape[1]] = inst.mask_crop
+        return crop, full[y0:y1, x0:x1], (x0, y0, x1 - x0, y1 - y0)
+
+    def instance_with_context(self, ref: InstanceRef, context: float = 0.0,
+                              invert: bool = False) -> CrackInstance:
+        """CrackInstance at the requested context.
+
+        The keypoint and learned-pairwise matchers consume CrackInstance
+        objects rather than bare crops (they do their own masking from
+        mask_crop), so they need this rather than crop().
+        """
+        if context <= 0 and not invert:
+            return self._ref_to_instance[ref.instance_id]
+        crop, mask, bbox = self._window(ref, context)
+        if invert:
+            crop = _erase_crack(crop, mask)
+        return CrackInstance(crop=crop, mask_crop=mask, bbox=bbox)
 
     def instance_of(self, ref: InstanceRef) -> CrackInstance:
         return self._ref_to_instance[ref.instance_id]
@@ -343,10 +365,20 @@ class PairwiseMatcherScorer(DistanceScorer):
     cheap comparisons (or Q*G forward passes for the genuinely-pairwise
     SuperGlue/LoFTR, which is their real, reportable cost)."""
 
-    def __init__(self, matcher, prune: bool = True):
+    def __init__(self, matcher, prune: bool = True, context: float = 0.0,
+                 apply_mask: bool | None = None, name: str | None = None,
+                 invert: bool = False):
         self.matcher = matcher
-        self.name = matcher.name
-        self.input_scope = "crop"
+        self.context = context
+        self.invert = invert
+        # None = keep the matcher's own default. Overriding matters because
+        # every keypoint matcher defaults to apply_mask=True, which blacks
+        # out everything but the crack -- and a thin crack silhouette has
+        # almost no keypoints to find. That default was asserted in a
+        # comment, never measured.
+        self.apply_mask = self.matcher.apply_mask if apply_mask is None else apply_mask
+        self.name = name or matcher.name
+        self.input_scope = "crop+ctx" if context > 0 else "crop"
         self.prune = prune
         self._prep: dict[str, object] = {}
 
@@ -354,10 +386,10 @@ class PairwiseMatcherScorer(DistanceScorer):
         todo = [r for r in refs if r.instance_id not in self._prep]
         if not todo:
             return
-        insts = [data.instance_of(r) for r in todo]
+        insts = [data.instance_with_context(r, self.context, self.invert) for r in todo]
         # matcher.prepare works on CrackInstance lists and honours apply_mask
         preps = self.matcher.prepare(
-            [_maybe_mask(inst, self.matcher.apply_mask) for inst in insts]
+            [_maybe_mask(inst, self.apply_mask) for inst in insts]
         )
         for r, p in zip(todo, preps):
             self._prep[r.instance_id] = p
@@ -381,6 +413,24 @@ class PairwiseMatcherScorer(DistanceScorer):
         return D
 
 
+def _erase_crack(crop: np.ndarray, mask: np.ndarray, dilate_px: int = 5) -> np.ndarray:
+    """Remove the crack from a crop, leaving plausible wall behind.
+
+    The control this serves asks "is the method matching the crack, or the
+    wall patch it sits in?". Zeroing the crack pixels does NOT answer that:
+    it leaves a crack-SHAPED black region, so the morphology survives
+    perfectly as negative space and the control measures nothing. Inpainting
+    fills the region from surrounding wall texture, so the silhouette is
+    genuinely gone. The mask is dilated first so the crack's darker edge
+    pixels go too.
+    """
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (dilate_px, dilate_px))
+    m = cv2.dilate((mask > 0).astype(np.uint8), k)
+    if m.sum() == 0:
+        return crop
+    return cv2.inpaint(crop, m, 3, cv2.INPAINT_TELEA)
+
+
 def _maybe_mask(inst: CrackInstance, apply: bool) -> CrackInstance:
     if not apply:
         return inst
@@ -397,29 +447,53 @@ class ContextEmbeddingScorer(EmbeddingScorer):
     wall rather than from the representation itself.
     """
 
-    def __init__(self, name: str, embed_fn, context: float, input_scope: str):
+    def __init__(self, name: str, embed_fn, context: float, input_scope: str,
+                 invert: bool = False):
         super().__init__(name=name, embed_fn=embed_fn, input_scope=input_scope)
         self.context = context
+        self.invert = invert
 
     def prepare(self, refs, data):
         todo = [r for r in refs if r.instance_id not in self._cache]
         if not todo:
             return
-        embs = self.embed_fn([data.crop(r, context=self.context) for r in todo])
+        embs = self.embed_fn([data.crop(r, context=self.context, invert=self.invert)
+                              for r in todo])
         for r, e in zip(todo, embs):
             self._cache[r.instance_id] = e
 
 
-def parse_method_key(key: str) -> tuple[str, float]:
-    """'clip' -> ('clip', 0.0);  'clip@ctx1.5' -> ('clip', 1.5).
+def parse_method_key(key: str) -> tuple[str, float, bool | None, bool]:
+    """Parse 'name[@flag]...' into (name, context, apply_mask, invert).
 
-    The @ctx suffix requests the crop+ctx scope: expand the bbox by that
-    fraction on each side. '@ctx' alone means 1.0 (bbox doubled).
+        clip                    -> ('clip', 0.0, None,  False)
+        clip@ctx1.5             -> ('clip', 1.5, None,  False)
+        sift@nomask             -> ('sift', 0.0, False, False)
+        sift@ctx1@nomask        -> ('sift', 1.0, False, False)
+        clip@ctx2@nocrack       -> ('clip', 2.0, None,  True)
+
+    @ctxN    expand the bbox by N times its size on each side (crop+ctx
+             scope). '@ctx' alone means 1.0.
+    @nomask  let the method see the wall behind the crack.
+    @mask    force background to black.
+    @nocrack ERASE the crack and keep only its surroundings. This is a
+             control, not a method: if it scores well, the benchmark is
+             measuring wall-patch matching rather than crack re-ID.
     """
-    if "@ctx" not in key:
-        return key, 0.0
-    base, _, amount = key.partition("@ctx")
-    return base, float(amount) if amount else 1.0
+    parts = key.split("@")
+    base, context, apply_mask, invert = parts[0], 0.0, None, False
+    for flag in parts[1:]:
+        if flag.startswith("ctx"):
+            context = float(flag[3:]) if flag[3:] else 1.0
+        elif flag == "nomask":
+            apply_mask = False
+        elif flag == "mask":
+            apply_mask = True
+        elif flag == "nocrack":
+            invert = True
+        else:
+            raise ValueError(f"unknown flag '@{flag}' in method key {key!r}")
+    return base, context, apply_mask, invert
 
 
 def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
@@ -427,22 +501,39 @@ def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
     skipping any whose heavy dependency is not installed."""
     from crack_reid_baselines import REGISTRY
 
+    def _suffix(context, apply_mask, default_mask, invert=False):
+        bits = []
+        if context:
+            bits.append(f"+ctx{context:g}")
+        if apply_mask is not None and apply_mask != default_mask:
+            bits.append("+nomask" if not apply_mask else "+mask")
+        if invert:
+            bits.append("+NOCRACK")
+        return "".join(bits)
+
     scorers = []
     for raw in methods:
-        key, context = parse_method_key(raw)
+        key, context, apply_mask, invert = parse_method_key(raw)
         try:
             if key in ("sift", "orb", "superglue", "loftr"):
-                if context:
-                    print(f"  (@ctx not supported for '{key}', running tight crop)")
-                scorers.append(PairwiseMatcherScorer(REGISTRY[key](), prune=prune))
+                m = REGISTRY[key]()
+                scorers.append(PairwiseMatcherScorer(
+                    m, prune=prune, context=context, apply_mask=apply_mask,
+                    invert=invert,
+                    name=m.name + _suffix(context, apply_mask, m.apply_mask, invert),
+                ))
             elif key in ("deit", "vit", "clip", "osnet", "yolo"):
                 emb = REGISTRY[key]()
                 # wrap embed_batch as an embed_fn over BGR crops
                 fn = lambda crops, e=emb: _l2(e.embed_batch(crops))
-                if context:
+                if apply_mask is not None:
+                    print(f"  (@mask/@nomask has no effect on '{key}': "
+                          f"embedders always get the unmasked crop)")
+                if context or invert:
                     scorers.append(ContextEmbeddingScorer(
-                        name=f"{emb.name}+ctx{context:g}", embed_fn=fn,
-                        context=context, input_scope="crop+ctx",
+                        name=emb.name + _suffix(context, None, None, invert),
+                        embed_fn=fn, context=context, invert=invert,
+                        input_scope="crop+ctx" if context else "crop",
                     ))
                 else:
                     scorers.append(EmbeddingScorer(
