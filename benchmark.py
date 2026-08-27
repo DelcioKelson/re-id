@@ -127,12 +127,36 @@ class Dataset:
     """
 
     def __init__(self, root: str, min_area: int = 200, close_px: int = 5,
-                 point_tolerance: int = 25):
+                 point_tolerance: int = 25, min_sharpness: float | None = None):
         self.root = root
         self.min_area = min_area
         self.close_px = close_px
         self.point_tolerance = point_tolerance
         self.photos = {p.image_id: p for p in load_manifest(root)}
+
+        # CAPTURE ADMISSION. The claim is invariance to VIEWPOINT, and in
+        # this dataset defocus predicts registration failure roughly three
+        # times as strongly as elapsed baseline does -- so a claim made on
+        # unadmitted captures is not isolating the variable it names. The
+        # gate is applied HERE, once, before instances are extracted, so
+        # every method in the run sees exactly the same photographs; a
+        # filter applied per-method would be a different experiment for
+        # each row of the table. image_quality.py justifies the threshold
+        # and reports what it rejects.
+        self.admission = None
+        if min_sharpness:
+            from image_quality import admission_report, admissible
+            keep = admissible(root, gate=min_sharpness)
+            self.admission = admission_report(root, gate=min_sharpness)
+            dropped = [i for i in self.photos if i not in keep]
+            for i in dropped:
+                del self.photos[i]
+            print(f"capture admission at sharpness >= {min_sharpness:g}: "
+                  f"kept {len(self.photos)}, rejected {len(dropped)} "
+                  f"({self.admission['walls_kept']}/{self.admission['walls_total']} walls survive)")
+            if self.admission["walls_emptied"]:
+                print(f"  !! the gate empties {self.admission['walls_emptied']} entirely -- "
+                      f"say so in the paper, it is a scope condition, not a detail")
 
         self._img_cache: dict[str, np.ndarray] = {}
         self._mask_cache: dict[str, np.ndarray] = {}
@@ -602,6 +626,9 @@ class PrunedRegistrationScorer(RegistrationScorer):
 
         todo, done, t0 = int(valid.sum()), 0, time.time()
         n_pairs = n_reg_fail = n_cells_unregistered = 0
+        oof = getattr(self, "out_of_frame_counter", None)
+        if oof is not None:
+            oof["n"] = 0                 # per-matrix, not cumulative over splits
         for (a_id, b_id), cells in by_pair.items():
             H = self._homography(a_id, b_id, data)
             n_pairs += 1
@@ -620,16 +647,28 @@ class PrunedRegistrationScorer(RegistrationScorer):
         # rejection. Merging them into one `scored` column is what made
         # `scored = 0.34` read as "registration fails two thirds of the time"
         # when the true image-pair failure rate is what this records.
+        n_oof = int(oof["n"]) if oof is not None else 0
+        n_cells = int(valid.sum())
         self.coverage = {
             "image_pairs": n_pairs,
             "registration_failures": n_reg_fail,
             "registration_failure_rate": n_reg_fail / max(n_pairs, 1),
+            # The three-way split of everything `scored` used to hide.
+            "cells_total": n_cells,
             "cells_unregistered": n_cells_unregistered,
-            "cells_total": int(valid.sum()),
+            "cells_out_of_frame": n_oof,
+            "cells_scored": n_cells - n_cells_unregistered - n_oof,
+            "frac_unregistered": n_cells_unregistered / max(n_cells, 1),
+            "frac_out_of_frame": n_oof / max(n_cells, 1),
+            "frac_scored": (n_cells - n_cells_unregistered - n_oof) / max(n_cells, 1),
         }
         if n_pairs:
+            c = self.coverage
             print(f"    {self.name}: registered {n_pairs - n_reg_fail}/{n_pairs} "
-                  f"image pairs ({1 - n_reg_fail / n_pairs:.0%})")
+                  f"image pairs ({1 - n_reg_fail / n_pairs:.0%});  cells: "
+                  f"{c['frac_scored']:.0%} scored / "
+                  f"{c['frac_out_of_frame']:.0%} out-of-frame (a confident 'not here') / "
+                  f"{c['frac_unregistered']:.0%} unregistered")
         return d
 
 
@@ -652,6 +691,15 @@ def _build_registration_scorer(data: Dataset, prune: bool = True):
     # handed registration an advantage disguised as a weakness.
     OUT_OF_FRAME = 1e6            # finite: ranks last, but IS an answer
 
+    # Counted, not merely distinguished. `scored` collapsed three events
+    # that mean opposite things, and a reviewer reading "scored = 0.50"
+    # next to "below 1.00 is being ranked on an easier subset" stops
+    # there. The three are: the images would not register (a non-answer);
+    # they registered and the crack projects outside the gallery photo (a
+    # confident geometric rejection no crop method can produce at all);
+    # and a real scored comparison.
+    out_of_frame = {"n": 0}
+
     def chamfer_fn(q_ref, g_ref, H, _data):
         # warp the query instance's mask into gallery frame, then Chamfer
         inst_q = data.instance_of(q_ref)
@@ -664,6 +712,7 @@ def _build_registration_scorer(data: Dataset, prune: bool = True):
         warped = cv2.warpPerspective(full_q, H, (wb, hb), flags=cv2.INTER_NEAREST)
         ys, xs = np.nonzero(warped)
         if len(xs) == 0:
+            out_of_frame["n"] += 1
             return OUT_OF_FRAME
         from crack_registration_reid import CrackInstance as RegInst
         q_w = RegInst(label=0, pixels=np.stack([xs, ys], 1),
@@ -680,7 +729,9 @@ def _build_registration_scorer(data: Dataset, prune: bool = True):
                          mask=(gfull > 0).astype(np.uint8))
         return symmetric_chamfer(q_w, g_full, (hb, wb))
 
-    return PrunedRegistrationScorer(register_fn, chamfer_fn, prune=prune)
+    scorer = PrunedRegistrationScorer(register_fn, chamfer_fn, prune=prune)
+    scorer.out_of_frame_counter = out_of_frame
+    return scorer
 
 
 # ===========================================================================
@@ -721,6 +772,11 @@ def score_and_save(scorer, queries, gallery, data, out_dir: str, split: str):
     d = os.path.join(out_dir, "scores")
     os.makedirs(d, exist_ok=True)
     path = os.path.join(d, f"{_slug(scorer.name)}__{split}.npz")
+    # The three-way split of `scored`, carried with the matrix rather than
+    # recomputed: only the scorer knows which unscored cells were failed
+    # registrations and which were confident out-of-frame rejections, and
+    # that distinction is invisible in the matrix itself.
+    coverage = getattr(scorer, "coverage", None)
     np.savez_compressed(
         path,
         scores=scores,
@@ -729,6 +785,7 @@ def score_and_save(scorer, queries, gallery, data, out_dir: str, split: str):
         split=np.array(split),
         prepare_seconds=np.array(t_prepare),
         score_seconds=np.array(t_score),
+        coverage_json=np.array(json.dumps(coverage or {})),
         **_ref_arrays("query", queries),
         **_ref_arrays("gallery", gallery),
     )
@@ -753,13 +810,35 @@ def _threshold_from_scores(scores, queries, gallery) -> float:
 # 5. Driver
 # ===========================================================================
 
+# The two controls that decide whether the headline comparison means what
+# it says. registration+chamfer is full-image; every baseline is a thin
+# crop -- so the table currently confounds the matching MECHANISM with the
+# field of view it is given. Both halves of the control were already
+# implemented and neither had ever been run:
+#
+#   @ctx1     crop+ctx scope: the embedder sees the crack AND the wall
+#             around it. If this closes most of the gap, the paper's
+#             contribution is context, and it has to say so.
+#   @nocrack  the crack is ERASED and its surroundings kept. If a
+#             crop+ctx embedder still retrieves the right identity with
+#             the crack removed, the benchmark is being solved by
+#             background texture and not by crack identity at all.
+#
+# A hostile reviewer will ask for exactly these two. Running them first is
+# much better than being asked.
+CONTROLS = ["osnet@ctx1", "osnet@ctx1@nocrack", "clip@ctx1", "clip@ctx1@nocrack"]
+
+DEFAULT_METHODS = ["sift", "orb", "loftr", "superglue",
+                   "deit", "vit", "clip", "osnet", "yolo",
+                   "shape", "registration"]
+
+
 def run(root: str, methods: list[str] | None = None,
         out_dir: str = "benchmark_out", prune: bool = True, seed: int = 0,
-        min_frame_gap: int = 0, min_area: int = 200, close_px: int = 5):
+        min_frame_gap: int = 0, min_area: int = 200, close_px: int = 5,
+        min_sharpness: float | None = None, controls: bool = False):
     PROTOCOL["min_frame_gap"] = int(min_frame_gap)
-    methods = methods or ["sift", "orb", "loftr", "superglue",
-                          "deit", "vit", "clip", "osnet", "yolo",
-                          "shape", "registration"]
+    methods = methods or (DEFAULT_METHODS + (CONTROLS if controls else []))
     os.makedirs(out_dir, exist_ok=True)
 
     # Measured, not assumed: registration's USAC_MAGSAC returns DIFFERENT
@@ -772,8 +851,12 @@ def run(root: str, methods: list[str] | None = None,
     cv2.setRNGSeed(seed)
     np.random.seed(seed)
 
-    data = Dataset(root, min_area=min_area, close_px=close_px)
+    data = Dataset(root, min_area=min_area, close_px=close_px,
+                   min_sharpness=min_sharpness)
     print(data.labelled_summary())
+    if data.admission:
+        with open(os.path.join(out_dir, "admission.json"), "w") as f:
+            json.dump(data.admission, f, indent=1)
 
     splits = _load_splits(root)
     val_walls = set(splits.get("val", []))
@@ -801,6 +884,19 @@ def run(root: str, methods: list[str] | None = None,
             t_scores, t_prep, t_sc = score_and_save(scorer, tq, tg, data, out_dir, "test")
             res = evaluate(scorer, tq, tg, data, threshold=thr,
                            scores=t_scores, timing=(t_prep, t_sc), **PROTOCOL)
+            if getattr(scorer, "coverage", None):
+                res["coverage"] = scorer.coverage
+            # S6: registration cost is per IMAGE PAIR, not per crack -- one
+            # homography serves every crack in that pair -- so the honest
+            # practicality figure scales with the number of photographs
+            # while an embedder's scales with the number of instances.
+            # Reporting only seconds-per-query hides the amortisation the
+            # method is entitled to.
+            n_img_pairs = (scorer.coverage or {}).get("image_pairs") \
+                if getattr(scorer, "coverage", None) else None
+            if n_img_pairs:
+                res["seconds_per_image_pair"] = res["total_seconds"] / n_img_pairs
+            res["seconds_per_query"] = res["total_seconds"] / max(len(tq), 1)
             results.append(res)
             _dump_curves(res, out_dir)
         except ImportError as e:
@@ -822,7 +918,8 @@ def run(root: str, methods: list[str] | None = None,
 
 def run_lowo(root: str, methods: list[str] | None = None,
              out_dir: str = "benchmark_out", prune: bool = True, seed: int = 0,
-             min_frame_gap: int = 0, min_area: int = 200, close_px: int = 5):
+             min_frame_gap: int = 0, min_area: int = 200, close_px: int = 5,
+             min_sharpness: float | None = None, controls: bool = False):
     """Leave-one-wall-out over every wall, instead of a fixed val/test split.
 
     The fixed split wastes the data and reports the weaker half: validation
@@ -841,8 +938,14 @@ def run_lowo(root: str, methods: list[str] | None = None,
     cv2.setRNGSeed(seed)
     np.random.seed(seed)
 
-    data = Dataset(root, min_area=min_area, close_px=close_px)
+    data = Dataset(root, min_area=min_area, close_px=close_px,
+                   min_sharpness=min_sharpness)
     print(data.labelled_summary())
+    if data.admission:
+        os.makedirs(out_dir, exist_ok=True)
+        with open(os.path.join(out_dir, "admission.json"), "w") as f:
+            json.dump(data.admission, f, indent=1)
+    methods = methods or (DEFAULT_METHODS + (CONTROLS if controls else []))
     walls = sorted({r.wall_id for r in data.refs})
     print(f"\nLeave-one-wall-out over {len(walls)} walls")
 
@@ -855,7 +958,7 @@ def run_lowo(root: str, methods: list[str] | None = None,
             continue
         fold_dir = os.path.join(out_dir, "lowo", held)
         os.makedirs(fold_dir, exist_ok=True)
-        scorers = build_scorers(methods or ["sift"], data, prune=prune)
+        scorers = build_scorers(methods, data, prune=prune)
         for scorer in scorers:
             try:
                 thr = None
@@ -923,6 +1026,17 @@ if __name__ == "__main__":
                          "is not merged; a fragmented crack becomes several "
                          "identities instead. Raise it, or merge fragments at "
                          "label time.")
+    ap.add_argument("--min-sharpness", type=float, default=None,
+                    help="CAPTURE ADMISSION GATE: drop photos whose "
+                         "variance-of-Laplacian sharpness (quarter-scale grey) is "
+                         "below this, before anything is extracted, so every method "
+                         "sees the same admitted photographs. Justify the value with "
+                         "`python image_quality.py <root> --sweep` and report the "
+                         "rejection count; it is a deployment rule, not data cleaning.")
+    ap.add_argument("--controls", action="store_true",
+                    help="also run the crop+ctx and crack-erased controls, which "
+                         "decide whether the full-image-vs-crop comparison measures "
+                         "the method or the field of view")
     ap.add_argument("--lowo", action="store_true",
                     help="leave-one-wall-out over all walls instead of the fixed "
                          "val/test split, so every wall contributes")
@@ -933,5 +1047,6 @@ if __name__ == "__main__":
     driver = run_lowo if args.lowo else run
     driver(args.root, methods=args.methods, out_dir=args.out,
            prune=not args.no_prune, seed=args.seed,
+           min_sharpness=args.min_sharpness, controls=args.controls,
            min_frame_gap=args.min_frame_gap,
            min_area=args.min_area, close_px=args.close_px)

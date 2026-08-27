@@ -75,6 +75,9 @@ class ScoreRun:
     query: dict
     gallery: dict
     path: str
+    #: the three-way split of `scored`, saved alongside the matrix by
+    #: benchmark.py. Empty for methods that score every cell.
+    coverage: dict | None = None
 
     @property
     def key(self) -> str:
@@ -102,6 +105,7 @@ def load_runs(out_dir: str, split: str | None = None) -> list[ScoreRun]:
             query=_cols(z, "query"),
             gallery=_cols(z, "gallery"),
             path=path,
+            coverage=json.loads(str(z["coverage_json"])) if "coverage_json" in z else None,
         )
         if split and r.split != split:
             continue
@@ -378,12 +382,31 @@ def frame_gap_sweep(out_dir: str, split: str = "test",
                     gaps=(0, 1, 2, 3)) -> dict:
     """R@1 / mAP for every method as adjacent frames are excluded.
 
-    This is the answer to the benchmark's biggest confound. Each wall was
-    captured in a single continuous pass, and for 100% of answerable
-    queries the nearest correct answer is the immediately adjacent frame.
-    Excluding a widening neighbourhood turns that into a difficulty axis,
-    and a curve of R@1 against baseline separation is a stronger result
-    than any single number.
+    WHAT THIS IS: a near-duplicate control over CAPTURE SEPARATION. Each
+    wall was shot in one continuous pass and for 100% of answerable
+    queries the nearest correct answer is the immediately adjacent frame,
+    so gap 0 measures near-duplicate retrieval across roughly three
+    seconds. Widening the excluded neighbourhood shows how much of the
+    headline number is near-duplicate matching. That is worth reporting.
+
+    WHAT THIS IS NOT: the viewpoint axis. Two earlier turns of review
+    called this the experiment that decides the paper; that was wrong.
+    Frame index measures elapsed capture order, and over the pairs where
+    geometry can be measured it tracks in-plane rotation while leaving
+    scale and perspective tilt essentially uncorrelated -- so a frame-gap
+    sweep is a CAMERA-ROLL sweep, and roll is the one viewpoint component
+    a homography absorbs exactly and any rotation-invariant descriptor
+    handles. Reporting a flat curve here and calling it viewpoint
+    invariance would be demonstrating almost nothing while appearing to
+    demonstrate the paper's central claim.
+
+    `python viewpoint.py <root> --out <dir> --report-only` prints the three
+    rank correlations measured on THIS dataset. Quote those, not a
+    remembered figure.
+
+    For the viewpoint axis use viewpoint_sweep() below, which stratifies
+    on a covariate measured by a front end the scoring pipeline does not
+    use.
     """
     runs = load_runs(out_dir, split=split)
     table = {}
@@ -400,9 +423,13 @@ def frame_gap_sweep(out_dir: str, split: str = "test",
 
 def format_frame_gap(table: dict, gaps=(0, 1, 2, 3)) -> str:
     L = ["", "=" * 92,
-         "FRAME-GAP SWEEP -- gallery photos within +/-N frames of the query are excluded",
-         "gap 0 is the published setting; every query's nearest correct answer is at gap 1,",
-         "so gap 0 measures near-duplicate retrieval (~3 s apart), not re-identification.",
+         "CAPTURE-SEPARATION SWEEP (near-duplicate control, NOT the viewpoint axis)",
+         "gallery photos within +/-N frames of the query are excluded. gap 0 is the published",
+         "setting; every query's nearest correct answer is at gap 1, so gap 0 measures",
+         "near-duplicate retrieval (~3 s apart), not re-identification.",
+         "Frame gap tracks camera ROLL and not scale or tilt, so it is not a viewpoint",
+         "stratifier -- see --viewpoint-sweep, and `viewpoint.py --report-only` for the",
+         "three measured rank correlations.",
          "=" * 92]
     hdr = f"{'method':<24}" + "".join(f"{'gap' + str(k):>18}" for k in gaps)
     L += [hdr, "-" * len(hdr)]
@@ -411,6 +438,149 @@ def format_frame_gap(table: dict, gaps=(0, 1, 2, 3)) -> str:
         L.append(f"{meth:<24}{cells}")
     L.append("")
     L.append("cells are R@1 / number of queries that still have an answer at that gap.")
+    return "\n".join(L)
+
+
+# ===========================================================================
+# Viewpoint stratification  (S2: the axis the paper actually claims)
+# ===========================================================================
+
+def _pair_key(a: str, b: str) -> str:
+    return f"{a}|{b}" if a <= b else f"{b}|{a}"
+
+
+def viewpoint_sweep(out_dir: str, split: str = "test",
+                    key: str = "scale_change",
+                    bins: tuple = (1.0, 1.25, 1.6, 2.5, 1e9)) -> dict:
+    """R@1 / mAP per method, stratified by MEASURED viewpoint change.
+
+    The covariate comes from viewpoint.py, which estimates the pairwise
+    geometry with front ends the scoring pipeline does not use, so a cell
+    exists for pairs registration cannot score. That is what makes this a
+    stratification rather than a restatement of where the method works.
+
+    Cells are dropped, not filled, where no covariate could be measured --
+    and the report says how many pairs that was. A stratifier that quietly
+    keeps only its own successes is the circularity this replaces.
+    """
+    from viewpoint import load
+    pairs = load(out_dir)
+    cov = {}
+    for k, rec in pairs.items():
+        vp = rec.get("viewpoint", {})
+        if vp.get("ok") and np.isfinite(vp.get(key, np.nan)):
+            cov[k] = float(vp[key])
+
+    runs = load_runs(out_dir, split=split)
+    edges = list(bins)
+    table, coverage = {}, {}
+    for r in runs:
+        valid, relevant = masks_for(r)
+        qi, gi = r.query["image_id"], r.gallery["image_id"]
+        # per-cell covariate, NaN where the pair has none
+        cvals = np.full(valid.shape, np.nan)
+        for i in range(valid.shape[0]):
+            for j in np.nonzero(valid[i])[0]:
+                v = cov.get(_pair_key(str(qi[i]), str(gi[j])))
+                if v is not None:
+                    cvals[i, j] = v
+        have = np.isfinite(cvals) & valid
+        coverage = {"pairs_with_covariate": int(have.sum()),
+                    "pairs_valid": int(valid.sum()),
+                    "fraction": float(have.sum() / max(valid.sum(), 1))}
+        row = []
+        for lo, hi in zip(edges[:-1], edges[1:]):
+            sel = valid & np.isfinite(cvals) & (cvals >= lo) & (cvals < hi)
+            if not sel.any():
+                row.append({"lo": lo, "hi": hi, "n_queries": 0,
+                            "rank1": float("nan"), "mAP": float("nan"),
+                            "n_pairs": 0})
+                continue
+            m = _metrics(r.scores, relevant, sel)
+            row.append({"lo": lo, "hi": hi, "n_pairs": int(sel.sum()), **{
+                k2: m[k2] for k2 in ("n_queries", "rank1", "mAP")}})
+        table[r.method] = row
+    return {"key": key, "table": table, "coverage": coverage}
+
+
+def format_viewpoint(sweep: dict) -> str:
+    key = sweep["key"]
+    cov = sweep.get("coverage", {})
+    L = ["", "=" * 100,
+         f"VIEWPOINT SWEEP on {key} -- a covariate measured by a front end the scoring",
+         "pipeline does not use (viewpoint.py), so cells exist where registration fails.",
+         f"covariate available on {cov.get('pairs_with_covariate', 0)}/"
+         f"{cov.get('pairs_valid', 0)} valid pairs ({cov.get('fraction', 0):.0%})",
+         "=" * 100]
+    any_row = next(iter(sweep["table"].values()), [])
+
+    def band(b):
+        hi = "inf" if b["hi"] >= 1e8 else f"{b['hi']:g}"
+        return f"[{b['lo']:g},{hi})"
+
+    hdr = f"{'method':<24}" + "".join(f"{band(b):>18}" for b in any_row)
+    L += [hdr, "-" * max(len(hdr), 1)]
+    for meth, row in sorted(sweep["table"].items(),
+                            key=lambda kv: -max((c["mAP"] for c in kv[1]
+                                                 if np.isfinite(c["mAP"])), default=0)):
+        cells = "".join(
+            (f"{c['rank1']:>9.3f}/{c['n_queries']:<8d}" if c["n_queries"]
+             else f"{'-':>18}") for c in row)
+        L.append(f"{meth:<24}{cells}")
+    L += ["", "cells are R@1 / queries with an answer inside that band of viewpoint change.",
+          "A FLAT row is the invariance claim. A row that decays names the envelope's edge.",
+          "Empty cells mean the dataset does not cover that band -- which is itself a result,",
+          "and the reason for re-shooting a subset at marked distances and angles."]
+    return "\n".join(L)
+
+
+# ===========================================================================
+# Per-wall coverage  (S4: coverage is a property of the surface)
+# ===========================================================================
+
+def per_wall_coverage(out_dir: str, split: str = "test") -> dict:
+    """Scored-pair rate per wall per method.
+
+    Registration failures are not distributed at random -- they are
+    concentrated on the walls where masking the crack out of keypoint
+    detection leaves no features, and on the walls shot out of focus. A
+    query-level bootstrap therefore understates the uncertainty badly, and
+    a single `scored` number hides a scope condition. Both are fixed by
+    printing the breakdown.
+    """
+    runs = load_runs(out_dir, split=split)
+    out = {}
+    for r in runs:
+        valid, _ = masks_for(r)
+        finite = np.isfinite(r.scores)
+        rows = {}
+        for w in sorted(set(map(str, r.query["wall_id"]))):
+            sel = valid & (r.query["wall_id"][:, None] == w)
+            n = int(sel.sum())
+            rows[w] = {"pairs": n,
+                       "scored": int((sel & finite).sum()),
+                       "rate": float((sel & finite).sum() / n) if n else float("nan")}
+        out[r.method] = rows
+    return out
+
+
+def format_per_wall_coverage(table: dict) -> str:
+    walls = sorted({w for rows in table.values() for w in rows})
+    L = ["", "=" * 100,
+         "COVERAGE BY WALL -- where each method can answer at all",
+         "=" * 100,
+         f"{'method':<24}" + "".join(f"{w[-2:]:>6}" for w in walls) + f"{'all':>8}"]
+    L.append("-" * len(L[-1]))
+    for meth, rows in sorted(table.items(),
+                             key=lambda kv: -sum(v["scored"] for v in kv[1].values())):
+        cells = "".join((f"{rows[w]['rate']:>6.2f}" if w in rows and rows[w]["pairs"]
+                         else f"{'-':>6}") for w in walls)
+        tot_p = sum(v["pairs"] for v in rows.values())
+        tot_s = sum(v["scored"] for v in rows.values())
+        L.append(f"{meth:<24}{cells}{tot_s / max(tot_p, 1):>8.2f}")
+    L += ["", "cells are the fraction of that wall's valid pairs the method scored.",
+          "A method whose zeros cluster on particular walls has a SCOPE CONDITION, not noise:",
+          "resample walls (CI (wall) above), not queries, and state the condition in the paper."]
     return "\n".join(L)
 
 
@@ -519,6 +689,13 @@ def analyse(out_dir: str, split: str = "test", n_boot: int = 1000,
         m["method"] = r.method
         m["input_scope"] = r.input_scope
         m["total_seconds"] = r.prepare_seconds + r.score_seconds
+        m["coverage"] = r.coverage or {}
+        # S6: registration's cost is per IMAGE PAIR (one homography serves
+        # every crack in that pair) while an embedder's is per instance,
+        # so seconds-per-query alone reports the amortisation backwards.
+        if (r.coverage or {}).get("image_pairs"):
+            m["seconds_per_image_pair"] = m["total_seconds"] / r.coverage["image_pairs"]
+        m["seconds_per_query"] = m["total_seconds"] / max(m["n_queries"], 1)
         if n_boot:
             m["ci"] = bootstrap_ci(r.scores, relevant, valid,
                                    n_boot=n_boot, seed=seed)
@@ -604,6 +781,41 @@ def format_report(rep: dict) -> str:
     L.append("honest unit of replication here. Quote the wall-level interval in the paper --")
     L.append("if two methods' wall-level intervals overlap, the dataset cannot separate them.")
 
+    breakdown = [r for r in rep["full"] if r.get("coverage", {}).get("cells_total")]
+    if breakdown:
+        L.append("\n" + "=" * 100)
+        L.append("WHAT `scored` IS MADE OF -- three events a single number was hiding")
+        L.append("=" * 100)
+        hdr_c = (f"{'method':<24}{'img pairs':>10}{'registered':>12}"
+                 f"{'scored':>9}{'out-of-frame':>14}{'unregistered':>14}")
+        L.append(hdr_c)
+        L.append("-" * len(hdr_c))
+        for r in breakdown:
+            c = r["coverage"]
+            reg = c["image_pairs"] - c["registration_failures"]
+            L.append(f"{r['method']:<24}{c['image_pairs']:>10d}"
+                     f"{reg:>7d} ({1 - c['registration_failure_rate']:.0%})"
+                     f"{c.get('frac_scored', float('nan')):>9.2f}"
+                     f"{c.get('frac_out_of_frame', float('nan')):>14.2f}"
+                     f"{c.get('frac_unregistered', float('nan')):>14.2f}")
+        L.append("")
+        L.append("out-of-frame = the images registered and the query crack projects OUTSIDE the")
+        L.append("  gallery photo: a confident, geometrically grounded 'not in this photo' that no")
+        L.append("  crop-scope method can produce at all. It is an ANSWER, and counting it as a")
+        L.append("  non-answer is what made `scored` read as a weakness.")
+        L.append("unregistered = a genuine non-answer. The pair takes the fail distance and ranks")
+        L.append("  last; the query is still counted, so this is a penalty, not an easier subset.")
+
+    cost = [r for r in rep["full"] if "seconds_per_image_pair" in r]
+    if cost:
+        L.append("\nCOST, AMORTISED  (S6: one homography serves every crack in an image pair)")
+        for r in sorted(rep["full"], key=lambda x: x.get("seconds_per_query", 0)):
+            per_pair = (f"{r['seconds_per_image_pair']:.2f} s/image-pair"
+                        if "seconds_per_image_pair" in r else "-- (cost is per instance)")
+            L.append(f"   {r['method']:<24}{r.get('seconds_per_query', 0):>8.2f} s/query   {per_pair}")
+        L.append("   On a wall with many defects the per-query figure falls while an embedder's")
+        L.append("   does not. Report both, and state the crossover.")
+
     if "matched" in rep:
         cov = rep["matched_coverage"]
         L.append("\n" + "=" * 100)
@@ -672,8 +884,18 @@ if __name__ == "__main__":
                     help="bootstrap resamples for CIs; 0 disables")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--frame-gap-sweep", action="store_true",
-                    help="report R@1/mAP as adjacent frames are excluded (0..3). "
-                         "Free: works off the saved matrices.")
+                    help="near-duplicate control: R@1/mAP as adjacent frames are "
+                         "excluded (0..3). Free: works off the saved matrices. NOT the "
+                         "viewpoint axis -- frame gap tracks camera roll only.")
+    ap.add_argument("--viewpoint-sweep", action="store_true",
+                    help="THE viewpoint axis: stratify by measured scale change, using "
+                         "the method-independent covariate from viewpoint.py")
+    ap.add_argument("--viewpoint-key", default="scale_change",
+                    choices=["scale_change", "abs_rotation_deg", "tilt_deg", "projectivity"],
+                    help="which viewpoint component to stratify on")
+    ap.add_argument("--per-wall-coverage", action="store_true",
+                    help="scored-pair rate per wall per method -- shows whether partial "
+                         "coverage is noise or a scope condition")
     ap.add_argument("--fuse", nargs=2, metavar=("PRIMARY", "BACKUP"),
                     help="cascade two saved methods by name and report the result")
     ap.add_argument("--surfaces", metavar="WALLS_CSV",
@@ -691,6 +913,19 @@ if __name__ == "__main__":
         tbl = frame_gap_sweep(args.out_dir, split=args.split)
         text += "\n" + format_frame_gap(tbl)
         rep["frame_gap_sweep"] = tbl
+
+    if args.viewpoint_sweep:
+        try:
+            vs = viewpoint_sweep(args.out_dir, split=args.split, key=args.viewpoint_key)
+            text += "\n" + format_viewpoint(vs)
+            rep["viewpoint_sweep"] = vs
+        except SystemExit as e:
+            text += f"\n\n(viewpoint sweep skipped: {e})"
+
+    if args.per_wall_coverage:
+        pwc = per_wall_coverage(args.out_dir, split=args.split)
+        text += "\n" + format_per_wall_coverage(pwc)
+        rep["per_wall_coverage"] = pwc
 
     if args.surfaces:
         smap = load_surface_map(args.surfaces)

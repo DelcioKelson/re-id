@@ -445,6 +445,31 @@ def pair_pr_curve(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
             "recall": recall, "f1": f1, "best_f1": float(max(f1))}
 
 
+def pair_f1_at(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
+               threshold: float) -> float:
+    """Pair F1 at ONE given threshold -- the deployable counterpart of
+    pair_pr_curve's best_f1.
+
+    best_f1 maximises over thresholds chosen on the matrix being reported.
+    Quoting it beside a validation-calibrated assignment F1 invites the
+    reader to compare an oracle with an honest number. This evaluates the
+    same curve at the threshold calibration actually chose.
+    """
+    s = scores[valid]
+    y = relevant[valid]
+    finite = np.isfinite(s)
+    s, y = s[finite], y[finite]
+    if len(s) == 0 or not y.any():
+        return 0.0
+    pred = s >= threshold
+    tp = int((pred & y).sum())
+    fp = int((pred & ~y).sum())
+    fn = int((~pred & y).sum())
+    p = tp / (tp + fp) if (tp + fp) else 1.0
+    r = tp / (tp + fn) if (tp + fn) else 0.0
+    return float(2 * p * r / (p + r)) if (p + r) else 0.0
+
+
 # ===========================================================================
 # One-to-one assignment (the operational setting)
 # ===========================================================================
@@ -573,9 +598,11 @@ def evaluate(scorer: ReIDScorer, queries: list[InstanceRef], gallery: list[Insta
     openset = open_set_curve(scores, relevant, valid)
     pr = pair_pr_curve(scores, relevant, valid)
 
+    threshold_source = "validation"
     if threshold is None:                       # fall back to best-F1 operating point
         idx = int(np.argmax(pr["f1"])) if pr["f1"] else 0
         threshold = pr["thresholds"][idx] if pr["thresholds"] else 0.0
+        threshold_source = "TEST (oracle)"
 
     assign = assignment_accuracy(scores, relevant, valid, threshold,
                                  queries=queries, gallery=gallery)
@@ -586,9 +613,18 @@ def evaluate(scorer: ReIDScorer, queries: list[InstanceRef], gallery: list[Insta
         "input_scope": scorer.input_scope,
         "closed_set": asdict(closed),
         "open_set_dir_at_far10": dir_at_far(openset, 0.1),
+        # pair_best_f1 is max(F1) swept over thresholds ON THE TEST MATRIX:
+        # the best operating point achievable in hindsight, which no
+        # deployment can pick. It sits in a table of honestly calibrated
+        # numbers and must be labelled as the oracle it is -- hence the
+        # separate pair_f1_at_threshold, which uses the SAME
+        # validation-calibrated threshold as the assignment metric and is
+        # the number a deployed system would actually get.
         "pair_best_f1": pr.get("best_f1", 0.0),
+        "pair_f1_at_threshold": pair_f1_at(scores, relevant, valid, threshold),
         "assignment": assign,
         "threshold": float(threshold),
+        "threshold_source": threshold_source,
         "scoreable_pair_rate": float(np.isfinite(scores[valid]).mean()) if n_pairs else 0.0,
         "prepare_seconds": t_prepare,
         "score_seconds": t_score,
@@ -625,7 +661,8 @@ def calibrate_threshold(scorer: ReIDScorer, val_queries, val_gallery, data, **pr
 def results_table(results: list[dict]) -> str:
     """Plain-text table, in roughly the shape the paper's main table needs."""
     hdr = (f"{'method':<24}{'scope':<12}{'nQ':>5}{'R@1':>7}{'R@5':>7}{'mAP':>7}"
-           f"{'DIR@FAR.1':>11}{'pairF1':>8}{'assF1':>8}{'scored':>8}{'total_s':>9}")
+           f"{'DIR@FAR.1':>11}{'pairF1*':>9}{'pairF1@v':>9}{'assF1':>8}"
+           f"{'scored':>8}{'total_s':>9}")
     lines = [hdr, "-" * len(hdr)]
     for r in sorted(results, key=lambda x: -x["closed_set"]["mAP"]):
         lines.append(
@@ -633,15 +670,30 @@ def results_table(results: list[dict]) -> str:
             f"{r['closed_set']['n_queries']:>5d}"
             f"{r['closed_set']['rank1']:>7.3f}{r['closed_set']['rank5']:>7.3f}"
             f"{r['closed_set']['mAP']:>7.3f}{r['open_set_dir_at_far10']:>11.3f}"
-            f"{r['pair_best_f1']:>8.3f}{r['assignment']['f1']:>8.3f}"
+            f"{r['pair_best_f1']:>9.3f}"
+            f"{r.get('pair_f1_at_threshold', float('nan')):>9.3f}"
+            f"{r['assignment']['f1']:>8.3f}"
             f"{r['scoreable_pair_rate']:>8.2f}"
             f"{r.get('total_seconds', r.get('score_seconds', 0.0)):>9.1f}"
         )
     lines.append("")
     lines.append("nQ = queries with a correct answer (the only ones R@1/mAP average over).")
-    lines.append("scored = fraction of valid pairs the method returned a finite score for;")
-    lines.append("         a method below 1.00 is being ranked on an easier subset than the rest.")
+    lines.append("pairF1*  = ORACLE: max F1 swept over thresholds on THIS (test) matrix. It is an")
+    lines.append("           upper bound no deployment can pick, and is not comparable with assF1.")
+    lines.append("pairF1@v = the same curve read at the threshold calibrated on VALIDATION -- the")
+    lines.append("           number a deployed system gets. Quote this one; quote pairF1* as a ceiling.")
+    lines.append("assF1  = one-to-one assignment F1 at the validation-calibrated threshold.")
+    lines.append("scored = fraction of valid pairs the method returned a finite score for.")
+    lines.append("         Below 1.00 is a PENALTY, not an easier subset: an unscored pair takes the")
+    lines.append("         fail distance, ranks last, and its query is still counted. See the")
+    lines.append("         coverage breakdown in results.json for what the missing fraction is made of.")
     lines.append("total_s = prepare + score. Embedding methods do all their work in prepare.")
+    srcs = {r.get("threshold_source") for r in results}
+    if "TEST (oracle)" in srcs:
+        oracle = [r["method"] for r in results if r.get("threshold_source") == "TEST (oracle)"]
+        lines.append("")
+        lines.append(f"!! no validation threshold for {oracle}: their assF1 and pairF1@v are")
+        lines.append("   test-tuned and optimistic. Fix the val split before quoting them.")
     return "\n".join(lines)
 
 

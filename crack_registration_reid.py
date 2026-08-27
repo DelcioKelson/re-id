@@ -98,9 +98,10 @@ MIN_WALL_KEYPOINTS = 300      # below this, the wall has no texture to key on
 
 
 def _ecc_homography(gray_a: np.ndarray, gray_b: np.ndarray,
-                    levels=(160, 320, 640), iters: int = 300,
+                    levels=(320, 640, 1280), iters: int = 300,
                     eps: float = 1e-6) -> tuple[np.ndarray | None, float]:
-    """Pyramid ECC alignment: coarse Euclidean, then homography.
+    """Pyramid ECC alignment: coarse translation, then Euclidean, then
+    homography.
 
     Direct/photometric rather than feature-based, so it aligns on smooth
     shading gradients -- exactly the signal that survives on a flat
@@ -113,37 +114,68 @@ def _ecc_homography(gray_a: np.ndarray, gray_b: np.ndarray,
     aligns the SCENE well without necessarily being accurate to hairline
     precision -- treat its homographies as coarser than a RANSAC fit and
     set downstream tolerances from `inlier_rms` accordingly.
+
+    TWO FIXES, both of which had made this function a no-op:
+
+      * A LEVEL THAT FAILS NO LONGER ABORTS THE PYRAMID. findTransformECC
+        raises cv2.error on non-convergence, and the old code returned
+        (None, 0.0) the first time any level did. Since the coarsest
+        level was 160 px on the long side -- 160x120 after a sigma-1.2
+        blur, which carries almost no gradient -- it raised on EVERY pair
+        in this dataset, so `ecc_or_fail` reported "ECC corr=0.00"
+        everywhere and the fallback that the two smooth-plaster walls
+        depend on never actually ran. Each level now keeps the best warp
+        found so far and moves on, and only a pyramid where NO level
+        converged returns None.
+
+      * The pyramid starts at 320 px and opens with MOTION_TRANSLATION.
+        Measured on wall12_s1_0001->0002: 160 px does not converge in
+        either mode, 320 px converges at cc 0.29 (translation) / 0.42
+        (Euclidean), 640 px at 0.47. Coarse-to-fine needs its coarsest
+        level to be solvable, and translation is the model most likely to
+        solve it from an identity start.
+
+    Returns the homography and the correlation of the LAST level that
+    converged, which is the number `register_images` thresholds on.
     """
-    def prep(g, width):
-        s = width / max(g.shape[:2])
+    def prep(g, long_side):
+        s = long_side / max(g.shape[:2])
         g = cv2.resize(g, None, fx=s, fy=s, interpolation=cv2.INTER_AREA)
         g = cv2.createCLAHE(2.0, (8, 8)).apply(g)
         return cv2.GaussianBlur(g, (0, 0), 1.2).astype(np.float32) / 255.0, s
 
+    modes = [cv2.MOTION_TRANSLATION, cv2.MOTION_EUCLIDEAN]
     W = np.eye(3, dtype=np.float32)
-    prev_s, cc = None, 0.0
-    for li, width in enumerate(levels):
-        A, sa = prep(gray_a, width)
-        B, _ = prep(gray_b, width)
+    prev_s, cc, any_ok = None, 0.0, False
+    for li, long_side in enumerate(levels):
+        A, sa = prep(gray_a, long_side)
+        B, _ = prep(gray_b, long_side)
         if prev_s is not None:                       # rescale warp to this level
             r = sa / prev_s
             S = np.diag([r, r, 1]).astype(np.float32)
             W = (S @ W @ np.linalg.inv(S)).astype(np.float32)
             W /= W[2, 2]
-        mode = cv2.MOTION_EUCLIDEAN if li == 0 else cv2.MOTION_HOMOGRAPHY
-        warp = W[:2].copy() if mode == cv2.MOTION_EUCLIDEAN else W.copy()
+        prev_s = sa
+        mode = modes[li] if li < len(modes) else cv2.MOTION_HOMOGRAPHY
+        warp = W[:2].copy() if mode != cv2.MOTION_HOMOGRAPHY else W.copy()
         try:
-            cc, warp = cv2.findTransformECC(
+            cc_l, warp = cv2.findTransformECC(
                 A, B, warp, mode,
                 (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, iters, eps), None, 5)
         except cv2.error:
-            return None, 0.0
-        W = (np.vstack([warp, [0, 0, 1]]) if mode == cv2.MOTION_EUCLIDEAN
+            continue                 # keep W from the previous level and go finer
+        if not np.all(np.isfinite(warp)):
+            continue
+        W = (np.vstack([warp, [0, 0, 1]]) if mode != cv2.MOTION_HOMOGRAPHY
              else warp).astype(np.float32)
-        prev_s = sa
+        cc, any_ok = float(cc_l), True
+    if not any_ok:
+        return None, 0.0
     S = np.diag([prev_s, prev_s, 1.0])
     H = np.linalg.inv(S) @ W @ S
-    return (H / H[2, 2]), float(cc)
+    if not np.all(np.isfinite(H)) or abs(H[2, 2]) < 1e-12:
+        return None, 0.0
+    return (H / H[2, 2]), cc
 
 
 def register_images(img_a: np.ndarray, img_b: np.ndarray,
