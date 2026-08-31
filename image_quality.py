@@ -223,7 +223,10 @@ def sweep(root: str, gates=(0, 10, 25, 50, 100, 200),
     L.append("-" * len(L[-1]))
     for g in gates:
         kept = [k for k in ids if np.isfinite(tab[k]) and tab[k] >= g]
-        walls = len({wall_of[k] for k in kept})
+        wall_counts: dict[str, int] = {}
+        for k in kept:
+            wall_counts[wall_of[k]] = wall_counts.get(wall_of[k], 0) + 1
+        walls = sum(1 for n in wall_counts.values() if n >= 2)  # pairable, not just non-empty
         keptset = set(kept)
         if outcomes:
             live = {k: v for k, v in outcomes.items()

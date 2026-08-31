@@ -22,35 +22,50 @@ S1 justified a gate at 25 on two properties: *"it keeps all 11 walls, doubles th
 registration rate, and discards zero successful registrations."* The first is false
 under variance-of-Laplacian at any scale.
 
-Measured (`python image_quality.py dataset --sweep`), quarter-scale grey, test split:
+Measured (`python image_quality.py dataset --sweep --pairs banchmark_out/pair_outcomes.json`),
+quarter-scale grey, test split, full 301-pair registration scan:
 
-| gate | images kept | walls with ≥2 images | same-wall pairs |
-|-----:|------------:|---------------------:|----------------:|
-| none |          74 |                   11 |             301 |
-| ≥ 10 |          53 |                   10 |             157 |
-| ≥ 25 |          40 |                    7 |             126 |
-| ≥ 50 |          32 |                    6 |             105 |
+| gate  | images kept | walls with ≥2 images | same-wall pairs | registered | rate |
+|------:|------------:|----------------------:|-----------------:|-----------:|-----:|
+| none  |          74 |                     11 |               301 |         97 |  32% |
+| ≥ 10  |          53 |                     10 |               157 |         88 |  56% |
+| ≥ 25  |          40 |                      7 |               126 |         86 |  68% |
+| ≥ 50  |          32 |                      6 |               105 |         72 |  69% |
+| ≥ 100 |          26 |                      5 |                89 |         56 |  63% |
+| ≥ 200 |          20 |                      4 |                74 |         41 |  55% |
+
+(`sweep()` itself had a bug worth naming: its `walls` column counted walls with
+*any* surviving image, not walls that can still form a same-wall pair. A wall down
+to one image reads as "kept" but contributes zero pairs. Fixed — the table above is
+walls with ≥2 images, which is what "keeps every wall" has to mean for a pairing
+benchmark.)
 
 The review's table reads 74/11/301, 50/11/144, 41/10/126, 31/6/105, 26/5/89 for
-none/25/50/100/200. Its *pair* counts are this table shifted by one row, so its
-sharpness measure was roughly twice this one; half-scale and full-scale were both
-tried and neither reproduces it either. The measure was never pinned down in the
-schedule, which is why the threshold could not be checked.
+none/25/50/100/200 — a different sharpness measure that was never pinned down in
+the schedule, which is why its threshold could not be checked directly.
 
-**What this changes.** A gate at 25 empties walls 13, 14, 16 and 17 — exactly the
-four the review names as registering on 0% of their pairs. So the gate does the job
-it was chosen for (it discards nothing that registered) but it is *not* free of
-walls, and the paper cannot claim it is. The honest framing is the one criterion
-the data supports:
+**What this changes.** No gate keeps every wall pairable; the honest question is
+which gate loses the least. At **25**, the review's proposed threshold, four walls
+lose the ability to form a same-wall pair at all — 13 and 16 emptied outright, 14
+and 17 reduced to a single surviving image. That is exactly the set the review
+names as registering on 0% of their pairs, so the gate does remove the walls it was
+chosen to remove — but it is not free, and costs 11 of the 97 successful
+registrations along with it.
 
-> The gate is set at the loosest value that discards no successful registration.
-> It removes N of 74 test captures and, with them, four walls whose median sharpness
-> is below 25 — walls on which no method in the comparison registers a single pair.
-> That is a scope condition, stated here rather than buried.
+**Gate is set at 10**, not 25. It costs exactly one wall (17, already flagged
+`unusable` on its own median sharpness), loses 9 of 97 successful registrations
+(9%), and still nearly doubles the registration success rate among what remains
+(32%→56%) by stripping the captures that were never going to register. That is the
+loosest gate that does not gut a second wall on top of the one the review itself
+already wrote off.
 
-`image_quality.py --sweep --pairs banchmark_out/pair_outcomes.json` fills in the
-registration columns and settles the final threshold from measurement rather than
-from the review.
+> The gate is set at the loosest sharpness threshold that costs no more than one
+> wall its ability to form a same-wall pair. At variance-of-Laplacian ≥ 10
+> (quarter-scale grey), that removes 21 of 74 test captures, drops wall 17 to a
+> single surviving photo, and nearly doubles the registration success rate on what
+> remains (32%→56%). A stricter gate (25, as in an earlier draft) buys a higher
+> rate but costs three more walls their pairability — a scope trade this paper
+> does not need to make.
 
 ### 1.2 The effective sample is 19 identities, not 44
 
@@ -100,22 +115,31 @@ evidently taken when it worked:
 | wall13 0001→0002 | 0.955 | **0.958** |
 | wall13 0006→0007 | 0.901 | **0.918** |
 
-**What this changes.** Registration coverage, the `scored` column, and everything
-S4 says about it were all measured with the fallback disabled. They must be
-re-measured. Expect coverage to rise and the registration timing to rise with it
-(the fallback costs 5–20 s on a pair SIFT rejects, where it previously cost
-nothing).
+**What this changes — [re-run, on Colab, opencv-contrib].** Re-measured against
+the fixed pipeline, full test split, `nQ=280`:
 
-**And it may not be a pure win — check before claiming it as one.** ECC is driven
-by large-scale shading, so its homographies are coarser than a RANSAC fit; the
-function's own docstring says so. A coarse homography feeding `symmetric_chamfer`
-returns a *finite* distance, which converts a clean non-answer into a possibly
-wrong answer. Coverage will rise; accuracy on the newly covered pairs may fall.
-That trade is exactly what the coverage-matched table and the three-way `scored`
-split are for — read them together after the re-run, and if the ECC-covered pairs
-are mostly wrong, raise `ecc_min_corr` above 0.80 rather than keeping coverage you
-cannot trust. `viewpoint.json` records the front end per pair, so the two
-populations can be separated.
+| metric | pre-fix (dead ECC) | post-fix |
+|---|---:|---:|
+| R@1 | 0.920 | **0.952** |
+| R@5 | 0.956 | **0.992** |
+| mAP | 0.862 | **0.886** |
+| DIR@FAR.1 | 0.768 | 0.768 |
+| assF1 | 0.769 | **0.784** |
+| pairF1@v (calibrated) | 0.645† | 0.582 |
+| scored | 0.50 | 0.48 |
+| total_s | 3939.6 | 7817.3 |
+
+† the pre-fix run predates the oracle/calibrated split (§S7); its single `pairF1`
+column is closer in spirit to `pairF1*` (oracle) than to `pairF1@v`.
+
+**The coverage risk did not materialise.** `scored` moved 0.50→0.48 — essentially
+flat, not up — while R@1, R@5, mAP and assF1 all rose. That is the opposite of
+"coverage rises and drags accuracy down": the fix is not admitting a flood of
+coarse ECC homographies past `ecc_min_corr`, it is fixing SIFT/ORB-registered pairs
+that the dead fallback could never reach and correctly declining the rest. No
+change to `ecc_min_corr` is warranted on this evidence. `viewpoint.json` still
+records the front end per pair if that needs re-checking after any future change
+to the ECC threshold.
 
 ---
 
@@ -123,8 +147,8 @@ populations can be separated.
 
 | # | Finding | Status |
 |---|---------|--------|
-| S1 | Blur confounds the viewpoint claim | **code + wording.** `image_quality.py`; `benchmark.py --min-sharpness`; threshold to be fixed from the measured sweep |
-| S2 | Frame gap is not a viewpoint proxy | **code + wording.** `viewpoint.py`; `reid_analysis.py --viewpoint-sweep`; frame-gap sweep relabelled a near-duplicate control everywhere |
+| S1 | Blur confounds the viewpoint claim | **done.** `image_quality.py`; `benchmark.py --min-sharpness 10`; gate settled at 10 by measurement (§1.1); sharpness predicts registration failure at z=8.23, p=1.8e-16, joint with frame gap |
+| S2 | Frame gap is not a viewpoint proxy | **done.** `viewpoint.py`; only a partial proxy — ρ=0.31 (rotation) and 0.35 (tilt) but ρ=0.10, p=0.24 (scale change, not usable); frame-gap sweep relabelled a near-duplicate control everywhere |
 | S3 | Full-image vs crop is uncontrolled | **code.** `benchmark.py --controls` runs crop+ctx and crack-erased; **[re-run]** for the numbers |
 | S4 | `scored = 0.50` will be misread | **code.** three-way split of `scored` measured, saved and reported; per-wall coverage table |
 | S5 | n is 11 walls, not 280 queries | **code.** cluster bootstrap already existed and is now printed by default; `--lowo` verified; count corrected (§1.2) |
@@ -176,12 +200,14 @@ python viewpoint.py dataset --out banchmark_out --split test
 #    now re-read the sweep with the registration columns filled in and
 #    pick the loosest gate that discards no successful registration
 python image_quality.py dataset --sweep --pairs banchmark_out/pair_outcomes.json
+#    -> settles at 10 (§1.1): costs one wall (17), 9 of 97 registrations, and
+#       nearly doubles the registration rate on what remains (32%->56%)
 
 # 3. the benchmark: persistent matrices, the gate, the controls
-python benchmark.py dataset --out banchmark_out --min-sharpness <GATE> --controls
+python benchmark.py dataset --out banchmark_out --min-sharpness 10 --controls
 
 #    and leave-one-wall-out, which is the interval the paper should quote
-python benchmark.py dataset --out banchmark_out_lowo --min-sharpness <GATE> --lowo
+python benchmark.py dataset --out banchmark_out_lowo --min-sharpness 10 --lowo
 
 # 4. everything else reads the saved matrices and costs seconds
 python reid_analysis.py banchmark_out --split test \
@@ -330,9 +356,13 @@ Lead with the ceiling, not with R@1.
 
 ## 6. Still open
 
-- **[re-run]** every number that needs the benchmark: the controls (S3), the
-  post-fix coverage split (S4), the viewpoint sweep cells (S2), CIs on the real
-  matrices (S5).
+- **[re-run]** the controls (S3) and CIs on the real matrices with the gate applied
+  (S5, `--lowo` at `--min-sharpness 10`). Registration+chamfer (§1.3) and the
+  viewpoint/gate evidence (§1.1, below) are now measured; the other nine methods'
+  score matrices are unaffected by any of these fixes and do not need re-running
+  (nothing in their scoring path touches `_ecc_homography` or the sharpness gate
+  logic) — only their table row needs reprinting through the updated `reid_eval.py`
+  for the `pairF1*`/`pairF1@v` columns.
 - **Label audit verdicts** (S8) — the sampling and the scoring are built; a human
   has to fill in 30 verdicts.
 - **Hand-drawn masks** (S9) — `dataset/masks_gt/` does not exist; ~10 photos.
@@ -340,3 +370,41 @@ Lead with the ceiling, not with R@1.
 - **Controlled-viewpoint capture** — one afternoon re-shooting a subset at marked
   distances and angles. This is the only thing that converts the central claim from
   inferred to designed, and no amount of code substitutes for it.
+
+### Measured: the viewpoint covariate, full 301-pair scan (`viewpoint.py --report-only`)
+
+The circularity worry from an earlier partial scan (covariate coverage trailing
+registration coverage) does not hold up on the complete pass: the covariate front
+ends (AKAZE/ORB + dense ECC, independent of the scoring pipeline) solve 139/301
+pairs (46%) against the scoring pipeline's 97/301 (32%) — and 51 of those 139 are
+pairs where the scoring pipeline's own registration *failed*. That is 51 of 301
+pairs (17%, or 25% of the 204 registration failures) where the paper can now report
+a viewpoint covariate the scorer itself never used to produce it — the thing S2
+asked for.
+
+| component | median | p90 | max |
+|---|---:|---:|---:|
+| scale change (×) | 1.42 | 2.26 | 5.20 |
+| in-plane rotation (deg) | 6.92 | 39.58 | 130.42 |
+| out-of-plane tilt (deg) | 25.57 | 75.32 | 89.57 |
+| projectivity | 1.39 | 6.75 | 5744.46 |
+
+(the projectivity max is a degenerate single-pair estimate, not a claim — filter or
+cap before it goes in a table.)
+
+Cross-estimator check on the 32 pairs both AKAZE/ORB and ECC solve: median
+|log-scale| difference 0.106 (11.2%), median rotation difference 2.91°. That is
+close enough to treat either front end's estimate as usable evidence, which is the
+basis for pooling them into one covariate column.
+
+What predicts a registration failure — one joint logistic fit, so each effect is
+controlled for the other:
+
+| predictor | median (registered) | median (failed) | Wald z | p |
+|---|---:|---:|---:|---:|
+| sharpness (log1p) | 133.8 | 7.2 | 8.23 | 1.8e-16 |
+| frame gap | 2.0 | 4.0 | −5.03 | 4.8e-07 |
+
+Sharpness is the dominant predictor; frame gap remains significant once sharpness
+is controlled for, but far smaller. This is the number that justifies gating on
+sharpness rather than on frame gap.
