@@ -15,6 +15,4 @@ SuperGlue               crop          280  0.555  0.893  0.453      0.414   0.35
 
 new results: 
 
-method                  scope          nQ    R@1    R@5    mAP  DIR@FAR.1  pairF1* pairF1@v   assF1  scored  total_s
-ORB                     crop          280  0.348  0.763  0.364      0.018   0.305   0.305   0.325    1.00     22.9
 registration+chamfer    full-image    280  0.952  0.992  0.886      0.768    0.656    0.582   0.784    0.48   7817.3

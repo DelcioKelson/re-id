@@ -1,0 +1,70 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage[table]{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\best}[1]{\textbf{#1}}
+\newcommand{\ours}{\textsc{Reg+Chamfer}}
+
+\begin{document}
+
+\title{CrackID: A Benchmark for Crack Re-Identification,\\
+and the Appearance Ceiling It Reveals}
+
+\author{\IEEEauthorblockN{Anonymous Submission}
+\IEEEauthorblockA{Paper ID \textemdash{} \textit{under review}}}
+
+\maketitle
+
+\begin{abstract}
+Automated building-maintenance systems increasingly convert photographs into
+tracked records: a defect is photographed, a ticket is opened, and follow-up
+activity accumulates against that record. Any defect re-photographed across
+visits therefore needs re-identification --- a new photo must match the record
+for that specific physical defect, or open a new one. Wall cracks are a common
+and difficult case. Yet despite crack detection being mature, we are not aware
+of a dataset or benchmark for crack \emph{re-identification}, and the natural
+approach --- crop the region and match embeddings --- imports an assumption from
+person and vehicle re-ID that may not transfer: that the object has stable,
+locally distinctive appearance.
+We introduce \textsc{CrackID}: 140 photographs over 17 walls with 212 annotated
+crack identities, released with an explicit annotation-quality report rather
+than as unaudited automatic labels. Benchmarking ten matchers across classical
+keypoints, learned correspondence, general vision embeddings, a re-identification
+architecture, and a purpose-built crack-shape descriptor, we find pairwise $F_1$
+confined to a $0.054$-wide band ($0.305$--$0.359$) while Rank-1 spans five times
+as much and is uncorrelated with it ($\rho = 0.02$). We argue this ceiling is a
+property of the data, not of any one method. As a geometric reference baseline
+we register on wall texture with cracks masked \emph{out}, then Chamfer-match
+projected crack masks under global assignment: it reaches a
+detection-and-identification rate of $0.768$ at $10\%$ false alarm against
+$0.414$ for the best crop-based method, while answering only $48\%$ of pairs ---
+partial coverage we show by censoring to cost accuracy rather than buy it.
+\end{abstract}
+
+\begin{IEEEkeywords}
+crack re-identification, dataset, benchmark, building maintenance, structural
+inspection, homography, geometric alignment, annotation quality
+\end{IEEEkeywords}
+
+\input{sections/intro}
+\input{sections/related}
+\input{sections/dataset}
+\input{sections/protocol}
+\input{sections/ceiling}
+\input{sections/method}
+\input{sections/results}
+\input{sections/validity}
+\input{sections/conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

@@ -1,0 +1,73 @@
+\section{CrackID}
+\label{sec:dataset}
+
+\subsection{Capture and composition}
+We photographed 17 exterior walls at one site over four half-days with two
+consumer handsets, yielding 140 photographs at $4080\times3072$. The walls span
+two surface families that behave very differently under keypoint matching:
+stippled render, which is densely textured, and smooth painted plaster
+photographed at cornice junctions, where the crack is frequently the only
+structure in frame. Walls are split disjointly into 6 validation walls (66
+photographs, 66 identities) and 11 test walls (74 photographs, 146 identities);
+no wall appears in both.
+
+Statistical power is governed not by the identity count but by identities
+visible in \emph{two or more} photographs, since only those form a query with an
+answer: 18 in validation, 19 in test, 37 in total. This is the single largest
+constraint on what the benchmark can conclude, so we state it here rather than
+in a footnote (Sec.~\ref{sec:validity}).
+
+\subsection{What the dataset measures, and what it does not}
+\label{sec:scope}
+Each wall was captured in a single continuous walk-around. Consecutive frames
+are a median of $3$\,s apart (maximum $20$\,s), and a wall's entire capture spans
+a median of $29$\,s (maximum $81$\,s). Every query and its gallery therefore
+share one illumination condition, one weather state, and one sensor
+configuration.
+
+We state the consequence plainly. \textsc{CrackID} in its present form measures
+\textbf{viewpoint and scale correspondence}: given a crack seen from one camera
+position, find it from a different position, distance, and angle. It does
+\textbf{not} yet measure correspondence across separate visits, which is the
+deployment case the maintenance-record setting implies. We therefore use
+\emph{correspondence} rather than \emph{re-identification} for the measured
+property, and treat every figure here as an upper bound on multi-visit
+performance. Sec.~\ref{sec:viewpoint} quantifies the residual viewpoint
+variation the data does span, using an estimator the scoring pipeline never
+sees.
+
+\subsection{Annotation, and why it needs auditing}
+\label{sec:annotation}
+Labelling crack instances by hand across 140 high-resolution photographs is not
+tractable, so identities are seeded automatically. An annotator places one click
+point per distinct physical crack; the point is propagated between consecutive
+photographs through an ORB homography and a one-to-one assignment; and
+identities whose components appear to be fragments of one physical crack are
+then merged.
+
+The merge step is where the risk concentrates. A merge that wrongly joins two
+distinct cracks converts a hard negative into a free positive and inflates mAP
+for \emph{every} method at once --- so it cannot be caught by comparing methods
+against each other. We therefore report its extent rather than assume its
+correctness.
+
+\textbf{95 of the 212 identities ($45\%$) were formed by a merge} --- 70 of 146
+on test ($48\%$), 25 of 66 on validation ($38\%$) --- bridging a median maximum
+gap of $228$\,px on test and $286$\,px on validation (p90 $308$ and $317$\,px,
+max $319$ and $320$\,px). The merge restructured the partition almost
+completely: the adjusted Rand index between the final labelling and the
+pre-merge automatic output --- a measure of how much the merge changed the
+partition, not of inter-annotator agreement --- is $0.080$ over $1{,}051$
+matched points. That is the same fact as ``$45\%$ absorbed more than
+one seed,'' seen from the other side. It is not an argument against merging,
+which is what makes the identities physically meaningful; it is why an audited
+error rate must exist before mAP on these labels is treated as exact.
+
+We release the instrumentation for that audit rather than the audit itself: per
+identity merge provenance, a reproducible stratified sample over merged and
+unmerged identities with rendered contact sheets, and scoring that turns human
+verdicts into an error rate with a Wilson interval. An automatic triage flags
+the 57 identities with the widest bridged gaps, where disagreement will
+concentrate. \textbf{The verdicts are not yet filled in}, so we report no
+sampled error rate and no inter-annotator statistic and claim none;
+Sec.~\ref{sec:validity} states what follows.

@@ -1,0 +1,98 @@
+\section{A Geometric Reference Baseline}
+\label{sec:method}
+
+The ceiling motivates a change of scope rather than a better encoder. A crack is
+a mark at a fixed location on a rigid, near-planar surface, and that surface
+carries texture the crack does not. We therefore identify a crack by \emph{where
+it is on its wall} after the two photographs have been aligned.
+
+We release this as a \emph{reference baseline} for \textsc{CrackID}, not a
+finished system: deliberately simple, with no learned component beyond the crack
+segmenter every method shares, marking where the geometric formulation sits so
+later work has something to beat. It has four stages.
+
+\subsection{Alignment driven by non-crack texture}
+Given photographs $I_a, I_b$ of one wall with crack masks $M_a, M_b$, we
+estimate the homography $H$ with $x' \sim Hx$ mapping $I_a$ into $I_b$'s frame.
+Walls are planar, so a homography is the correct model rather than an
+approximation.
+
+The design decision that matters is \textbf{what drives the fit}. We dilate the
+crack masks by $15$\,px and \emph{exclude} those pixels from detection, so $H$
+comes from wall texture alone. This is not an optimisation but what makes the
+resulting position an independent identity cue: were cracks to participate in
+the alignment, a long crack could dominate the correspondence set and pull the
+fit toward superimposing the wrong crack, and the projected position would
+restate appearance similarity rather than provide evidence against it.
+
+Detection runs on copies downscaled to $1600$\,px under CLAHE equalisation, so
+exposure differences between captures do not suppress matches; $H$ is rescaled
+to full resolution afterwards. We use SIFT (up to $8000$ features), a $0.75$
+ratio test, and MAGSAC at $4$\,px requiring $25$ inliers.
+
+\subsection{A cascade for two surface families}
+One front end does not serve both surfaces in this data, and the failure is
+categorical rather than marginal: on the smooth-plaster walls, crack-masked SIFT
+succeeds on \emph{exactly zero} pairs. We therefore try three front ends in
+order.
+
+\begin{enumerate}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+\item \textbf{SIFT on masked wall texture.} Correct for stippled render.
+\item \textbf{SIFT with cracks restored}, triggered only when masking starves
+detection below $300$ keypoints in either image. On smooth plaster at a cornice
+junction the crack is the only feature in frame, and masking it leaves nothing.
+This stage accepts the circularity that stage~1 avoids, and we record which
+front end produced each result so the trade is auditable.
+\item \textbf{ECC}, direct photometric alignment needing no keypoints at all,
+over a $320 \to 640 \to 1280$\,px pyramid opening with a translation model. It
+aligns on large-scale shading, the only signal surviving on flat paint.
+\end{enumerate}
+
+Every candidate $H$ passes a sanity check rejecting the degenerate matrices
+RANSAC otherwise returns: we warp the image corners and reject if the
+quadrilateral is mirrored or folded, if its area scale leaves $[1/16, 16]$, or
+if a side collapses. The fit's inlier RMS is retained to set downstream
+tolerances rather than fixing a constant.
+
+\subsection{Projection and scale-free Chamfer agreement}
+Crack instances are extracted as connected components. Instance pixels from
+$I_a$ are projected into $I_b$ by $H$ and compared to instances of $I_b$.
+
+Chamfer distance, not IoU, is the primary criterion. Cracks are a few pixels
+wide, so a $3$\,px registration error drives IoU to nearly zero for a pair that
+is in fact correctly aligned. We use the symmetric mean distance between pixel
+sets, computed over the union bounding box of the two instances with a cheap
+rejection when boxes are far apart.
+
+Raw Chamfer is a distance in \emph{pixels}, and every photograph pair carries
+its own independently solved homography, so its scale differs per pair and per
+crack size: $3$\,px of error on a $40$\,px crack and on a $400$\,px crack are not
+the same evidence. Since $\mathrm{DIR}@\mathrm{FAR}$, pairwise $F_1$, and the
+assignment all apply \emph{one global threshold}, a raw-pixel score would make
+them measure calibration rather than accuracy. We therefore score with
+\textbf{Chamfer coverage}, the symmetric fraction of each instance's pixels
+lying within $\tau$ of the other,
+\begin{equation}
+C(a,b) = \tfrac{1}{2}\!\left[
+\frac{|\{p \in a : d(p, b) \leq \tau\}|}{|a|} +
+\frac{|\{q \in b : d(q, a) \leq \tau\}|}{|b|}\right],
+\end{equation}
+which is bounded in $[0,1]$ and scale-free, so a threshold learned on validation
+transfers to test. We set $\tau$ from the registration's own inlier RMS for that
+pair where available.
+
+\subsection{Global assignment and explicit non-answers}
+Correspondence is solved as a one-to-one assignment per image pair by the
+Hungarian algorithm with an explicit rejection threshold, not by per-query
+argmax --- which would permit two cracks in $I_a$ to both claim the same crack
+in $I_b$, not a physically admissible reading of a surface. Unmatched instances
+are reported as \emph{disappeared} or \emph{newly appeared} rather than forced
+to a nearest neighbour.
+
+This is where the geometric formulation earns its place. Because the two
+photographs are aligned, the system can project a recorded crack into the new
+image and observe that the region is visible and the crack is not in it. That is
+a \textbf{licensed negative} --- positive evidence of absence --- and it is
+categorically stronger than the low similarity score that is the only negative a
+crop embedding can produce. It is also the mechanism behind the open-set gap
+reported next.

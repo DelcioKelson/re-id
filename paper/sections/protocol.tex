@@ -1,0 +1,42 @@
+\section{Benchmark Protocol}
+\label{sec:protocol}
+
+A query is one annotated crack instance in one photograph. The gallery is
+restricted to \textbf{the query's own wall}: the hard negatives are other cracks
+in the same material under the same light, which is the honest setting and
+markedly harder than a cross-wall gallery. A query's own photograph and its own
+capture session are excluded. This yields $n_Q = 280$ scored query instances on
+test.
+
+Three protocol choices are deliberately unfavourable to the methods being
+measured, including ours. \textbf{Unanswerable queries are retained} --- a query
+whose identity has no gallery counterpart is not deleted, since that is exactly
+the open-set case a maintenance system faces whenever a crack has been repaired
+or is genuinely new; such queries can contribute false alarms and never
+successes. \textbf{Thresholds are calibrated on validation}: we report an
+oracle-thresholded $F_1^{*}$ (best threshold on test, which flatters every
+method) and $F_1^{@v}$, thresholded on the held-out validation walls; where only
+one column is available for a baseline it is the oracle variant, so the
+comparison is biased \emph{towards} the baselines. \textbf{Missing scores are
+charged, not skipped}: pairs a method cannot register take the failure score and
+rank last, with the query still counted in every metric
+(Sec.~\ref{sec:coverage}).
+
+\subsection{Metrics}
+We report Rank-1, Rank-5 and mAP for ranking, resolving ties in expectation over
+random tie-breaks rather than by array order, which otherwise rewards methods
+emitting many equal scores. The headline metric is the open-set
+\textbf{detection-and-identification rate at $10\%$ false alarm}
+($\mathrm{DIR}@\mathrm{FAR}{=}0.1$): a known query is correct only if its
+top-ranked gallery entry is above threshold \emph{and} correct, while an unknown
+query is a false alarm whenever anything clears threshold. We also report
+\textbf{pairwise $F_1$} over all valid pairs independent of ranking, and
+\textbf{assignment $F_1$}, a one-to-one matching per image pair --- the deployed
+operation, since two cracks in today's photograph must not both claim the same
+record.
+
+Confidence is reported by resampling \textbf{walls}, not queries: queries from
+one wall share its material, lighting, and camera pass and succeed or fail
+together, so a query-level interval is badly over-optimistic. With 11 test walls
+that interval is wide, and we regard its width as the honest statement of what
+19 multi-photo identities support.

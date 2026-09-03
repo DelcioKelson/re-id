@@ -1,0 +1,96 @@
+\section{Introduction}
+
+Automated building-maintenance systems increasingly convert photographic
+observations into tracked records. A defect is photographed, a ticket or issue
+is opened, and subsequent activity --- status changes, follow-up inspection,
+resolution --- accumulates against that record over the defect's lifetime. This
+creates a re-identification requirement for any defect type that gets
+re-photographed across visits: a new photo must match the existing record for
+that specific physical defect, or a new record must be opened, without a human
+reconciling every submission by hand. Wall cracks are a common and difficult
+case, since the same crack is routinely re-photographed from a different
+distance, angle, or lighting condition across separate inspection visits.
+
+Crack analysis is a mature computer vision task, but a mature \emph{detection}
+and \emph{segmentation} task: the public datasets are annotated within single
+images, and the largest consolidations of them --- CrackSeg9k's 9k
+images~\cite{kulkarni2022crackseg9k}, OmniCrack30k's 30k over twenty
+sub-datasets~\cite{benz2024omnicrack30k} --- carry no cross-observation identity
+labels, because the task they serve does not need any. We are not aware of a
+dataset or benchmark for crack \emph{re-identification}: deciding which recorded
+crack a new observation corresponds to, or whether it is new
+(Sec.~\ref{sec:related-temporal}).
+
+This gap matters because the natural approach --- treat it as instance
+re-identification, crop the reported region, and match embeddings --- carries an
+assumption from person and vehicle re-ID~\cite{zhou2019osnet,qian2024reidtrends}
+that does not obviously transfer: that the object being matched has stable,
+locally distinctive appearance. A crack is thin, low-texture, and locally
+self-similar; whether crop appearance is actually sufficient to re-identify one
+has, to our knowledge, never been measured.
+
+We introduce \textsc{CrackID} to make that measurement possible, and to
+establish where the difficulty of this task actually lies.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/ceiling.pdf}
+\caption{\textbf{The appearance ceiling.} Pairwise $F_1$ for ten crop-scope
+matchers spanning five method families, on the \textsc{CrackID} test split.
+Every method falls inside a band of width $0.054$, irrespective of family, era,
+or compute budget. The geometric reference baseline (red) leaves the band.
+Ranking metrics separate these same methods over a $0.30$ range; the decision
+metric does not.}
+\label{fig:ceiling}
+\end{figure}
+
+\smallskip
+\noindent\textbf{Appearance is not enough, and the flatness says why.} On
+ranking metrics the ten benchmarked matchers separate as expected --- Rank-1
+spans $0.352$ to $0.654$. But on pairwise $F_1$, the metric measuring the
+decision a maintenance system actually makes (\emph{same crack or not}, at a
+threshold), all ten land between $0.305$ and $0.359$ (Fig.~\ref{fig:ceiling}).
+That $0.054$-wide band contains ORB and LoFTR, CLIP and OSNet, and a shape
+descriptor we designed specifically for cracks; the two quantities are
+statistically uncorrelated ($\rho = 0.02$, $p = 0.96$). A flat band across so
+diverse a population is evidence about the data, not the encoders.
+
+\smallskip
+\noindent\textbf{Building it required solving an annotation problem.}
+Propagating a single click-point identity across a wall's photographs via
+homography is the only tractable way to label crack instances at this scale, but
+it fragments a physical crack into multiple identities whenever propagation
+breaks, requiring a merge step --- and a merge that incorrectly joins two
+distinct cracks silently converts a hard negative into a free positive and
+inflates every downstream matching metric at once. We treat this as a
+first-class part of the contribution rather than a footnote: $45\%$ of
+\textsc{CrackID} identities were formed by such a merge, and we report that rate,
+the gap distribution it bridged, and the agreement between merged and pre-merge
+labellings, instead of presenting the result as ground truth by construction
+(Sec.~\ref{sec:annotation}).
+
+\smallskip
+\noindent\textbf{Contributions.}
+\begin{enumerate}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+\item \textsc{CrackID}, 140 photographs across 17 walls and 212 crack
+identities, released with an explicit annotation-quality report --- merge rate,
+bridged-gap distribution, chance-corrected agreement against the pre-merge
+labelling --- plus the instrumentation for a human error-rate audit
+(Sec.~\ref{sec:dataset}).
+\item A ten-method benchmark spanning classical keypoints, learned
+correspondence, general vision embeddings, a dedicated re-identification
+architecture, and a purpose-built crack-shape descriptor, showing a consistent
+appearance ceiling that we argue reflects a property of the data rather than of
+any one method (Sec.~\ref{sec:ceiling}).
+\item A geometric reference baseline --- registration on wall texture with
+cracks masked out, followed by Chamfer-matched crack masks under global
+assignment --- that substantially exceeds every crop-based method, released
+alongside the crop-based baselines as part of the benchmark
+(Sec.~\ref{sec:method},~\ref{sec:results}).
+\item A protocol for this task's failure modes: a blur admission gate set by
+measured impact on registration yield rather than convention, a viewpoint
+covariate estimated independently of the scoring pipeline to avoid circularity,
+coverage-aware metrics that keep unanswerable queries, and leave-one-wall-out
+resampling in place of a point estimate on a small identity count
+(Sec.~\ref{sec:protocol}).
+\end{enumerate}

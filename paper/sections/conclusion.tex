@@ -1,0 +1,29 @@
+\section{Conclusion}
+
+Maintenance systems that keep a record per physical defect must re-identify that
+defect when it is photographed again. For wall cracks there was no dataset on
+which to test whether that is possible, so we built one: \textsc{CrackID}, 140
+photographs over 17 walls with 212 crack identities, released with its
+annotation provenance stated rather than assumed --- $45\%$ of identities were
+formed by an automatic merge, and we report that rate rather than presenting the
+labels as ground truth by construction.
+
+The benchmark's main finding is negative and, we think, structural. Ten matchers
+across five families all decide \emph{same crack or not} at a pairwise $F_1$
+between $0.305$ and $0.359$ --- a $0.054$-wide band across two decades of method
+development and a $2590\times$ range in compute --- while Rank-1 spans five times
+as much and is uncorrelated with it. Ordering a gallery well and deciding an
+identity are not the same capability, and only the second maintains a record.
+
+Our geometric reference baseline shows the ceiling is not a property of the
+task. A homography from non-crack wall texture, crack masks projected into a
+common frame, and scale-free Chamfer agreement under global assignment reach
+$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ against $0.414$, while answering
+only $48\%$ of pairs. The advantage has a specific source: an aligned pair
+supports a \emph{licensed negative} --- project the recorded crack, look,
+observe it is not there --- where a crop embedding can only report low
+similarity. We expect that to matter for any defect marking a rigid, textured
+surface. Two bounds remain, and both are addressable: a second capture session
+weeks later turns \textsc{CrackID} from a viewpoint benchmark into a
+cross-visit one, and the annotation audit is instrumented and awaits its
+verdicts.

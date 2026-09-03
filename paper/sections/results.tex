@@ -1,0 +1,163 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Main comparison}
+Table~\ref{tab:main} places the geometric reference baseline against all ten
+crop-scope methods. Relocating identity into wall geometry moves every metric
+decisively: Rank-1
+rises from $0.654$ to $0.952$, mAP from $0.520$ to $0.886$, assignment $F_1$
+from $0.401$ to $0.784$. Pairwise $F_1$ leaves the appearance band entirely, at
+$0.656$ against a ceiling of $0.359$ --- and the \emph{validation-calibrated}
+$F_1^{@v} = 0.582$ still exceeds every baseline's \emph{oracle} value by
+$1.62\times$, a comparison biased in the baselines' favour.
+
+\subsection{The open-set gap is the substantive result}
+\label{sec:openset}
+The clearest separation is on $\mathrm{DIR}@\mathrm{FAR}{=}0.1$: $0.768$ against
+$0.414$ for the best baseline (SuperGlue), a $1.86\times$ improvement, and
+$4.6\times$ over OSNet, the strongest baseline by Rank-1.
+
+This is the licensed negative, quantified. The metric charges a false alarm
+whenever an unanswerable query produces an above-threshold match, and crop
+methods cannot decline: they return a similarity to their nearest neighbour,
+which on a wall of self-similar hairline cracks is often high. Our method
+instead aligns the photographs, projects the query into the gallery frame, and
+finds the location visible and empty --- holding a high detection rate at a
+false-alarm budget where appearance methods have spent theirs. Compute does not
+help: SuperGlue's $0.414$ costs $5.7$\,s per query, OSNet's $0.168$ costs
+$0.006$\,s.
+
+\subsection{Partial coverage is a penalty, not a subsidy}
+\label{sec:coverage}
+The baseline returns a finite score for $48\%$ of valid pairs; every crop method
+returns one for all of them. The intuitive reading --- that answering only easy
+pairs flatters the metrics --- is wrong here, and we tested it rather than
+asserted it. Unscorable pairs take the failure score and rank \emph{last}, with
+the query still counted. Censoring a complete score matrix artificially, Rank-1
+fell $0.422 \to 0.27$ at $34\%$ coverage, and censoring whole image-pair blocks
+--- registration's actual failure structure --- was no more forgiving than
+censoring cells uniformly.
+
+The unscored fraction is not one phenomenon: part is pairs that could not be
+registered, a genuine non-answer; the rest is pairs that registered and in which
+the query crack projects \emph{outside} the gallery photograph --- a confident
+``not in that image'' no crop method can produce. The artefacts report the
+split.
+
+\subsection{Failures are structured by wall, not scattered}
+\label{sec:perwall}
+Registration succeeds on $97$ of $301$ same-wall test pairs ($32.2\%$) without
+an admission gate, but the average conceals the mechanism
+(Fig.~\ref{fig:coverage}): walls 07, 08 and 12 register at $100\%$, wall 11 at
+$83\%$, wall 09 at $52\%$, while walls 16, 14 and 13 sit at $3\%$, $6\%$ and
+$11\%$, and walls 10 and 17 at zero.
+
+This bimodality is why we resample walls rather than queries, and why a single
+coverage number misleads. Leave-one-wall-out on the cheapest crop descriptor
+makes the variance concrete: \textsc{CrackShape} scores Rank-1
+$0.495 \pm 0.329$ and mAP $0.464 \pm 0.294$ over 14 folds --- a wall-to-wall
+standard deviation of $0.33$ on a mean of $0.50$, which is why we claim no
+fine-grained separation among baselines.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/coverage.pdf}
+\caption{Registration coverage per test wall, ordered by median sharpness.
+Failure is categorical rather than gradual and largely tracks image quality ---
+the walls at left are the blurred smooth-plaster captures. Walls 10 and 17
+contribute one pair each; wall 10 is the counterexample, sharp yet
+unregistered.}
+\label{fig:coverage}
+\end{figure}
+
+\subsection{What predicts a registration failure}
+\label{sec:viewpoint}
+Because the failures are structured, we model them. We fit one joint logistic
+regression over all $301$ test pairs so each effect is controlled for the other.
+Sharpness dominates: $\log(1+\text{sharpness})$ has Wald $z = 8.23$
+($p = 1.8\times10^{-16}$), with median sharpness $133.8$ among registered pairs
+against $7.2$ among failures. Frame gap remains significant once sharpness is
+controlled ($z = -5.03$, $p = 4.8\times10^{-7}$) but is far smaller. Registration
+failure in this benchmark is primarily an image-quality event, not a viewpoint
+event.
+
+Measuring the viewpoint the data spans requires care: a covariate derived from
+the method's own homography exists only where that method succeeded, so
+stratifying on it would be circular. We therefore estimate viewpoint with an
+\emph{independent} front end the scorer never uses --- AKAZE/ORB on unmasked
+images, falling back to dense ECC --- decomposed into isotropic scale change,
+in-plane rotation, and the out-of-plane tilt implied by foreshortening. It solves
+$139$ of $301$ pairs ($46\%$) against the scorer's $97$ ($32\%$), and $51$ of
+those are pairs the scorer \emph{failed} on: a quarter of all registration
+failures now carry a viewpoint measurement the scorer did not produce. On the
+$32$ pairs both estimators solve, median $|\log$-scale$|$ disagreement is $0.106$
+($11.2\%$) and median rotation disagreement $2.91^\circ$, justifying pooling.
+
+The resulting spread (Fig.~\ref{fig:viewpoint}) is substantial: median scale
+change $1.42\times$ (p90 $2.26\times$, max $5.20\times$), median absolute
+in-plane rotation $6.9^\circ$ (p90 $39.6^\circ$), and median out-of-plane tilt
+$25.6^\circ$ (p90 $75.3^\circ$). So although captures are seconds apart, they are
+not trivially similar in geometry.
+
+We also use this covariate to rule out a tempting shortcut. Frame-index gap is
+\emph{not} a viewpoint proxy: over the registered pairs it correlates with
+in-plane rotation ($\rho = 0.31$, $p = 2\times10^{-4}$) and tilt
+($\rho = 0.35$, $p = 2\times10^{-5}$) but not with scale change
+($\rho = 0.10$, $p = 0.24$). A frame-gap sweep is therefore largely a camera-roll
+sweep, and roll is the one component a homography absorbs exactly. We report
+frame gap as a near-duplicate control and build no invariance claim on it.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/viewpoint.pdf}
+\caption{Viewpoint spanned by the benchmark, estimated by a front end the
+scoring pipeline never uses, so that stratification is not circular. Dashed line
+marks the median. Registration failures (pale) are not concentrated at extreme
+viewpoints --- consistent with the logistic fit, in which sharpness rather than
+viewpoint dominates.}
+\label{fig:viewpoint}
+\end{figure}
+
+\subsection{Ablation: the third front end}
+\label{sec:ecc}
+The ECC stage exists for the smooth-plaster walls on which keypoint matching
+finds nothing. Disabling it and leaving the pipeline otherwise identical gives
+Rank-1 $0.920$, Rank-5 $0.956$, mAP $0.862$,
+$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$, and coverage $0.50$, against
+$0.952$, $0.992$, $0.886$, $0.768$, and $0.48$ for the full cascade.
+
+This ablation has an unusual provenance we state plainly: the disabled condition
+was not constructed but discovered. The ECC stage had been silently inert --- its
+pyramid began where convergence always failed, and a failed level aborted the
+routine --- so earlier measurements were taken with a dead third stage. Repairing
+it makes the disabled condition an exact ablation rather than an approximation.
+
+The result is instructive in a way we did not expect. Enabling ECC raises every
+ranking metric and assignment $F_1$ ($0.769 \to 0.784$) while coverage moves
+$0.50 \to 0.48$ --- essentially flat, and slightly \emph{down}. The stage is
+therefore not buying accuracy by admitting marginal alignments; it fixes pairs
+the keypoint stages resolved badly and correctly declines others. The open-set
+rate is unchanged, locating ECC's benefit in ranking rather than in the
+accept/reject decision.
+
+\subsection{Admission policy: making image quality explicit}
+\label{sec:gate}
+Since sharpness dominates registration failure, whether a capture is
+\emph{admitted} is a design decision, not a preprocessing detail: hiding it
+would let any method be tuned by silent input selection. We apply one gate
+identically to every method, before extraction. No gate keeps every wall
+pairable, so the question is which loses least. At variance-of-Laplacian
+$\geq 10$ (quarter-scale grey), $21$ of $74$ test captures are rejected, one wall
+(17, already the least sharp) drops to a single photograph, and the registration
+rate on what remains nearly doubles, $32.2\% \to 56.1\%$. A stricter gate at $25$
+reaches $68.3\%$ but costs three more walls any same-wall pair at all. We adopt
+$10$, the loosest threshold costing at most one wall. Table~\ref{tab:main}
+reports the \emph{ungated} protocol, comparing all methods on all captures.
+
+\subsection{Cost}
+At $27.9$\,s per query the baseline is $4300\times$ slower than OSNet, with two
+qualifications. The cost is dominated by registration, which is per \emph{image
+pair}: one homography serves every crack in it, so on a wall with many recorded
+cracks the amortised cost falls proportionally. And it is within an order of
+magnitude of LoFTR ($8.3$\,s), a crop-scope method with none of the open-set
+benefit.

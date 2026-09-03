@@ -1,0 +1,86 @@
+\section{Related Work}
+
+\subsection{Crack datasets, and where they stop}
+Automated crack analysis is overwhelmingly a detection and segmentation
+literature~\cite{hasan2025review,perez2024assessment}, and its datasets follow:
+CrackTree, CFD, CRACK500, DeepCrack, GAPs and their successors annotate cracks
+\emph{within} single images, and the large consolidations merging
+them~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k} inherit that scope. None
+carries an identity label linking a crack in one photograph to the same physical
+crack in another, because segmentation does not need one. They answer \emph{where
+is there a crack in this image}, never \emph{is this the crack from last time},
+and the distinction is not cosmetic: a detector perfect on every visit still
+yields an incoherent defect history if the visits cannot be linked. Multi-view
+pipelines aggregate across images of one inspection~\cite{mallios2023multiview}
+but establish no instance correspondence, so they cannot support temporal
+tracking either.
+
+\subsection{Multi-temporal crack monitoring: the nearest neighbour}
+\label{sec:related-temporal}
+Structural health monitoring does compare crack images across time, with
+machinery close to ours. Parente \emph{et al.}~\cite{parente2022monitoring} track
+crack width from repeated captures; Harb \emph{et al.}~\cite{harb2025multitemporal}
+use temporal sequences to improve crack \emph{segmentation}; Sun and
+Chang~\cite{sun2025perspective} perspective-correct handheld time-lapse images so
+evolution can be measured under field distortion. RANSAC-estimated homography is
+the standard tool throughout, and it appears in patents too, matching a new
+crack image against registered ones via SIFT~\cite{nec2019guide}.
+
+The task is different in a way that matters. Throughout this work the
+\emph{identity of the crack is given by construction} --- a fixed camera, a
+marked location, or an operator guided back to a previous viewpoint supplies the
+correspondence --- and the open question is the crack's width or extent.
+Accordingly the metrics are measurement metrics (width, area, spine-length
+error) rather than association metrics; the subject is one known crack rather
+than a wall of candidates; and no dataset is released on which one association
+method could be compared against another. The patent case is telling: its
+SIFT-and-homography pipeline exists to guide an operator back to the same camera
+pose, which \emph{avoids} the re-identification problem rather than solving it.
+
+What is missing is the decision an automated maintenance record requires: given
+a new photograph of a wall carrying several cracks, which recorded identity does
+each observation belong to, and which are new? That is an open-set association
+problem over a gallery, it has no benchmark, and it is what \textsc{CrackID}
+supplies.
+
+\subsection{Object re-identification}
+Re-identification matches an instance across
+captures~\cite{qian2024reidtrends}. Handcrafted local
+descriptors~\cite{lowe2004sift,bay2006surf,rublee2011orb} are efficient and
+interpretable but need repeatable, distinctive keypoints --- precisely what
+hairline cracks on flat render fail to provide. Learned correspondence replaces
+descriptor matching with attention: SuperGlue~\cite{sarlin2020superglue} refines
+detected keypoints through a graph network and an optimal matching layer, and
+LoFTR~\cite{sun2021loftr} is detector-free and dense. Both are markedly more
+robust, and both are pairwise, so cost grows with gallery size. Embedding
+methods map a region to a vector~\cite{he2023similarity}: ViT and
+DeiT~\cite{dosovitskiy2021vit,touvron2021deit}, CLIP~\cite{radford2021clip},
+detector backbones~\cite{xu2024localmatching}, and OSNet~\cite{zhou2019osnet},
+which is designed for instance-level discrimination.
+
+Our benchmark evaluates all of these. Our finding is not that any one of them is
+weak, but that their differences collapse on the decision metric --- a result
+that only becomes visible when the population is broad enough and the metric is
+the deployable one rather than a ranking statistic.
+
+\subsection{Damage association in inspection pipelines}
+The closest integrated systems come from vehicle-damage assessment. Maiano
+\emph{et al.}~\cite{maiano2023antifraud} combine filtering, detection, and
+OSNet-based damage re-identification for insurance claims. Commercial vehicle
+inspection platforms rely on controlled capture rigs. In both cases association
+is posed over cropped damage regions and evaluated where acquisition is
+curated. Our results suggest the crop scope is itself the limiting choice, and
+that a geometry-first formulation --- available whenever the damaged object is a
+rigid surface with texture of its own --- changes what is achievable.
+
+\subsection{Geometric alignment}
+Planar registration is classical~\cite{hartley2004mvg}, with RANSAC-family
+robust estimation~\cite{fischler1987ransac} and well-understood sensitivity to
+control-point configuration~\cite{acuna2019homography}; direct photometric
+alignment (ECC) is the standard fallback where keypoints fail. Our contribution
+is not a new estimator but the observation that in crack correspondence the
+alignment target and the matching target should be \emph{disjoint}: the
+homography must be driven by the wall precisely because the crack is what we are
+trying to identify. Masking cracks out of detection is what makes the projected
+position an independent identity cue rather than a restatement of appearance
+similarity.

@@ -1,0 +1,65 @@
+\section{Threats to Validity}
+\label{sec:validity}
+
+We state the limits in the body rather than a closing paragraph, because two of
+them bound the central claim.
+
+\subsection{Scope is uncontrolled between the two formulations}
+The proposed method reads full photographs; the baselines read crops. That
+follows from the design --- homography estimation needs wall-level context a
+crop cannot supply --- but it means Table~\ref{tab:main} varies \emph{two}
+things at once: identity cue (appearance versus geometry) and input scope (crop
+versus full image). The result establishes that a geometry-first system on full
+images substantially outperforms crop-scope appearance matching here; it does
+not by itself establish that geometry rather than context is responsible.
+
+Two controls separate these and ship with the benchmark: a
+\emph{crop-plus-context} condition widening the crop until baselines see
+comparable surrounding wall, and a \emph{crack-erased} condition that inpaints
+the crack away, so any remaining performance is attributable to context alone.
+Both are designed but unrun --- they require regenerating score matrices for all
+ten baselines --- and we prefer to leave the gap visible. The ceiling result is
+unaffected, comparing crop methods only against each other.
+
+\subsection{The effective sample is 19 identities}
+The test split's $280$ query instances come from $19$ identities visible in two
+or more photographs, over $11$ walls. Query count is not sample size: queries
+from one wall share material, illumination, and one camera pass. Hence we
+resample walls and report the leave-one-wall-out spread ($\pm 0.33$ Rank-1 for
+\textsc{CrackShape}).
+
+This benchmark can therefore support a large structural claim --- a $0.35$ gap
+in $\mathrm{DIR}@\mathrm{FAR}$, a formulation that leaves a band ten methods sit
+inside --- but not fine-grained ranking among baselines. Differences of a few
+points between two crop methods in Table~\ref{tab:main} should be read as
+uninformative.
+
+\subsection{The annotation audit is instrumented but not completed}
+The human verdicts that would turn the provenance of Sec.~\ref{sec:annotation}
+into a sampled error rate with a confidence interval have not been collected,
+and no second annotator has labelled a subset. Until both exist, every mAP figure
+here --- ours and the baselines' alike --- is conditional on the merge policy
+being sound. Relative comparison is more robust than absolute level, since the
+merge affects all methods identically, and the appearance ceiling is a
+comparison among methods rather than an absolute claim.
+
+\subsection{Segmentation quality is not reported}
+Crack masks come from a learned segmenter and are treated as given. Mask errors
+propagate into instance extraction and hence Chamfer agreement, and we do not
+quantify that path: hand-drawn reference masks do not exist for this data. The
+released code contains a sensitivity sweep over minimum-area and closing
+parameters, checkable once reference masks are drawn.
+
+\subsection{Site, surface, and device scope}
+All captures come from a single site over four half-days, two handsets, and two
+surface families. We claim a benchmark and a baseline for these conditions, not
+a general solution. The baseline assumes a near-planar surface with texture that
+is not the crack, and should degrade on curved or featureless surfaces, and
+where the surrounding texture itself changes between visits.
+
+\subsection{The measurement that would change the most}
+One thing would convert the central claim from inferred to designed: a second
+capture session, weeks later, at marked distances and angles. It would make the
+protocol cross-visit rather than viewpoint-only, supply exact rather than
+estimated viewpoint ground truth, and test the condition under which we expect
+geometry to widen its advantage --- appearance drift with position preserved.

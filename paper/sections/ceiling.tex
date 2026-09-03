@@ -1,0 +1,144 @@
+\section{The Appearance Ceiling}
+\label{sec:ceiling}
+
+\subsection{Setup}
+We evaluate ten crop-scope matchers under the identical protocol of
+Sec.~\ref{sec:protocol}, on identical inputs, scored by identical code from
+saved score matrices. The population is deliberately broad, spanning five
+families:
+
+\begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+\item \textbf{Handcrafted keypoints}: SIFT~\cite{lowe2004sift},
+ORB~\cite{rublee2011orb}. Similarity is the inlier count after ratio test and
+RANSAC verification.
+\item \textbf{Learned correspondence}: SuperGlue~\cite{sarlin2020superglue},
+LoFTR~\cite{sun2021loftr}. Similarity is the confidence-weighted count of
+predicted correspondences.
+\item \textbf{General visual embeddings}: ViT-B/16~\cite{dosovitskiy2021vit},
+DeiT-S~\cite{touvron2021deit}, CLIP ViT-B/32~\cite{radford2021clip}, and a
+YOLOv8 detector backbone. Similarity is cosine distance between L2-normalised
+features.
+\item \textbf{A re-identification architecture}: OSNet~\cite{zhou2019osnet},
+trained for instance-level discrimination.
+\item \textbf{A purpose-built crack-shape descriptor} (\textsc{CrackShape}), the
+strongest crop-scope baseline we could construct \emph{knowing the domain}: it
+PCA-aligns crack pixels to remove in-plane rotation, resamples the centreline
+into $48$ bins, normalises perpendicular offsets by crack length to remove
+scale, and takes the magnitude spectrum of the offset profile --- invariant to
+traversal direction --- with scale-free tortuosity, elongation, relative
+thickness, and turning-angle spread appended.
+\end{itemize}
+
+\textsc{CrackShape} matters to the argument: if the ceiling were an artefact of
+generic encoders meeting a specialised structure, a descriptor designed around
+crack geometry should escape it. It does not.
+
+\begin{table*}[t]
+\centering
+\caption{\textbf{Main result}, test split, $n_Q = 280$ query instances over 11
+walls. All methods see identical inputs and are scored by identical code.
+$F_1^{*}$ is oracle-thresholded on test; for the proposed method we additionally
+report $F_1^{@v}$, thresholded on the held-out validation walls, which is the
+deployable number. \emph{scored} is the fraction of valid query--gallery pairs
+receiving a finite score; unscored pairs rank last and the query is still
+counted (Sec.~\ref{sec:coverage}). Cost is wall-clock seconds per query on one
+workstation. Best crop-scope value per column in \textbf{bold}.}
+\label{tab:main}
+\small
+\begin{tabular}{llcccccccr}
+\toprule
+Method & Family & R@1 & R@5 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & assign-$F_1$ & scored & s/query \\
+\midrule
+\multicolumn{10}{l}{\emph{Crop scope}} \\
+ORB~\cite{rublee2011orb}            & keypoint   & 0.352 & 0.759 & 0.364 & 0.018 & 0.305 & 0.325 & 1.00 & 0.056 \\
+SIFT~\cite{lowe2004sift}            & keypoint   & 0.432 & 0.829 & 0.417 & 0.036 & 0.313 & 0.324 & 1.00 & 0.119 \\
+SuperGlue~\cite{sarlin2020superglue}& learned    & 0.555 & 0.893 & 0.453 & \best{0.414} & 0.353 & 0.352 & 1.00 & 5.693 \\
+LoFTR~\cite{sun2021loftr}           & learned    & 0.549 & 0.824 & 0.441 & 0.336 & \best{0.359} & \best{0.401} & 1.00 & 8.325 \\
+YOLOv8 backbone                     & embedding  & 0.561 & 0.821 & 0.453 & 0.157 & 0.356 & 0.364 & 1.00 & 0.016 \\
+ViT-B/16~\cite{dosovitskiy2021vit}  & embedding  & \best{0.654} & 0.893 & 0.511 & 0.286 & 0.331 & 0.392 & 1.00 & 0.851 \\
+DeiT-S~\cite{touvron2021deit}       & embedding  & 0.621 & 0.879 & 0.497 & 0.250 & 0.305 & 0.381 & 1.00 & 0.259 \\
+CLIP ViT-B/32~\cite{radford2021clip}& embedding  & 0.604 & 0.850 & 0.471 & 0.143 & 0.307 & 0.367 & 1.00 & 0.228 \\
+OSNet~\cite{zhou2019osnet}          & re-ID      & \best{0.654} & \best{0.907} & \best{0.520} & 0.168 & 0.309 & 0.388 & 1.00 & 0.006 \\
+\textsc{CrackShape} (ours)          & shape      & 0.554 & 0.825 & 0.442 & 0.082 & 0.305 & 0.346 & 1.00 & \best{0.003} \\
+\midrule
+\rowcolor{black!5}
+\multicolumn{10}{l}{\emph{Full-image scope}} \\
+\rowcolor{black!5}
+\ours{} (ours) & geometry & \best{0.952} & \best{0.992} & \best{0.886} & \best{0.768} & \best{0.656}\,/\,0.582$^{@v}$ & \best{0.784} & 0.48 & 27.92 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Result}
+Table~\ref{tab:main} reports all ten methods. The pattern is the point.
+
+\noindent\textbf{Pairwise $F_1$ is flat.} Every method lands in
+$[0.305, 0.359]$: mean $0.324$, standard deviation $0.023$, coefficient of
+variation $0.068$. The span is $0.054$, or $16.7\%$ of the mean. By comparison
+Rank-1 spans $0.302$ ($54.6\%$ of its mean, $\mathrm{CV}=0.164$) and
+$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ spans $0.396$ ($\mathrm{CV}=0.655$) over the
+same ten methods on the same data. Whatever separates these methods, it does not
+separate their ability to decide whether two crops show the same crack.
+
+\noindent\textbf{Ranking ability does not transfer to decision ability.} Across
+the ten methods, Rank-1 and pairwise $F_1$ are essentially uncorrelated
+(Spearman $\rho = 0.018$, $p = 0.96$). OSNet ties for the best Rank-1 ($0.654$)
+and sits near the \emph{bottom} of the pairwise band ($0.309$); SuperGlue ranks
+sixth on Rank-1 ($0.555$) yet achieves the best open-set rate of any baseline
+($0.414$ versus OSNet's $0.168$). A method that orders a gallery well is not
+thereby a method that can say \emph{yes, that is the same crack} --- and it is
+the second capability an inspection system needs.
+
+\noindent\textbf{Compute buys nothing.} Cost per query spans $2590\times$, from
+$0.003$\,s (\textsc{CrackShape}) to $8.33$\,s (LoFTR). Its rank correlation with
+Rank-1 is $\rho = 0.018$ ($p = 0.96$) and with pairwise $F_1$ is $\rho = 0.497$
+($p = 0.14$, not significant at $n = 10$). LoFTR costs $1300\times$ OSNet per
+query and ranks below it on Rank-1, Rank-5, and mAP.
+
+\noindent\textbf{The absolute level is the real finding.} A pairwise $F_1$ near
+$0.33$ is not a merely-imperfect system; it is unusable for maintenance
+bookkeeping, where a wrong association silently corrupts a defect history. The
+ceiling is low as well as flat.
+
+\subsection{Why we read this as a property of the data}
+Three observations support a data-level rather than encoder-level explanation.
+The band contains methods with no shared inductive bias --- sparse keypoints,
+dense attention, ImageNet features, language-image pretraining, a re-ID metric
+objective, hand-designed shape statistics --- and a common limitation of such a
+population sits more parsimoniously in the signal than in five independent
+architectural failures. The domain-specific descriptor lands at the bottom of
+the band. And the failure mode is structural: two distinct hairline cracks under
+one illumination are routinely more similar than two views of one crack at
+different scales.
+
+We state the limits of this inference. Ten methods are a sample, not a proof;
+$n{=}10$ makes the correlations descriptive rather than inferential; and a model
+trained on a large corpus of crack instances --- which does not exist --- might
+yet break the band. What the result establishes is that \emph{the obvious moves
+have been tried and land in the same place}, reason enough to change the
+formulation rather than the encoder.
+
+\subsection{A designed viewpoint ablation}
+\label{sec:synth}
+The evidence above is observational: the viewpoint variation is whatever the
+capture produced. To test sensitivity by design, we warp each admitted
+photograph, its mask, and its label points by a homography with \emph{exactly
+known} scale, rotation, and tilt, and query the wall's \emph{unmodified} real
+gallery with it. Only the geometry between the views is synthetic; crack
+appearance, texture, and sensor noise are real, and the construction is
+self-checking --- decomposing the transform recovers the requested parameters to
+floating point.
+
+There is almost no response. From the identity transform (SIFT Rank-1 $0.469$,
+ORB $0.456$, $n{=}207$), rotating every query by $45^\circ$ costs SIFT $0.051$
+and \emph{gains} ORB $0.046$ ($n{=}201$); a $60^\circ$ tilt costs SIFT $0.037$
+and gains ORB $0.033$ ($n{=}192$). A $3\times$ scale change moves SIFT
+$0.469 \to 0.424$, but is confounded: upscaling pushes labelled points out of
+frame, so $n$ falls $207 \to 66$ and the survivors are a more central subset.
+
+We read this as corroboration, not a separate finding. A merely
+\emph{viewpoint-limited} method should degrade as the transform grows; these do
+not, because at Rank-1 $\approx 0.46$ they already sit near a floor set by crack
+self-similarity. Two limits: only the two cheapest baselines were run, and the
+transforms are exactly affine by construction, so this says nothing about
+projective distortion.
