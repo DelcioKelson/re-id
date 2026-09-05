@@ -79,7 +79,7 @@ import numpy as np
 from crack_reid_baselines import extract_crack_instances, CrackInstance
 from reid_eval import (
     InstanceRef, EmbeddingScorer, RegistrationScorer, DistanceScorer,
-    evaluate, calibrate_threshold, results_table,
+    ReIDScorer, evaluate, calibrate_threshold, results_table, chance_pair_f1,
 )
 
 
@@ -590,8 +590,14 @@ def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
                     scorers.append(EmbeddingScorer(
                         name=emb.name, embed_fn=fn, input_scope="crop",
                     ))
-            elif key == "registration":
-                scorers.append(_build_registration_scorer(data, prune=prune))
+            elif key in ("registration", "registration-coverage",
+                         "registration-nomask"):
+                scorers.append(_build_registration_scorer(
+                    data, prune=prune,
+                    chamfer="coverage" if key == "registration-coverage" else "distance",
+                    exclude_cracks=(key != "registration-nomask")))
+            elif key == "coverage-only":
+                scorers.append(_build_coverage_only_scorer(data))
             else:
                 print(f"  (unknown method '{raw}', skipped)")
         except ImportError as e:
@@ -672,14 +678,101 @@ class PrunedRegistrationScorer(RegistrationScorer):
         return d
 
 
-def _build_registration_scorer(data: Dataset, prune: bool = True):
-    """Wire the registration pipeline into reid_eval's RegistrationScorer."""
-    from crack_registration_reid import register_images, symmetric_chamfer
+def _build_coverage_only_scorer(data: Dataset, outcomes_path: str | None = None):
+    """The control that isolates ALIGNMENT from MATCHING.
+
+    Scores a constant wherever the two photographs registered, and -inf
+    where they did not -- so it reproduces the geometric method's exact
+    coverage pattern while never once looking at a crack. Whatever it
+    scores is what registration coverage alone is worth, and only the
+    excess above it is attributable to Chamfer agreement.
+
+    This baseline exists because coverage is NOT independent of the label
+    here. Two photographs register precisely when they overlap, which is
+    also when the answer is present in the gallery photo: on the CrackID
+    test split the scorable subset retains 100% of positive pairs but only
+    37% of negatives, lifting positive prevalence from 0.180 to 0.373. Since
+    best-F1 includes the degenerate all-positive threshold, that alone
+    scores 2p/(1+p) = 0.544 -- against a reported Reg+Chamfer F1@v of 0.582.
+    Without this row the pairwise-F1 comparison against crop baselines
+    (measured at prevalence 0.180, floor 0.305) is not like-for-like.
+
+    Reads the per-pair registration outcomes that `viewpoint.py` already
+    writes, rather than re-running registration for an answer that run
+    already produced.
+    """
+    path = outcomes_path or os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "banchmark_out", "pair_outcomes.json")
+    if not os.path.exists(path):
+        raise ImportError(f"coverage-only needs {path}; run viewpoint.py first")
+    with open(path) as f:
+        raw = json.load(f)["registered"]
+    reg = {}
+    for k, ok in raw.items():
+        a, b = k.split("|")
+        reg[(a, b)] = reg[(b, a)] = bool(ok)
+
+    class CoverageOnlyScorer(ReIDScorer):
+        name = "coverage-only"
+        input_scope = "full-image"
+
+        def score_matrix(self, queries, gallery, _data):
+            s = np.full((len(queries), len(gallery)), -np.inf)
+            for i, q in enumerate(queries):
+                for j, g in enumerate(gallery):
+                    if reg.get((q.image_id, g.image_id), False):
+                        s[i, j] = 0.0
+            return s
+
+    return CoverageOnlyScorer()
+
+
+def _build_registration_scorer(data: Dataset, prune: bool = True,
+                               chamfer: str = "distance",
+                               exclude_cracks: bool = True):
+    """Wire the registration pipeline into reid_eval's RegistrationScorer.
+
+    `chamfer` selects the agreement score:
+
+      "distance"  symmetric mean Chamfer distance in PIXELS (lower better).
+                  This is what produced the numbers in the paper's Table I.
+      "coverage"  `chamfer_coverage`, the symmetric fraction of each
+                  instance's pixels within tau of the other, bounded in
+                  [0, 1] and scale-free, with tau taken from the pair's own
+                  registration inlier RMS where available.
+
+    Coverage is the better-motivated score -- raw Chamfer is a distance in
+    pixels whose scale differs per pair and per crack size, so the single
+    global threshold that DIR@FAR, pairwise F1 and the assignment all apply
+    is measuring calibration as much as accuracy. It was implemented but
+    never wired to a call site, so every reported number used "distance".
+    Both are kept, and which one produced a result is recorded in the run's
+    metadata, so the paper cannot describe one while reporting the other.
+
+    `exclude_cracks=False` disables the mask-exclusion that drives the
+    homography from wall texture alone -- the ablation of the method's
+    central mechanism.
+    """
+    from crack_registration_reid import (register_images, symmetric_chamfer,
+                                         chamfer_coverage)
+
+    # tau for coverage scoring: the pair's own fit accuracy, clamped to a
+    # sane band. A pair aligned to 1 px should not be judged at the same
+    # tolerance as one aligned to 12, and ECC fits carry no RMS at all.
+    TAU_DEFAULT, TAU_MIN, TAU_MAX = 6.0, 2.0, 16.0
+    rms_of = {}
 
     def register_fn(img_a_id, img_b_id, _data):
         reg = register_images(data.image(img_a_id), data.image(img_b_id),
-                              data.mask(img_a_id), data.mask(img_b_id))
-        return reg.H if reg.ok else None
+                              data.mask(img_a_id), data.mask(img_b_id),
+                              exclude_cracks=exclude_cracks)
+        if not reg.ok:
+            return None
+        r = getattr(reg, "inlier_rms", float("nan"))
+        rms_of[(img_a_id, img_b_id)] = (
+            TAU_DEFAULT if not np.isfinite(r)
+            else float(min(max(r, TAU_MIN), TAU_MAX)))
+        return reg.H
 
     # A query crack that warps OUTSIDE the gallery photo is not an
     # unanswerable pair -- it is a confident, geometrically grounded "this
@@ -689,7 +782,11 @@ def _build_registration_scorer(data: Dataset, prune: bool = True):
     # there". Across the test split those are 63% and 10% of unscored
     # cells respectively, and collapsing them made `scored` unreadable and
     # handed registration an advantage disguised as a weakness.
-    OUT_OF_FRAME = 1e6            # finite: ranks last, but IS an answer
+    # Both scores are consumed as DISTANCES (RegistrationScorer negates
+    # them), so coverage is returned as 1 - coverage. The out-of-frame
+    # sentinel must therefore be worse than any real value in whichever
+    # scale is active, and finite in both.
+    OUT_OF_FRAME = 1e6 if chamfer == "distance" else 10.0
 
     # Counted, not merely distinguished. `scored` collapsed three events
     # that mean opposite things, and a reviewer reading "scored = 0.50"
@@ -727,10 +824,19 @@ def _build_registration_scorer(data: Dataset, prune: bool = True):
                          bbox=inst_g.bbox, area=len(gxs),
                          centroid=(gxs.mean(), gys.mean()),
                          mask=(gfull > 0).astype(np.uint8))
+        if chamfer == "coverage":
+            tau = rms_of.get((q_ref.image_id, g_ref.image_id), TAU_DEFAULT)
+            return 1.0 - chamfer_coverage(q_w, g_full, (hb, wb), tau=tau)
         return symmetric_chamfer(q_w, g_full, (hb, wb))
 
     scorer = PrunedRegistrationScorer(register_fn, chamfer_fn, prune=prune)
     scorer.out_of_frame_counter = out_of_frame
+    # Recorded so a run's provenance names the score that produced it.
+    scorer.chamfer_mode = chamfer
+    scorer.exclude_cracks = exclude_cracks
+    if chamfer != "distance" or not exclude_cracks:
+        scorer.name = (f"registration+chamfer[{chamfer}"
+                       f"{'' if exclude_cracks else ',nomask'}]")
     return scorer
 
 
@@ -828,6 +934,18 @@ def _threshold_from_scores(scores, queries, gallery) -> float:
 # much better than being asked.
 CONTROLS = ["osnet@ctx1", "osnet@ctx1@nocrack", "clip@ctx1", "clip@ctx1@nocrack"]
 
+# The ablations of the geometric method's two design decisions, plus the
+# control that separates alignment from matching. None of these was ever
+# run, and all three answer a question Table I currently begs:
+#
+#   coverage-only          how much of the pairwise-F1 gap is registration
+#                          COVERAGE rather than Chamfer matching?
+#   registration-nomask    does excluding cracks from the homography fit --
+#                          the method's central claim -- actually matter?
+#   registration-coverage  does the scale-free score the paper DESCRIBES
+#                          beat the raw-pixel one it actually used?
+ABLATIONS = ["coverage-only", "registration-nomask", "registration-coverage"]
+
 DEFAULT_METHODS = ["sift", "orb", "loftr", "superglue",
                    "deit", "vit", "clip", "osnet", "yolo",
                    "shape", "registration"]
@@ -836,9 +954,11 @@ DEFAULT_METHODS = ["sift", "orb", "loftr", "superglue",
 def run(root: str, methods: list[str] | None = None,
         out_dir: str = "benchmark_out", prune: bool = True, seed: int = 0,
         min_frame_gap: int = 0, min_area: int = 200, close_px: int = 5,
-        min_sharpness: float | None = None, controls: bool = False):
+        min_sharpness: float | None = None, controls: bool = False,
+        ablations: bool = False):
     PROTOCOL["min_frame_gap"] = int(min_frame_gap)
-    methods = methods or (DEFAULT_METHODS + (CONTROLS if controls else []))
+    methods = methods or (DEFAULT_METHODS + (CONTROLS if controls else [])
+                          + (ABLATIONS if ablations else []))
     os.makedirs(out_dir, exist_ok=True)
 
     # Measured, not assumed: registration's USAC_MAGSAC returns DIFFERENT
@@ -919,7 +1039,8 @@ def run(root: str, methods: list[str] | None = None,
 def run_lowo(root: str, methods: list[str] | None = None,
              out_dir: str = "benchmark_out", prune: bool = True, seed: int = 0,
              min_frame_gap: int = 0, min_area: int = 200, close_px: int = 5,
-             min_sharpness: float | None = None, controls: bool = False):
+             min_sharpness: float | None = None, controls: bool = False,
+             ablations: bool = False):
     """Leave-one-wall-out over every wall, instead of a fixed val/test split.
 
     The fixed split wastes the data and reports the weaker half: validation
@@ -945,7 +1066,8 @@ def run_lowo(root: str, methods: list[str] | None = None,
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, "admission.json"), "w") as f:
             json.dump(data.admission, f, indent=1)
-    methods = methods or (DEFAULT_METHODS + (CONTROLS if controls else []))
+    methods = methods or (DEFAULT_METHODS + (CONTROLS if controls else [])
+                          + (ABLATIONS if ablations else []))
     walls = sorted({r.wall_id for r in data.refs})
     print(f"\nLeave-one-wall-out over {len(walls)} walls")
 
@@ -1037,6 +1159,12 @@ if __name__ == "__main__":
                     help="also run the crop+ctx and crack-erased controls, which "
                          "decide whether the full-image-vs-crop comparison measures "
                          "the method or the field of view")
+    ap.add_argument("--ablations", action="store_true",
+                    help="also run coverage-only, registration-nomask and "
+                         "registration-coverage: the controls that separate "
+                         "alignment from matching, test whether crack-masking "
+                         "the homography matters, and compare the scale-free "
+                         "Chamfer score against the raw-pixel one")
     ap.add_argument("--lowo", action="store_true",
                     help="leave-one-wall-out over all walls instead of the fixed "
                          "val/test split, so every wall contributes")
@@ -1048,5 +1176,6 @@ if __name__ == "__main__":
     driver(args.root, methods=args.methods, out_dir=args.out,
            prune=not args.no_prune, seed=args.seed,
            min_sharpness=args.min_sharpness, controls=args.controls,
+           ablations=args.ablations,
            min_frame_gap=args.min_frame_gap,
            min_area=args.min_area, close_px=args.close_px)

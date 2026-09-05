@@ -45,15 +45,28 @@ metric does not.}
 \end{figure}
 
 \smallskip
-\noindent\textbf{Appearance is not enough, and the flatness says why.} On
-ranking metrics the ten benchmarked matchers separate as expected --- Rank-1
-spans $0.352$ to $0.654$. But on pairwise $F_1$, the metric measuring the
-decision a maintenance system actually makes (\emph{same crack or not}, at a
-threshold), all ten land between $0.305$ and $0.359$ (Fig.~\ref{fig:ceiling}).
-That $0.054$-wide band contains ORB and LoFTR, CLIP and OSNet, and a shape
-descriptor we designed specifically for cracks; the two quantities are
-statistically uncorrelated ($\rho = 0.02$, $p = 0.96$). A flat band across so
-diverse a population is evidence about the data, not the encoders.
+\noindent\textbf{Appearance buys almost nothing on the decision.} On ranking
+metrics the ten benchmarked matchers separate as expected --- Rank-1 spans
+$0.352$ to $0.654$, against a chance level of $0.336$. But on pairwise $F_1$,
+the metric measuring the decision a maintenance system actually makes
+(\emph{same crack or not}, at a threshold), the picture is different in kind.
+That metric has a hard floor: we report the best $F_1$ over a threshold grid,
+and the grid contains the degenerate point at which every pair is called
+positive, which scores $2p/(1+p) = 0.305$ here whatever the scores are. All ten
+methods land between $0.305$ and $0.359$ --- that is, between $0.000$ and
+$0.054$ \emph{above chance} (Fig.~\ref{fig:ceiling}). ORB, DeiT and the shape
+descriptor we designed specifically for cracks achieve exactly zero. At a
+threshold calibrated on held-out validation walls rather than on the test
+matrix, no tight-crop method exceeds chance by more than $0.012$ and two fall
+below it.
+
+\smallskip
+\noindent\textbf{Two controls say where the difficulty is not.} Widening the
+crop until an embedder sees the surrounding wall helps a great deal --- OSNet's
+open-set rate goes $0.168 \to 0.404$. Then \emph{erasing the crack} from that
+same widened view costs almost none of it ($0.393$). A crop$+$context method is
+therefore retrieving on the wall behind the crack, not on the crack; and the
+cue that works, even in that crude implicit form, is \emph{location}.
 
 \smallskip
 \noindent\textbf{Building it required solving an annotation problem.}
@@ -79,18 +92,23 @@ labelling --- plus the instrumentation for a human error-rate audit
 (Sec.~\ref{sec:dataset}).
 \item A ten-method benchmark spanning classical keypoints, learned
 correspondence, general vision embeddings, a dedicated re-identification
-architecture, and a purpose-built crack-shape descriptor, showing a consistent
-appearance ceiling that we argue reflects a property of the data rather than of
-any one method (Sec.~\ref{sec:ceiling}).
+architecture, and a purpose-built crack-shape descriptor, measuring how much
+each buys \emph{over chance} on the decision metric --- between $0.000$ and
+$0.054$ --- together with crop$+$context and crack-erased controls that
+localise the difficulty to crack appearance rather than to field of view
+(Sec.~\ref{sec:ceiling}).
 \item A geometric reference baseline --- registration on wall texture with
 cracks masked out, followed by Chamfer-matched crack masks under global
-assignment --- that substantially exceeds every crop-based method, released
-alongside the crop-based baselines as part of the benchmark
+assignment --- reported against a \textsc{Coverage-only} control that exploits
+its exact registration coverage without examining a crack, so that alignment
+and matching are separated rather than confounded
 (Sec.~\ref{sec:method},~\ref{sec:results}).
-\item A protocol for this task's failure modes: a blur admission gate set by
-measured impact on registration yield rather than convention, a viewpoint
-covariate estimated independently of the scoring pipeline to avoid circularity,
-coverage-aware metrics that keep unanswerable queries, and leave-one-wall-out
-resampling in place of a point estimate on a small identity count
-(Sec.~\ref{sec:protocol}).
+\item A protocol for this task's failure modes: chance levels reported for
+every metric because two of them are far from zero, a frame-gap sweep that
+turns the benchmark's near-duplicate structure into a stated difficulty axis, a
+blur admission gate set by measured impact on registration yield rather than
+convention, a viewpoint covariate estimated independently of the scoring
+pipeline to avoid circularity, coverage-aware metrics that keep unanswerable
+queries and charge unscorable pairs, and leave-one-wall-out resampling in place
+of a point estimate on a small identity count (Sec.~\ref{sec:protocol}).
 \end{enumerate}

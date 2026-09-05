@@ -136,3 +136,156 @@
   title = {Photographing guide device},
   howpublished = {US Patent 12{,}223{,}639 B2 (priority 2019)}, year = {2025}
 }
+
+% ---------------------------------------------------------------------------
+% Estimators and operations used by the method, previously uncited.
+% ---------------------------------------------------------------------------
+@inproceedings{barath2019magsac,
+  author = {Barath, Daniel and Matas, Ji{\v r}{\'\i} and Noskova, Jana},
+  title = {{MAGSAC}: Marginalizing Sample Consensus},
+  booktitle = {IEEE/CVF Conf. Computer Vision and Pattern Recognition (CVPR)},
+  pages = {10197--10205},
+  year = {2019}
+}
+
+@article{evangelidis2008ecc,
+  author = {Evangelidis, Georgios D. and Psarakis, Emmanouil Z.},
+  title = {Parametric Image Alignment Using Enhanced Correlation Coefficient
+           Maximization},
+  journal = {IEEE Trans. Pattern Analysis and Machine Intelligence},
+  volume = {30}, number = {10}, pages = {1858--1865},
+  year = {2008}
+}
+
+@incollection{zuiderveld1994clahe,
+  author = {Zuiderveld, Karel},
+  title = {Contrast Limited Adaptive Histogram Equalization},
+  booktitle = {Graphics Gems IV},
+  pages = {474--485},
+  publisher = {Academic Press},
+  year = {1994}
+}
+
+@article{kuhn1955hungarian,
+  author = {Kuhn, Harold W.},
+  title = {The {H}ungarian Method for the Assignment Problem},
+  journal = {Naval Research Logistics Quarterly},
+  volume = {2}, number = {1-2}, pages = {83--97},
+  year = {1955}
+}
+
+% ---------------------------------------------------------------------------
+% Crack segmentation datasets named in Sec. II-A. A claim that no
+% re-identification benchmark exists is only auditable if the detection and
+% segmentation datasets that DO exist are individually cited.
+% ---------------------------------------------------------------------------
+@article{zou2012cracktree,
+  author = {Zou, Qin and Cao, Yu and Li, Qingquan and Mao, Qingzhou and Wang, Song},
+  title = {{CrackTree}: Automatic Crack Detection from Pavement Images},
+  journal = {Pattern Recognition Letters},
+  volume = {33}, number = {3}, pages = {227--238},
+  year = {2012}
+}
+
+@article{shi2016cfd,
+  author = {Shi, Yong and Cui, Limeng and Qi, Zhiquan and Meng, Fan and Chen, Zhensong},
+  title = {Automatic Road Crack Detection Using Random Structured Forests},
+  journal = {IEEE Trans. Intelligent Transportation Systems},
+  volume = {17}, number = {12}, pages = {3434--3445},
+  year = {2016}
+}
+
+@inproceedings{yang2018crack500,
+  author = {Yang, Fan and Zhang, Lei and Yu, Sijia and Prokhorov, Danil and
+            Mei, Xue and Ling, Haibin},
+  title = {Feature Pyramid and Hierarchical Boosting Network for Pavement
+           Crack Detection},
+  booktitle = {IEEE Trans. Intelligent Transportation Systems},
+  year = {2020}
+}
+
+@article{liu2019deepcrack,
+  author = {Liu, Yahui and Yao, Jian and Lu, Xiaohu and Xie, Renping and Li, Li},
+  title = {{DeepCrack}: A Deep Hierarchical Feature Learning Architecture for
+           Crack Segmentation},
+  journal = {Neurocomputing},
+  volume = {338}, pages = {139--153},
+  year = {2019}
+}
+
+@inproceedings{eisenbach2017gaps,
+  author = {Eisenbach, Markus and Stricker, Ronny and Seichter, Daniel and
+            Amende, Karl and Debes, Klaus and Sesselmann, Maximilian and
+            Ebersbach, Dirk and Stoeckert, Ulrike and Gross, Horst-Michael},
+  title = {How to Get Pavement Distress Detection Ready for Deep Learning?
+           A Systematic Approach},
+  booktitle = {Int. Joint Conf. Neural Networks (IJCNN)},
+  pages = {2039--2047},
+  year = {2017}
+}
+
+% ---------------------------------------------------------------------------
+% Scene change detection: the closest formal analogue to the licensed
+% negative. Register two captures of one scene, then reason about what is
+% present in one and absent in the other.
+% ---------------------------------------------------------------------------
+@inproceedings{sakurada2015changedetection,
+  author = {Sakurada, Ken and Okatani, Takayuki},
+  title = {Change Detection from a Street Image Pair Using {CNN} Features and
+           Superpixel Segmentation},
+  booktitle = {British Machine Vision Conference (BMVC)},
+  year = {2015}
+}
+
+@article{alcantarilla2018street,
+  author = {Alcantarilla, Pablo F. and Stent, Simon and Ros, German and
+            Arroyo, Roberto and Gherardi, Riccardo},
+  title = {Street-View Change Detection with Deconvolutional Networks},
+  journal = {Autonomous Robots},
+  volume = {42}, number = {7}, pages = {1301--1322},
+  year = {2018}
+}
+
+% ---------------------------------------------------------------------------
+% Visual place recognition: "find this location again from a different
+% viewpoint" is the problem statement a geometry-first formulation inherits,
+% and suggests a retrieval front end to amortise registration cost.
+% ---------------------------------------------------------------------------
+@inproceedings{arandjelovic2016netvlad,
+  author = {Arandjelovi{\'c}, Relja and Gronat, Petr and Torii, Akihiko and
+            Pajdla, Tom{\'a}{\v s} and Sivic, Josef},
+  title = {{NetVLAD}: {CNN} Architecture for Weakly Supervised Place Recognition},
+  booktitle = {IEEE Conf. Computer Vision and Pattern Recognition (CVPR)},
+  pages = {5297--5307},
+  year = {2016}
+}
+
+% ---------------------------------------------------------------------------
+% Open-set identification: the origin of DIR@FAR, which this paper uses as
+% its headline metric.
+% ---------------------------------------------------------------------------
+@inproceedings{liao2014openset,
+  author = {Liao, Shengcai and Mo, Zhipeng and Hu, Yang and Li, Stan Z.},
+  title = {Open-set Person Re-identification},
+  booktitle = {arXiv:1408.0872},
+  year = {2014}
+}
+
+% ---------------------------------------------------------------------------
+% Current backbones a reviewer will ask about. DINOv2 is the obvious strong
+% instance-retrieval embedding; LightGlue supersedes SuperGlue.
+% ---------------------------------------------------------------------------
+@article{oquab2024dinov2,
+  author = {Oquab, Maxime and Darcet, Timoth{\'e}e and Moutakanni, Th{\'e}o and others},
+  title = {{DINOv2}: Learning Robust Visual Features without Supervision},
+  journal = {Transactions on Machine Learning Research},
+  year = {2024}
+}
+
+@inproceedings{lindenberger2023lightglue,
+  author = {Lindenberger, Philipp and Sarlin, Paul-Edouard and Pollefeys, Marc},
+  title = {{LightGlue}: Local Feature Matching at Light Speed},
+  booktitle = {IEEE/CVF Int. Conf. Computer Vision (ICCV)},
+  pages = {17627--17638},
+  year = {2023}
+}

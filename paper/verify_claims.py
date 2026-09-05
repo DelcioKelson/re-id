@@ -18,31 +18,113 @@ def check(label, got, want, tol=5e-3):
     if not ok:
         fails.append(label)
 
-print("\n[1] Appearance ceiling (Table I, Sec. IV)")
+print("\n[0] Table I is a faithful copy of the benchmark's own output")
+# The README used to claim verify_claims.py checked this, and it did not:
+# the ten rows below were hardcoded here, so the one link that was never
+# verified was benchmark output -> published table. Parse it instead.
+def parse_results_table(path):
+    """method -> {column: value} from a results_table.txt / result.txt."""
+    rows, header = {}, None
+    for line in open(path):
+        parts = line.split()
+        if not parts:
+            continue
+        if parts[0] == "method":
+            header = parts
+            continue
+        if header is None or parts[0].startswith("-") or len(parts) < len(header) - 1:
+            continue
+        # method names never contain spaces in this table
+        vals = parts[1:]
+        try:
+            nums = [float(x) for x in vals[1:]]
+        except ValueError:
+            continue
+        rows[parts[0]] = dict(zip(header[2:], nums))
+    return rows
+
+TABLE = J('banchmark_out/result.txt')
+parsed = parse_results_table(TABLE) if os.path.exists(TABLE) else {}
+check("methods parsed from result.txt", len(parsed), 11, tol=0)
+
+print("\n[1] How much appearance buys (Table I, Sec. V)")
 CROP = dict(  # name -> (R@1, mAP, DIR, pairF1, secs)
     ORB=(0.352, 0.364, 0.018, 0.305, 15.6), SIFT=(0.432, 0.417, 0.036, 0.313, 33.3),
     SuperGlue=(0.555, 0.453, 0.414, 0.353, 1594.0), LoFTR=(0.549, 0.441, 0.336, 0.359, 2331.1),
     YOLOv8=(0.561, 0.453, 0.157, 0.356, 4.6), ViT=(0.654, 0.511, 0.286, 0.331, 238.4),
     DeiT=(0.621, 0.497, 0.250, 0.305, 72.6), CLIP=(0.604, 0.471, 0.143, 0.307, 63.9),
     OSNet=(0.654, 0.520, 0.168, 0.309, 1.8), CrackShape=(0.554, 0.442, 0.082, 0.305, 0.9))
+
+# Every quoted crop row must match the committed benchmark output.
+_ALIAS = {"YOLOv8": "YOLOv8-backbone"}
+for name, (r1_, map_, dir_, f1_, _s) in CROP.items():
+    row = parsed.get(_ALIAS.get(name, name))
+    if not row:
+        fails.append(f"{name} missing from result.txt")
+        print(f"  FAIL  {name:52s} not present in result.txt")
+        continue
+    for col, want in (("R@1", r1_), ("mAP", map_), ("DIR@FAR.1", dir_)):
+        check(f"{name} {col} matches result.txt", row[col], want, tol=1e-3)
+
 v = np.array(list(CROP.values()))
 r1, dirf, f1, sec = v[:, 0], v[:, 2], v[:, 3], v[:, 4] / 280.0
-check("pairF1 band width", f1.max() - f1.min(), 0.054)
 check("pairF1 min", f1.min(), 0.305); check("pairF1 max", f1.max(), 0.359)
-check("pairF1 mean", f1.mean(), 0.324); check("pairF1 sd", f1.std(ddof=1), 0.023)
-check("pairF1 CV", f1.std() / f1.mean(), 0.068)
 check("R@1 span", r1.max() - r1.min(), 0.302)
-check("R@1 CV", r1.std() / r1.mean(), 0.164)
-check("DIR span", dirf.max() - dirf.min(), 0.396)
-check("DIR CV", dirf.std() / dirf.mean(), 0.655)
 check("compute span (x)", sec.max() / sec.min(), 2590, tol=5)
-check("Spearman R@1 vs pairF1", spearmanr(r1, f1)[0], 0.018, tol=0.01)
-check("  ... its p-value", spearmanr(r1, f1)[1], 0.96, tol=0.02)
-check("Spearman log(cost) vs R@1", spearmanr(np.log(sec), r1)[0], 0.018, tol=0.01)
-check("Spearman log(cost) vs pairF1", spearmanr(np.log(sec), f1)[0], 0.497, tol=0.01)
 check("REG DIR / best baseline DIR", 0.768 / dirf.max(), 1.86, tol=0.02)
-check("REG calib F1 / best oracle F1", 0.582 / f1.max(), 1.62, tol=0.02)
-check("REG cost / OSNet cost", (7817.3 / 280) / (1.8 / 280), 4343, tol=10)
+
+# --- the chance levels every quoted excess is measured against -----------
+# Without these the pairwise-F1 numbers above are unreadable: the metric has
+# a floor at 2p/(1+p), three methods sit exactly on it, and the "band" the
+# paper used to quote as evidence about the data is a band pressed against
+# that floor. chance_baseline.py derives them two ways (closed form from
+# prevalence, and 200 random score matrices) and they agree.
+CH = json.load(open(J('banchmark_out/chance.json')))
+check("test prevalence", CH["prevalence"], 0.1798, tol=1e-3)
+check("analytic pairF1 floor 2p/(1+p)", CH["analytic_pair_f1_floor"], 0.3048, tol=1e-3)
+check("simulated pairF1 chance", CH["chance"]["pair_f1"]["mean"], 0.3049, tol=2e-3)
+check("  ... its sd (a floor, not an average)",
+      CH["chance"]["pair_f1"]["sd"], 0.0001, tol=1e-3)
+check("chance R@1", CH["chance"]["rank1"]["mean"], 0.336, tol=0.01)
+check("chance R@5", CH["chance"]["rank5"]["mean"], 0.767, tol=0.01)
+check("chance mAP", CH["chance"]["mAP"]["mean"], 0.385, tol=0.01)
+check("chance DIR@FAR.1", CH["chance"]["dir_at_far10"]["mean"], 0.038, tol=0.01)
+check("chance assign-F1", CH["chance"]["assign_f1"]["mean"], 0.311, tol=0.01)
+
+floor = CH["analytic_pair_f1_floor"]
+excess = {k: CROP[k][3] - floor for k in CROP}
+check("max crop excess over chance (LoFTR)", max(excess.values()), 0.054, tol=2e-3)
+check("min crop excess over chance", min(excess.values()), 0.000, tol=2e-3)
+check("methods at exactly chance", sum(1 for e in excess.values() if e < 1e-3), 3, tol=0)
+# ORB is BELOW chance on three metrics; the paper says so.
+check("ORB R@5 below chance", CROP["ORB"][0] * 0 + 0.759 - CH["chance"]["rank5"]["mean"],
+      -0.008, tol=0.012)
+check("ORB mAP below chance", CROP["ORB"][1] - CH["chance"]["mAP"]["mean"], -0.021, tol=0.012)
+check("ORB DIR below chance", CROP["ORB"][2] - CH["chance"]["dir_at_far10"]["mean"],
+      -0.020, tol=0.012)
+
+# --- the near-duplicate structure (Sec. IV-B) ----------------------------
+FG = CH["frame_gap"]
+check("nearest answer is the adjacent frame",
+      FG["nearest_answer_frame_distance"]["frac_adjacent"], 1.0, tol=1e-9)
+check("  ... over how many queries", FG["nearest_answer_frame_distance"]["n"], 280, tol=0)
+for g, (nq, prev, fl) in {"0": (280, 0.1798, 0.3048), "1": (205, 0.1446, 0.2527),
+                          "2": (149, 0.1205, 0.2151), "3": (105, 0.1021, 0.1852)}.items():
+    check(f"gap {g}: answerable queries", FG["per_gap"][g]["answerable_queries"], nq, tol=0)
+    check(f"gap {g}: prevalence", FG["per_gap"][g]["prevalence"], prev, tol=1e-3)
+    check(f"gap {g}: chance pairF1", FG["per_gap"][g]["chance_pair_f1"], fl, tol=1e-3)
+
+# --- coverage is not independent of the label (Sec. VI-C, VII) -----------
+CC = CH["coverage_confound"]
+check("positives retained by registration", CC["positives_retained"], 1.000, tol=1e-6)
+check("negatives retained by registration", CC["negatives_retained"], 0.368, tol=5e-3)
+check("prevalence on the scorable subset", CC["prevalence_scorable_pool"], 0.3733, tol=1e-3)
+check("pairF1 floor on the scorable subset",
+      CC["chance_pair_f1_scorable_pool"], 0.5437, tol=1e-3)
+check("coverage-only pairF1 (closed form)", CC["coverage_only_pair_f1"], 0.5437, tol=1e-3)
+# ... and the same number produced by actually running it through benchmark.py
+check("unknown queries the OLD open_set_curve dropped", CC["dropped_unknown"], 102, tol=0)
+check("known queries it dropped (the asymmetry)", CC["dropped_known"], 0, tol=0)
 
 print("\n[2] Dataset composition (Table II)")
 sp = json.load(open(J('dataset/splits.json')))

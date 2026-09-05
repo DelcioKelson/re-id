@@ -1,0 +1,115 @@
+{
+ "split": "test",
+ "seed": 0,
+ "repeats": 200,
+ "n_queries": 538,
+ "n_gallery": 538,
+ "valid_pairs": 31822,
+ "positive_pairs": 5722,
+ "prevalence": 0.179812708189303,
+ "analytic_pair_f1_floor": 0.30481568293202643,
+ "chance": {
+  "rank1": {
+   "mean": 0.33571428571428574,
+   "sd": 0.023860020631915436,
+   "n": 200
+  },
+  "rank5": {
+   "mean": 0.7664821428571429,
+   "sd": 0.018974981706877364,
+   "n": 200
+  },
+  "mAP": {
+   "mean": 0.38478814111701953,
+   "sd": 0.005312233010080649,
+   "n": 200
+  },
+  "dir_at_far10": {
+   "mean": 0.03823214285714286,
+   "sd": 0.012723227273579347,
+   "n": 200
+  },
+  "pair_f1": {
+   "mean": 0.3048591570902613,
+   "sd": 9.935070046026919e-05,
+   "n": 200
+  },
+  "assign_f1": {
+   "mean": 0.31087231032947715,
+   "sd": 0.005210417832558462,
+   "n": 200
+  }
+ },
+ "frame_gap": {
+  "per_gap": {
+   "0": {
+    "answerable_queries": 280,
+    "valid_pairs": 31822,
+    "positive_pairs": 5722,
+    "prevalence": 0.179812708189303,
+    "chance_pair_f1": 0.30481568293202643,
+    "chance_rank1": 0.3314285714285714,
+    "chance_rank1_sd": 0.02452785449766252
+   },
+   "1": {
+    "answerable_queries": 205,
+    "valid_pairs": 23464,
+    "positive_pairs": 3394,
+    "prevalence": 0.1446471189907944,
+    "chance_pair_f1": 0.2527366147888897,
+    "chance_rank1": 0.3500487804878049,
+    "chance_rank1_sd": 0.02735189418317304
+   },
+   "2": {
+    "answerable_queries": 149,
+    "valid_pairs": 17264,
+    "positive_pairs": 2080,
+    "prevalence": 0.12048192771084337,
+    "chance_pair_f1": 0.21505376344086022,
+    "chance_rank1": 0.3210738255033557,
+    "chance_rank1_sd": 0.04291630141945816
+   },
+   "3": {
+    "answerable_queries": 105,
+    "valid_pairs": 12540,
+    "positive_pairs": 1280,
+    "prevalence": 0.10207336523125997,
+    "chance_pair_f1": 0.18523878437047755,
+    "chance_rank1": 0.36495238095238103,
+    "chance_rank1_sd": 0.036236395262881346
+   }
+  },
+  "nearest_answer_frame_distance": {
+   "n": 280,
+   "histogram": {
+    "1": 280
+   },
+   "median": 1.0,
+   "frac_adjacent": 1.0
+  }
+ },
+ "coverage_confound": {
+  "valid_pairs": 31822,
+  "scorable_pairs": 15328,
+  "positives_retained": 1.0,
+  "negatives_retained": 0.3680459770114943,
+  "prevalence_full_pool": 0.179812708189303,
+  "prevalence_scorable_pool": 0.37330375782881003,
+  "chance_pair_f1_full_pool": 0.30481568293202643,
+  "chance_pair_f1_scorable_pool": 0.5436579572446556,
+  "coverage_only_pair_f1": 0.5436579572446556,
+  "queries_total": 538,
+  "queries_known": 280,
+  "queries_unknown": 258,
+  "dropped_known": 0,
+  "dropped_unknown": 102,
+  "dropped_by_wall": {
+   "wall10": 19,
+   "wall13": 14,
+   "wall14": 9,
+   "wall15": 6,
+   "wall16": 34,
+   "wall17": 20
+  }
+ }
+}

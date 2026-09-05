@@ -1,0 +1,49 @@
+# Environment that produced the reported results.
+#
+#   python -m venv .venv && . .venv/bin/activate
+#   pip install -r requirements.txt
+#
+# Python 3.14 was used; 3.10+ should work. A GPU is optional -- everything
+# except LoFTR and SuperGlue runs at acceptable speed on CPU, and the
+# geometric method is CPU-bound regardless (its cost is SIFT + MAGSAC per
+# image pair, not a network forward pass).
+#
+# Versions are pinned because the benchmark's whole contribution is a
+# measurement. `requirements.lock` carries the full transitive freeze from
+# the machine that produced Table I; this file is the direct set.
+
+# --- core: needed for the dataset, the metrics, and the geometric method ---
+numpy==2.5.1
+scipy==1.18.0
+opencv-python==5.0.0.93        # SIFT/ORB/MAGSAC/ECC/CLAHE all live here
+
+# --- analysis, figures, tests ---
+matplotlib==3.11.1
+scikit-learn==1.9.0
+pytest==9.1.1
+
+# --- crop-scope baselines (optional; each is skipped cleanly if absent) ---
+# benchmark.py catches ImportError per scorer and prints what is missing,
+# so a core-only install still runs SIFT, ORB, CrackShape, coverage-only
+# and the full geometric pipeline.
+torch==2.13.0
+torchvision==0.28.0
+timm==1.0.28                   # ViT, DeiT
+transformers==5.15.0           # CLIP
+kornia==0.8.3                  # LoFTR
+ultralytics==8.4.104           # YOLOv8 backbone
+torchreid==0.2.5               # OSNet
+gdown==6.1.0                   # torchreid weight download
+yacs                           # torchreid runtime dep
+
+# --- SuperGlue is NOT a package ---
+# It is a repository checkout under third_party/, cloned by colab_setup.sh.
+# Research / non-commercial licence: check it before use.
+#   git clone --depth 1 \
+#     https://github.com/magicleap/SuperGluePretrainedNetwork \
+#     third_party/SuperGluePretrainedNetwork
+#
+# --- crack segmentation masks ---
+# dataset/masks/ is COMMITTED, so nothing here needs the segmenter to
+# reproduce any reported number. See dataset/README.md for the checkpoint's
+# provenance if you want to re-segment.

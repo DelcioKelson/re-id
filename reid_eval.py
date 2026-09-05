@@ -360,6 +360,19 @@ def open_set_curve(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
     if the top-ranked gallery entry is both above threshold AND correct.
     Unknown queries (identity absent - the crack was repaired, or is new)
     count as a false alarm whenever anything scores above threshold.
+
+    Missing scores are CHARGED, not skipped. A query whose entire valid row
+    is unscorable keeps its place in the pool with a top score of -inf: it
+    can never clear a threshold, so a known query counts as a miss and an
+    unknown query as a correct rejection. Dropping such rows instead --
+    which this used to do, via `if not np.isfinite(s).any(): continue` --
+    silently shrinks the pool, and it shrinks it asymmetrically: on this
+    data the registration scorer lost 102 of 258 unknown test queries and 0
+    of 280 known ones, because registration succeeds precisely when the two
+    photographs overlap, which is also when the answer is present. That
+    inflates the false-alarm DENOMINATOR's sensitivity and contradicts the
+    protocol the paper states. Only methods with unscorable pairs were
+    affected; every crop baseline scores every pair.
     """
     known_best, known_top_correct, unknown_best = [], [], []
 
@@ -367,10 +380,8 @@ def open_set_curve(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
         mask = valid[i]
         if not mask.any():
             continue
-        s = scores[i][mask]
+        s = np.where(np.isfinite(scores[i]), scores[i], -np.inf)[mask]
         r = (relevant[i] & mask)[mask]
-        if not np.isfinite(s).any():
-            continue
         top = int(np.argmax(s))
         if r.any():
             known_best.append(s[top])
@@ -385,7 +396,12 @@ def open_set_curve(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
     pool = np.concatenate([known_best, unknown_best]) if len(unknown_best) else known_best
     pool = pool[np.isfinite(pool)]
     if len(pool) == 0:
-        return {"thresholds": [], "dir": [], "far": []}
+        # A method that scored nothing still has a pool. Report the counts
+        # so callers can tell "no queries" from "no query was scorable",
+        # and so the pool size stays comparable across methods.
+        return {"thresholds": [], "dir": [], "far": [],
+                "n_known": int(len(known_best)),
+                "n_unknown": int(len(unknown_best))}
 
     thresholds = _threshold_grid(pool, n_thresholds)
     dir_rate, far_rate = [], []
@@ -420,18 +436,32 @@ def pair_pr_curve(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
     This is the curve that tells an engineer where to set the operating
     threshold, and it is comparable across methods in a way that a single
     accuracy number is not.
+
+    Unscorable pairs are CHARGED as predicted-negative, not dropped from the
+    pool. Dropping them -- which this used to do -- makes the curve
+    conditional on coverage, and coverage is not independent of the label:
+    for the registration scorer the scorable subset keeps 100% of positive
+    pairs but only 37% of negatives, lifting positive prevalence from 0.180
+    to 0.373. Since best-F1 over a threshold grid includes the degenerate
+    "predict everything positive" point, whose F1 is 2p/(1+p), that shift
+    moves the floor from 0.305 to 0.544 -- so a dropped-cell F1 was being
+    compared against baselines measured on a differently balanced pool.
+
+    F1 ignores true negatives, so charging cells that contain no positives
+    leaves the reported VALUE unchanged; what it fixes is the comparison.
+    See `chance_pair_f1` for the floor this curve cannot go below.
     """
     s = scores[valid]
     y = relevant[valid]
     finite = np.isfinite(s)
-    s, y = s[finite], y[finite]
-    if len(s) == 0 or not y.any():
+    if not finite.any() or not y.any():
         return {"thresholds": [], "precision": [], "recall": [], "f1": []}
 
-    thresholds = _threshold_grid(s, n_thresholds)
+    # Grid from the finite scores only; the curve is evaluated over ALL pairs.
+    thresholds = _threshold_grid(s[finite], n_thresholds)
     precision, recall, f1 = [], [], []
     for t in thresholds:
-        pred = s >= t
+        pred = finite & (s >= t)
         tp = int((pred & y).sum())
         fp = int((pred & ~y).sum())
         fn = int((~pred & y).sum())
@@ -454,20 +484,49 @@ def pair_f1_at(scores: np.ndarray, relevant: np.ndarray, valid: np.ndarray,
     Quoting it beside a validation-calibrated assignment F1 invites the
     reader to compare an oracle with an honest number. This evaluates the
     same curve at the threshold calibration actually chose.
+
+    Unscorable pairs are charged as predicted-negative, matching
+    `pair_pr_curve`.
     """
     s = scores[valid]
     y = relevant[valid]
     finite = np.isfinite(s)
-    s, y = s[finite], y[finite]
-    if len(s) == 0 or not y.any():
+    if not finite.any() or not y.any():
         return 0.0
-    pred = s >= threshold
+    pred = finite & (s >= threshold)
     tp = int((pred & y).sum())
     fp = int((pred & ~y).sum())
     fn = int((~pred & y).sum())
     p = tp / (tp + fp) if (tp + fp) else 1.0
     r = tp / (tp + fn) if (tp + fn) else 0.0
     return float(2 * p * r / (p + r)) if (p + r) else 0.0
+
+
+def chance_pair_f1(relevant: np.ndarray, valid: np.ndarray) -> float:
+    """The pairwise-F1 floor that no method on this pool can fall below.
+
+    `pair_pr_curve` reports best-F1 over a threshold grid, and that
+    maximisation includes the degenerate threshold at which EVERY pair is
+    predicted positive. That strategy scores 2p/(1+p), where p is positive
+    prevalence, irrespective of the scores -- so pairwise F1 carries a hard,
+    pool-dependent floor, and a method with no discriminative power at all
+    still reports it.
+
+    On the CrackID test split p = 0.180, so the floor is 0.305 -- which is
+    exactly where three of the ten benchmarked crop-scope methods land, and
+    only 0.054 below the best of them. Any pairwise F1 quoted without this
+    number beside it is unreadable, and a "narrow band" of pairwise F1
+    across methods is evidence of the floor before it is evidence of
+    anything about the data.
+
+    Verified against simulation in tests/test_reid_eval.py: 200 random score
+    matrices reproduce this value to within 1e-3.
+    """
+    n = int(valid.sum())
+    if n == 0:
+        return 0.0
+    p = float((relevant & valid).sum()) / n
+    return (2 * p / (1 + p)) if p > 0 else 0.0
 
 
 # ===========================================================================

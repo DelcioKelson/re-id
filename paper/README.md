@@ -6,27 +6,31 @@ LaTeX source for the IEEE conference submission built from this repository.
 
 ## Where every number comes from
 
-Every figure and table is regenerated from committed artefacts; nothing is
-transcribed by hand except Table I, which is a direct copy of
-`../banchmark_out/result.txt` (checked by `verify_claims.py`).
+Every figure and table is regenerated from committed artefacts. Table I is a
+direct copy of `../banchmark_out/result.txt`, and `verify_claims.py` now
+*parses that file* and asserts each quoted row against it -- previously the ten
+rows were hardcoded in the verifier, so the one link never checked was the one
+from benchmark output to published table.
 
 | Artefact | Produced by | Used for |
 |---|---|---|
 | `../banchmark_out/result.txt` | `benchmark.py` | Table I, Fig. 1 |
 | `../banchmark_out/pair_outcomes.json` | `viewpoint.py` | Fig. 2, coverage, gate sweep |
 | `../banchmark_out/viewpoint.json` | `viewpoint.py` | Fig. 3, viewpoint stats, logistic fit |
+| `../banchmark_out/chance.json` | `chance_baseline.py` | chance levels, the frame-gap sweep, the coverage confound |
 | `../dataset/quality.json` | `image_quality.py` | gate sweep, Fig. 2 ordering |
-| `../dataset/labels/*.json` | `label_points.py` | Table II (composition) |
+| `../dataset/labels/*.json` | `label_points.py` | dataset composition (Sec. IV-A) |
 | `../dataset/labels/_changelog.json` | `prefill_labels.py` | merge provenance, Sec. IV-C |
 | `../dataset/labels/_triage.json` | `prefill_labels.py` | the 57 widest-gap merges |
 | `../dataset/labels_old/` | `prefill_labels.py` | pre-merge labelling, for the ARI |
-| `synth/rows_{rot,tilt,scale}.json` | `synthetic_viewpoint.py` | Table II (designed viewpoint ablation) |
+| `synth/rows_{rot,tilt,scale}.json` | `synthetic_viewpoint.py` | the designed viewpoint ablation (Sec. V-F, in prose) |
 
+    python ../chance_baseline.py ../dataset --out ../banchmark_out
     python make_figs.py        # regenerates figs/*.pdf
-    python verify_claims.py    # re-derives all 78 quoted statistics
+    python verify_claims.py    # re-derives every quoted statistic
 
 `verify_claims.py` exits non-zero if any number in the paper stops matching the
-artefacts. It currently passes on every quoted statistic except the two below.
+artefacts. It currently passes on every quoted statistic.
 
 ## Regenerating the designed viewpoint ablation (Table II)
 

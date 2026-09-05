@@ -54,6 +54,32 @@ S.~A. P{\'e}rez-Zarate, D.~Corzo-Garc{\'i}a, J.~L. Pro-Mart{\'i}n
   Insurance company use case,'' \emph{Applied Sciences}, vol.~14, no.~20, p.
   9560, 2024.
 
+\bibitem{zou2012cracktree}
+Q.~Zou, Y.~Cao, Q.~Li, Q.~Mao, and S.~Wang, ``{CrackTree}: Automatic crack
+  detection from pavement images,'' \emph{Pattern Recognition Letters},
+  vol.~33, no.~3, pp. 227--238, 2012.
+
+\bibitem{shi2016cfd}
+Y.~Shi, L.~Cui, Z.~Qi, F.~Meng, and Z.~Chen, ``Automatic road crack detection
+  using random structured forests,'' \emph{IEEE Trans. Intelligent
+  Transportation Systems}, vol.~17, no.~12, pp. 3434--3445, 2016.
+
+\bibitem{yang2018crack500}
+F.~Yang, L.~Zhang, S.~Yu, D.~Prokhorov, X.~Mei, and H.~Ling, ``Feature pyramid
+  and hierarchical boosting network for pavement crack detection,'' in
+  \emph{IEEE Trans. Intelligent Transportation Systems}, 2020.
+
+\bibitem{liu2019deepcrack}
+Y.~Liu, J.~Yao, X.~Lu, R.~Xie, and L.~Li, ``{DeepCrack}: A deep hierarchical
+  feature learning architecture for crack segmentation,''
+  \emph{Neurocomputing}, vol. 338, pp. 139--153, 2019.
+
+\bibitem{eisenbach2017gaps}
+M.~Eisenbach, R.~Stricker, D.~Seichter, K.~Amende, K.~Debes, M.~Sesselmann,
+  D.~Ebersbach, U.~Stoeckert, and H.-M. Gross, ``How to get pavement distress
+  detection ready for deep learning? a systematic approach,'' in \emph{Int.
+  Joint Conf. Neural Networks (IJCNN)}, 2017, pp. 2039--2047.
+
 \bibitem{mallios2023multiview}
 D.~Mallios, L.~Xiaofei, N.~McLaughlin, J.~M. Del~Rincon, C.~Galbraith, and
   R.~Garland, ``Vehicle damage severity estimation for insurance operations
@@ -80,6 +106,10 @@ X.~Sun and P.~Chang, ``Robust perspective correction for real-world crack
 \bibitem{nec2019guide}
 {NEC Corporation}, ``Photographing guide device,'' US Patent 12{,}223{,}639 B2
   (priority 2019), 2025.
+
+\bibitem{liao2014openset}
+S.~Liao, Z.~Mo, Y.~Hu, and S.~Z. Li, ``Open-set person re-identification,'' in
+  \emph{arXiv:1408.0872}, 2014.
 
 \bibitem{lowe2004sift}
 D.~G. Lowe, ``Distinctive image features from scale-invariant keypoints,''
@@ -132,10 +162,35 @@ S.~Xu, S.~Chen, R.~Xu, C.~Wang, P.~Lu, and L.~Guo, ``Local feature matching
   using deep learning: A survey,'' \emph{Information Fusion}, vol. 107, p.
   102344, 2024.
 
+\bibitem{oquab2024dinov2}
+M.~Oquab, T.~Darcet, T.~Moutakanni \emph{et~al.}, ``{DINOv2}: Learning robust
+  visual features without supervision,'' \emph{Transactions on Machine Learning
+  Research}, 2024.
+
+\bibitem{lindenberger2023lightglue}
+P.~Lindenberger, P.-E. Sarlin, and M.~Pollefeys, ``{LightGlue}: Local feature
+  matching at light speed,'' in \emph{IEEE/CVF Int. Conf. Computer Vision
+  (ICCV)}, 2023, pp. 17\,627--17\,638.
+
 \bibitem{maiano2023antifraud}
 L.~Maiano, A.~Montuschi, M.~Caserio \emph{et~al.}, ``A deep-learning-based
   antifraud system for car-insurance claims,'' \emph{Expert Systems with
   Applications}, vol. 231, p. 120644, 2023.
+
+\bibitem{sakurada2015changedetection}
+K.~Sakurada and T.~Okatani, ``Change detection from a street image pair using
+  {CNN} features and superpixel segmentation,'' in \emph{British Machine Vision
+  Conference (BMVC)}, 2015.
+
+\bibitem{alcantarilla2018street}
+P.~F. Alcantarilla, S.~Stent, G.~Ros, R.~Arroyo, and R.~Gherardi, ``Street-view
+  change detection with deconvolutional networks,'' \emph{Autonomous Robots},
+  vol.~42, no.~7, pp. 1301--1322, 2018.
+
+\bibitem{arandjelovic2016netvlad}
+R.~Arandjelovi{\'c}, P.~Gronat, A.~Torii, T.~Pajdla, and J.~Sivic, ``{NetVLAD}:
+  {CNN} architecture for weakly supervised place recognition,'' in \emph{IEEE
+  Conf. Computer Vision and Pattern Recognition (CVPR)}, 2016, pp. 5297--5307.
 
 \bibitem{hartley2004mvg}
 R.~Hartley and A.~Zisserman, \emph{Multiple View Geometry in Computer Vision},
@@ -148,9 +203,19 @@ M.~A. Fischler and R.~C. Bolles, ``Random sample consensus: A paradigm for
   cartography,'' in \emph{Readings in Computer Vision}.\hskip 1em plus 0.5em
   minus 0.4em\relax Morgan Kaufmann, 1987, pp. 726--740.
 
+\bibitem{barath2019magsac}
+D.~Barath, J.~Matas, and J.~Noskova, ``{MAGSAC}: Marginalizing sample
+  consensus,'' in \emph{IEEE/CVF Conf. Computer Vision and Pattern Recognition
+  (CVPR)}, 2019, pp. 10\,197--10\,205.
+
 \bibitem{acuna2019homography}
 R.~Acuna and V.~Willert, ``Insights into the robustness of control point
   configurations for homography and planar pose estimation,''
   \emph{arXiv:1803.03025}, 2019.
+
+\bibitem{evangelidis2008ecc}
+G.~D. Evangelidis and E.~Z. Psarakis, ``Parametric image alignment using
+  enhanced correlation coefficient maximization,'' \emph{IEEE Trans. Pattern
+  Analysis and Machine Intelligence}, vol.~30, no.~10, pp. 1858--1865, 2008.
 
 \end{thebibliography}

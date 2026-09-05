@@ -64,35 +64,63 @@ is in fact correctly aligned. We use the symmetric mean distance between pixel
 sets, computed over the union bounding box of the two instances with a cheap
 rejection when boxes are far apart.
 
-Raw Chamfer is a distance in \emph{pixels}, and every photograph pair carries
-its own independently solved homography, so its scale differs per pair and per
-crack size: $3$\,px of error on a $40$\,px crack and on a $400$\,px crack are not
-the same evidence. Since $\mathrm{DIR}@\mathrm{FAR}$, pairwise $F_1$, and the
-assignment all apply \emph{one global threshold}, a raw-pixel score would make
-them measure calibration rather than accuracy. We therefore score with
-\textbf{Chamfer coverage}, the symmetric fraction of each instance's pixels
-lying within $\tau$ of the other,
+Concretely, the reported score is the \textbf{symmetric mean Chamfer
+distance} in pixels between the projected pixel set of $a$ and the pixel set of
+$b$,
+\begin{equation}
+D(a,b) = \tfrac{1}{2}\!\left[
+\frac{1}{|a|}\sum_{p \in a} d(p, b) \;+\;
+\frac{1}{|b|}\sum_{q \in b} d(q, a)\right],
+\label{eq:chamfer}
+\end{equation}
+computed over the union bounding box of the two instances with a cheap
+rejection when the boxes are far apart.
+
+Equation~(\ref{eq:chamfer}) has a known weakness that we report rather than
+paper over. It is a distance in \emph{pixels}, and every photograph pair
+carries its own independently solved homography, so its scale differs per pair
+and per crack size: $3$\,px of error on a $40$\,px crack and on a $400$\,px
+crack are not the same evidence. Since $\mathrm{DIR}@\mathrm{FAR}$, pairwise
+$F_1$ and the assignment all apply \emph{one global threshold}, a raw-pixel
+score makes them partly measure calibration rather than accuracy. The
+scale-free alternative is \textbf{Chamfer coverage}, the symmetric fraction of
+each instance's pixels lying within $\tau$ of the other,
 \begin{equation}
 C(a,b) = \tfrac{1}{2}\!\left[
 \frac{|\{p \in a : d(p, b) \leq \tau\}|}{|a|} +
 \frac{|\{q \in b : d(q, a) \leq \tau\}|}{|b|}\right],
+\label{eq:coverage}
 \end{equation}
-which is bounded in $[0,1]$ and scale-free, so a threshold learned on validation
-transfers to test. We set $\tau$ from the registration's own inlier RMS for that
-pair where available.
+bounded in $[0,1]$, with $\tau$ set from the pair's own registration inlier RMS
+where available and a default otherwise. Sec.~\ref{sec:chamferablation} reports
+both under the identical protocol, so the design decision and its cost are
+visible rather than asserted.
 
-\subsection{Global assignment and explicit non-answers}
-Correspondence is solved as a one-to-one assignment per image pair by the
-Hungarian algorithm with an explicit rejection threshold, not by per-query
-argmax --- which would permit two cracks in $I_a$ to both claim the same crack
-in $I_b$, not a physically admissible reading of a surface. Unmatched instances
-are reported as \emph{disappeared} or \emph{newly appeared} rather than forced
-to a nearest neighbour.
+\subsection{Explicit non-answers, and the licensed negative}
+Correspondence is delivered as a one-to-one assignment per image pair with an
+explicit rejection threshold, not as a per-query argmax --- which would permit
+two cracks in $I_a$ to both claim the same crack in $I_b$, not a physically
+admissible reading of a surface. Unmatched instances are reported as
+\emph{disappeared} or \emph{newly appeared} rather than forced to a nearest
+neighbour.
 
-This is where the geometric formulation earns its place. Because the two
-photographs are aligned, the system can project a recorded crack into the new
-image and observe that the region is visible and the crack is not in it. That is
-a \textbf{licensed negative} --- positive evidence of absence --- and it is
-categorically stronger than the low similarity score that is the only negative a
-crop embedding can produce. It is also the mechanism behind the open-set gap
-reported next.
+We are explicit that the Hungarian solve itself is part of the
+\emph{evaluation}, not a privilege of this method: \texttt{reid\_eval} applies
+the same per-image-pair assignment to every method's score matrix, so a method
+that natively produces assignments gets no advantage from doing so
+(Sec.~\ref{sec:protocol}).
+
+What \emph{is} specific to the geometric formulation is the evidence it can
+produce for a negative. Because the two photographs are aligned, the system can
+project a recorded crack into the new image and observe that the region is
+visible and the crack is not in it --- a \textbf{licensed negative}, positive
+evidence of absence, categorically stronger than the low similarity score that
+is the only negative a crop embedding can produce. Mechanically this is a
+distinct outcome in the score matrix: a projected crack falling outside the
+gallery photograph is recorded as a confident rejection rather than as an
+unscorable pair, and the two are counted separately
+(Sec.~\ref{sec:coverage}). It is the mechanism behind the open-set gap reported
+next, and Sec.~\ref{sec:results} isolates it: a control that exploits this
+method's registration \emph{coverage} without ever examining a crack scores
+$0.000$ on $\mathrm{DIR}@\mathrm{FAR}{=}0.1$, so the open-set result is not a
+coverage artefact.

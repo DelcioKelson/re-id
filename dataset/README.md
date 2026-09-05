@@ -73,3 +73,30 @@ describe the split as sessions, visits, inspections, or dates.
 4. **Run.**
 
        python benchmark.py dataset --methods sift orb registration
+
+## Provenance of the masks
+
+`masks/` is committed, so no reported number needs the segmenter to be
+re-run. The masks come from a UNet++ crack segmenter trained on **public
+crack-segmentation data only**. No CrackID wall, and no photograph from
+this site or capture session, appears in its training set, so there is no
+path from the evaluation walls into the mask model.
+
+Masks are treated as given and their error is not quantified; there are no
+hand-drawn reference masks for this data. `segmentation_audit.py` holds the
+sensitivity sweep over `min_area` and `close_px`, which becomes checkable
+once reference masks exist.
+
+## Two properties of this data that must be reported with any result
+
+1. **The adjacent frame is always an answer.** For 100% of answerable test
+   queries the nearest correct gallery entry is the immediately adjacent
+   frame, a median of 3 s away. At `--min-frame-gap 0` this is
+   near-duplicate retrieval. Sweep the gap and report the curve.
+
+2. **Every metric has a chance level, and two are high.** Pairwise F1
+   cannot fall below 0.305 on this pool, because best-F1 over a threshold
+   grid includes the degenerate all-positive threshold, which scores
+   2p/(1+p). Rank-5 chance is 0.767. Run `chance_baseline.py` and quote the
+   floor beside the number; the floor moves with the frame gap and with a
+   method's own coverage.
