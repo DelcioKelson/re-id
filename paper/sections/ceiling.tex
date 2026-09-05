@@ -211,29 +211,3 @@ backbone such as DINOv2. What the result establishes is that the obvious moves
 have been tried, that they land between $0.000$ and $0.054$ above chance on the
 decision a maintenance system makes, and that this is reason to change the
 formulation rather than the encoder.
-
-\subsection{A designed viewpoint ablation}
-\label{sec:synth}
-The evidence above is observational: the viewpoint variation is whatever the
-capture produced. To test sensitivity by design, we warp each admitted
-photograph, its mask, and its label points by a homography with \emph{exactly
-known} scale, rotation, and tilt, and query the wall's \emph{unmodified} real
-gallery with it. Only the geometry between the views is synthetic; crack
-appearance, texture, and sensor noise are real, and the construction is
-self-checking --- decomposing the transform recovers the requested parameters to
-floating point.
-
-There is almost no response. From the identity transform (SIFT Rank-1 $0.469$,
-ORB $0.456$, $n{=}207$), rotating every query by $45^\circ$ costs SIFT $0.051$
-and \emph{gains} ORB $0.046$ ($n{=}201$); a $60^\circ$ tilt costs SIFT $0.037$
-and gains ORB $0.033$ ($n{=}192$). A $3\times$ scale change moves SIFT
-$0.469 \to 0.424$, but is confounded: upscaling pushes labelled points out of
-frame, so $n$ falls $207 \to 66$ and the survivors are a more central subset.
-
-We read this as corroboration rather than a separate finding, and weakly: at
-Rank-1 $\approx 0.46$ against a chance level of $0.336$, SIFT and ORB are the
-two weakest methods in the table and are close enough to the floor that a null
-response is not very informative. Three limits: only the two cheapest baselines
-were run, the transforms are exactly affine by construction so this says
-nothing about projective distortion, and a null result near a floor is weak
-evidence about a method with headroom.

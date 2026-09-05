@@ -267,39 +267,6 @@ check("median consecutive-frame gap (s)", float(np.median(g)), 3, tol=0)
 check("max consecutive-frame gap (s)", max(g), 20, tol=0)
 check("max per-wall span (s)", max(spans), 81, tol=0)
 
-print("\n[8] Designed viewpoint ablation (Sec. V-D, reported in prose)")
-import collections
-def bins(axis):
-    rows = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                       "synth", f"rows_{axis}.json")))
-    g = collections.defaultdict(list)
-    for r in rows:
-        g[(r["method"], r["scale"], r["rotation_deg"], r["tilt_deg"])].append(r)
-    out = {}
-    for k, v in g.items():
-        w = np.array([r["n_queries"] for r in v], float)
-        if not w.sum():
-            continue
-        out[k] = (int(w.sum()), float((w / w.sum() @ [r["rank1"] for r in v])),
-                  float(np.mean([r["dir_at_far10"] for r in v])))
-    return out
-R, T = bins("rot"), bins("tilt")
-for (src, key, n, r1_) in [
-        (R, ("sift", 1.0, 0.0, 0.0), 207, 0.469), (R, ("sift", 1.0, 45.0, 0.0), 201, 0.418),
-        (R, ("orb", 1.0, 0.0, 0.0), 207, 0.456),  (R, ("orb", 1.0, 45.0, 0.0), 201, 0.502),
-        (T, ("sift", 1.0, 0.0, 60.0), 192, 0.432), (T, ("orb", 1.0, 0.0, 60.0), 192, 0.489)]:
-    got_n, got_r1, _ = src[key]
-    check(f"synth {key[0]} rot{key[2]:.0f} tilt{key[3]:.0f}: n", got_n, n, tol=0)
-    check(f"synth {key[0]} rot{key[2]:.0f} tilt{key[3]:.0f}: R@1", got_r1, r1_, tol=0.002)
-check("SIFT R@1 drop over 45 deg rotation",
-      R[("sift", 1.0, 0.0, 0.0)][1] - R[("sift", 1.0, 45.0, 0.0)][1], 0.051, tol=0.003)
-check("ORB R@1 gain over 45 deg rotation",
-      R[("orb", 1.0, 45.0, 0.0)][1] - R[("orb", 1.0, 0.0, 0.0)][1], 0.046, tol=0.003)
-check("SIFT R@1 drop over 60 deg tilt",
-      T[("sift", 1.0, 0.0, 0.0)][1] - T[("sift", 1.0, 0.0, 60.0)][1], 0.037, tol=0.003)
-check("ORB R@1 gain over 60 deg tilt",
-      T[("orb", 1.0, 0.0, 60.0)][1] - T[("orb", 1.0, 0.0, 0.0)][1], 0.033, tol=0.003)
-
 print("\n" + "=" * 74)
 if fails:
     print(f"{len(fails)} CLAIM(S) FAILED TO REPRODUCE:"); [print("  -", f) for f in fails]

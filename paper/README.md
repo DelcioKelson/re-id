@@ -23,7 +23,6 @@ from benchmark output to published table.
 | `../dataset/labels/_changelog.json` | `prefill_labels.py` | merge provenance, Sec. IV-C |
 | `../dataset/labels/_triage.json` | `prefill_labels.py` | the 57 widest-gap merges |
 | `../dataset/labels_old/` | `prefill_labels.py` | pre-merge labelling, for the ARI |
-| `synth/rows_{rot,tilt,scale}.json` | `synthetic_viewpoint.py` | the designed viewpoint ablation (Sec. V-F, in prose) |
 
     python ../chance_baseline.py ../dataset --out ../banchmark_out
     python make_figs.py        # regenerates figs/*.pdf
@@ -31,19 +30,6 @@ from benchmark output to published table.
 
 `verify_claims.py` exits non-zero if any number in the paper stops matching the
 artefacts. It currently passes on every quoted statistic.
-
-## Regenerating the designed viewpoint ablation (Table II)
-
-    python synthetic_viewpoint.py dataset --out synth/rot \
-        --scales 1.0 --rotations 0,15,30,45 --tilts 0 \
-        --methods sift orb --min-sharpness 10 --max-sources-per-wall 3
-    python synthetic_viewpoint.py dataset --out synth/tilt \
-        --scales 1.0 --rotations 0 --tilts 0,30,60 \
-        --methods sift orb --min-sharpness 10 --max-sources-per-wall 3
-
-Adding `registration` to `--methods` extends the ablation to the proposed
-method; it was omitted here purely on cost (one full evaluation per bin per
-source photograph, and registration is ~26 s per image pair).
 
 ## The one claim the paper deliberately does NOT make
 
