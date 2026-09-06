@@ -18,8 +18,13 @@ oracle-thresholded $F_1^{*}$ (best threshold on test, which flatters every
 method) and $F_1^{@v}$, thresholded on the held-out validation walls; where only
 one column is available for a baseline it is the oracle variant, so the
 comparison is biased \emph{towards} the baselines. \textbf{Missing scores are
-charged, not skipped}: pairs a method cannot register take the failure score and
-rank last, with the query still counted in every metric
+charged, not skipped}: a pair a method cannot score counts as a predicted
+negative and ranks last, with the query still present in \emph{every} metric ---
+ranking, open-set, pairwise and assignment alike. We state this precisely
+because it is easy to implement inconsistently, and because only a method with
+partial coverage is affected: dropping unscorable cells instead makes the
+metric conditional on coverage, and coverage is not independent of the label
+here
 (Sec.~\ref{sec:coverage}).
 
 \subsection{Metrics}
@@ -34,6 +39,14 @@ query is a false alarm whenever anything clears threshold. We also report
 \textbf{assignment $F_1$}, a one-to-one matching per image pair --- the deployed
 operation, since two cracks in today's photograph must not both claim the same
 record.
+
+\textbf{Every metric is reported against its chance level}
+(Sec.~\ref{sec:reference}), because two of them are far from zero: pairwise
+$F_1$ has a hard floor at $2p/(1+p) = 0.305$ on this pool, and Rank-5 chance is
+$0.767$. A number is informative only as excess over that floor, and the floor
+moves whenever the pool does --- with the frame gap, and with a method's own
+coverage. We obtain it two ways that agree: in closed form from the prevalence,
+and by scoring $200$ random matrices through the same evaluation code.
 
 Confidence is reported by resampling \textbf{walls}, not queries: queries from
 one wall share its material, lighting, and camera pass and succeed or fail

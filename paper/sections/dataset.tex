@@ -36,6 +36,42 @@ performance. Sec.~\ref{sec:viewpoint} quantifies the residual viewpoint
 variation the data does span, using an estimator the scoring pipeline never
 sees.
 
+\smallskip
+\noindent\textbf{The adjacent frame is always an answer.} One consequence is
+sharp enough that it must be stated as a number rather than as a caveat. For
+\textbf{$100\%$ of the $280$ answerable test queries, the nearest correct
+gallery entry is the immediately adjacent frame} --- a median of $3$\,s of
+wall-clock away. There is no query in either split whose answer requires
+looking further than one frame. At the default protocol setting
+(\texttt{min\_frame\_gap}$=0$) every ranking number in this paper is therefore
+a near-duplicate retrieval result, and must be read as one.
+
+We do not treat this as a defect to be hidden or a confound to be deleted, but
+as the benchmark's difficulty axis. Excluding gallery photographs within $k$
+frames of the query makes the task progressively harder and the pool
+progressively smaller:
+
+\begin{center}
+\small
+\begin{tabular}{ccccc}
+\toprule
+\texttt{min\_frame\_gap} & answerable queries & valid pairs & prevalence & chance $F_1$ \\
+\midrule
+0 \emph{(reported)} & 280 & 31{,}822 & 0.180 & 0.305 \\
+1 & 205 & 23{,}464 & 0.145 & 0.253 \\
+2 & 149 & 17{,}264 & 0.121 & 0.215 \\
+3 & 105 & 12{,}540 & 0.102 & 0.185 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Note that the chance level of pairwise $F_1$ moves with the gap
+(Sec.~\ref{sec:reference}), so results at different gaps are not comparable
+against a single floor. Sec.~\ref{sec:gapsweep} reports the sweep. Statistical
+power falls quickly --- $105$ answerable queries over $11$ walls at gap $3$ ---
+which is why we report it as a trend with wall-resampled intervals rather than
+replacing Table~\ref{tab:main} with a point estimate at a larger gap.
+
 \subsection{Annotation, and why it needs auditing}
 \label{sec:annotation}
 Labelling crack instances by hand across 140 high-resolution photographs is not

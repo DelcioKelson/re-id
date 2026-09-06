@@ -3,7 +3,9 @@
 \subsection{Crack datasets, and where they stop}
 Automated crack analysis is overwhelmingly a detection and segmentation
 literature~\cite{hasan2025review,perez2024assessment}, and its datasets follow:
-CrackTree, CFD, CRACK500, DeepCrack, GAPs and their successors annotate cracks
+CrackTree~\cite{zou2012cracktree}, CFD~\cite{shi2016cfd},
+CRACK500~\cite{yang2018crack500}, DeepCrack~\cite{liu2019deepcrack},
+GAPs~\cite{eisenbach2017gaps} and their successors annotate cracks
 \emph{within} single images, and the large consolidations merging
 them~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k} inherit that scope. None
 carries an identity label linking a crack in one photograph to the same physical
@@ -45,7 +47,10 @@ supplies.
 
 \subsection{Object re-identification}
 Re-identification matches an instance across
-captures~\cite{qian2024reidtrends}. Handcrafted local
+captures~\cite{qian2024reidtrends}, and open-set identification --- deciding
+whether a probe is in the gallery at all --- is measured by the
+detection-and-identification rate against false alarm rate that we adopt as our
+headline metric~\cite{liao2014openset}. Handcrafted local
 descriptors~\cite{lowe2004sift,bay2006surf,rublee2011orb} are efficient and
 interpretable but need repeatable, distinctive keypoints --- precisely what
 hairline cracks on flat render fail to provide. Learned correspondence replaces
@@ -58,10 +63,15 @@ DeiT~\cite{dosovitskiy2021vit,touvron2021deit}, CLIP~\cite{radford2021clip},
 detector backbones~\cite{xu2024localmatching}, and OSNet~\cite{zhou2019osnet},
 which is designed for instance-level discrimination.
 
-Our benchmark evaluates all of these. Our finding is not that any one of them is
-weak, but that their differences collapse on the decision metric --- a result
-that only becomes visible when the population is broad enough and the metric is
-the deployable one rather than a ranking statistic.
+Our benchmark evaluates all of these. Our finding is not that any one of them
+is weak, but that on the decision metric none of them clears chance by more
+than $0.054$ --- a result that only becomes visible when the population is
+broad enough, the metric is the deployable one rather than a ranking statistic,
+and the chance level is reported beside it. We have not evaluated a current
+self-supervised backbone such as DINOv2~\cite{oquab2024dinov2}, nor
+SuperGlue's faster successor LightGlue~\cite{lindenberger2023lightglue}; both
+are the natural next entries against this benchmark, and the framework and
+protocol here are what make adding them cheap.
 
 \subsection{Damage association in inspection pipelines}
 The closest integrated systems come from vehicle-damage assessment. Maiano
@@ -73,11 +83,29 @@ curated. Our results suggest the crop scope is itself the limiting choice, and
 that a geometry-first formulation --- available whenever the damaged object is a
 rigid surface with texture of its own --- changes what is achievable.
 
+\subsection{Change detection, the nearest formal analogue}
+The move this paper makes --- register two captures of one scene, then reason
+about what is present in one and absent in the other --- is the standard
+formulation of scene change
+detection~\cite{sakurada2015changedetection,alcantarilla2018street}, and our
+\emph{licensed negative} is that literature's core operation applied to defect
+identity. The difference is what the output is for: change detection asks
+\emph{what differs between these two images}, and answers with a pixel mask,
+whereas an inspection record needs \emph{which stored identity this observation
+belongs to, or none}, and answers with an assignment over a gallery. So the
+formulation transfers and the evaluation does not, which is what a benchmark
+has to supply. Relatedly, ``find this surface again from a different
+viewpoint'' is visual place recognition~\cite{arandjelovic2016netvlad}; a VPR
+retrieval front end is the obvious way to amortise the cost of our
+registration stage over a large gallery, and we do not attempt it here.
+
 \subsection{Geometric alignment}
 Planar registration is classical~\cite{hartley2004mvg}, with RANSAC-family
-robust estimation~\cite{fischler1987ransac} and well-understood sensitivity to
+robust estimation~\cite{fischler1987ransac}, its modern marginalising variant
+MAGSAC~\cite{barath2019magsac}, and well-understood sensitivity to
 control-point configuration~\cite{acuna2019homography}; direct photometric
-alignment (ECC) is the standard fallback where keypoints fail. Our contribution
+alignment (ECC~\cite{evangelidis2008ecc}) is the standard fallback where
+keypoints fail. Our contribution
 is not a new estimator but the observation that in crack correspondence the
 alignment target and the matching target should be \emph{disjoint}: the
 homography must be driven by the wall precisely because the crack is what we are

@@ -3,19 +3,52 @@
 
 \subsection{Main comparison}
 Table~\ref{tab:main} places the geometric reference baseline against all ten
-crop-scope methods. Relocating identity into wall geometry moves every metric
-decisively: Rank-1
-rises from $0.654$ to $0.952$, mAP from $0.520$ to $0.886$, assignment $F_1$
-from $0.401$ to $0.784$. Pairwise $F_1$ leaves the appearance band entirely, at
-$0.656$ against a ceiling of $0.359$ --- and the \emph{validation-calibrated}
-$F_1^{@v} = 0.582$ still exceeds every baseline's \emph{oracle} value by
-$1.62\times$, a comparison biased in the baselines' favour.
+crop-scope methods, the two scope controls, and the two reference levels.
+Relocating identity into wall geometry moves every metric: Rank-1 rises from
+$0.654$ to $0.952$, mAP from $0.520$ to $0.886$.
+
+We are careful about which parts of that are attributable to what, because the
+\textsc{Coverage-only} row shows the two are separable. Measured as excess over
+the appropriate reference:
+
+\begin{center}
+\small
+\begin{tabular}{lccc}
+\toprule
+ & best crop & \ours{} & \ours{} over \\
+ & over chance & over \textsc{Cov-only} & best crop \\
+\midrule
+Rank-1                 & $+0.318$ & $+0.437$ & $+0.298$ \\
+mAP                    & $+0.135$ & $+0.353$ & $+0.366$ \\
+pairwise $F_1^{*}$     & $+0.054$ & $+0.112$ & --- \\
+pairwise $F_1^{@v}$    & $+0.046$ & $+0.038$ & --- \\
+$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ & $+0.391$ & $\mathbf{+0.768}$ & $+0.339$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The pairwise-$F_1$ columns are the ones to read sceptically, and we flag them
+ourselves: because \textsc{Coverage-only} already scores $0.544$ on that metric
+purely from which pairs it can align (Sec.~\ref{sec:coverage}), the geometric
+method's $F_1^{*} = 0.656$ is $+0.112$ over the right reference rather than
+$+0.351$ over the crop methods' floor, and its deployable
+$F_1^{@v} = 0.582$ is $+0.038$. A direct comparison of pairwise $F_1$ between a
+full-coverage and a partial-coverage method is not like-for-like, and we
+withdraw the ``$1.62\times$ over every baseline's oracle value'' framing that an
+earlier version of this comparison used.
+
+The open-set column is different in kind, and is the result we lead with.
+\textsc{Coverage-only} scores $0.000$, so none of the geometric method's
+$\mathrm{DIR}@\mathrm{FAR}$ comes from coverage; and the best crop$+$context
+control reaches only $0.404$, so it does not come from field of view either.
 
 \subsection{The open-set gap is the substantive result}
 \label{sec:openset}
 The clearest separation is on $\mathrm{DIR}@\mathrm{FAR}{=}0.1$: $0.768$ against
-$0.414$ for the best baseline (SuperGlue), a $1.86\times$ improvement, and
-$4.6\times$ over OSNet, the strongest baseline by Rank-1.
+$0.429$ for the best crop baseline (SuperGlue), $0.404$ for the best
+crop$+$context control, $0.038$ for chance and $0.000$ for
+\textsc{Coverage-only}. It is the one column on which neither field of view nor
+alignment coverage explains any of the gap.
 
 This is the licensed negative, quantified. The metric charges a false alarm
 whenever an unanswerable query produces an above-threshold match, and crop
@@ -24,19 +57,78 @@ which on a wall of self-similar hairline cracks is often high. Our method
 instead aligns the photographs, projects the query into the gallery frame, and
 finds the location visible and empty --- holding a high detection rate at a
 false-alarm budget where appearance methods have spent theirs. Compute does not
-help: SuperGlue's $0.414$ costs $5.7$\,s per query, OSNet's $0.168$ costs
-$0.006$\,s.
+help: SuperGlue's $0.429$ costs $5.8$\,s per query, OSNet's $0.168$ costs
+$0.053$\,s.
 
-\subsection{Partial coverage is a penalty, not a subsidy}
+\subsection{Removing the adjacent frame}
+\label{sec:gapsweep}
+Every answerable test query has its correct answer one frame away
+(Sec.~\ref{sec:scope}), so the obvious objection is that
+Table~\ref{tab:main} measures near-duplicate retrieval. We sweep the exclusion
+radius over the saved score matrices and report the result against the chance
+level \emph{at each gap}, because both move.
+
+\begin{center}
+\small
+\begin{tabular}{lcccc}
+\toprule
+Rank-1 & gap 0 & gap 1 & gap 2 & gap 3 \\
+\midrule
+Chance                & 0.331 & 0.350 & 0.321 & 0.365 \\
+Best crop method      & 0.654 & 0.590 & 0.604 & 0.686 \\
+\emph{excess}         & 0.323 & 0.240 & 0.283 & 0.321 \\
+\midrule
+OSNet                 & 0.654 & 0.566 & 0.604 & 0.648 \\
+OSNet $+$ ctx         & 0.775 & 0.751 & 0.779 & 0.762 \\
+\textsc{CrackShape}   & 0.554 & 0.512 & 0.523 & 0.533 \\
+answerable queries    & 280   & 205   & 149   & 105 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The near-duplicate structure is real but is \emph{not} what produces the
+numbers. Excluding the adjacent frame entirely, and then the two and three
+nearest, leaves Rank-1 essentially flat --- OSNet $0.654 \to 0.648$, OSNet$+$ctx
+$0.775 \to 0.762$ --- and excess over chance stable in the range $0.24$--$0.32$.
+We read this as saying that adjacent frames are not markedly easier than
+non-adjacent ones within a walk-around, which is consistent with
+Sec.~\ref{sec:viewpoint}: frame gap correlates with camera roll, the one
+component a homography absorbs exactly, and not with scale change.
+
+The sweep is a control, not a new operating point. By gap $3$ only $105$
+answerable queries over $11$ walls remain, which is too few to separate methods;
+we report Table~\ref{tab:main} at gap $0$ and this sweep beside it.
+
+\subsection{Partial coverage: a penalty on ranking, a subsidy on pairwise $F_1$}
 \label{sec:coverage}
 The baseline returns a finite score for $48\%$ of valid pairs; every crop method
-returns one for all of them. The intuitive reading --- that answering only easy
-pairs flatters the metrics --- is wrong here, and we tested it rather than
-asserted it. Unscorable pairs take the failure score and rank \emph{last}, with
-the query still counted. Censoring a complete score matrix artificially, Rank-1
-fell $0.422 \to 0.27$ at $34\%$ coverage, and censoring whole image-pair blocks
---- registration's actual failure structure --- was no more forgiving than
-censoring cells uniformly.
+returns one for all of them. Unscorable pairs are charged as predicted
+negatives, rank \emph{last}, and their queries stay in every metric. The
+question is whether that is enough, and the honest answer is that it depends on
+the metric.
+
+For \textbf{ranking} it is a penalty, and we tested rather than asserted it.
+Censoring a complete score matrix artificially, Rank-1 fell $0.422 \to 0.27$ at
+$34\%$ coverage, and censoring whole image-pair blocks --- registration's actual
+failure structure --- was no more forgiving than censoring cells uniformly.
+
+For \textbf{pairwise $F_1$} it is a subsidy, and the mechanism is that coverage
+is not independent of the label. Two photographs register when they overlap,
+which is when the answer is present: the scorable subset retains $100\%$ of
+positive pairs and $36.8\%$ of negatives, so prevalence rises $0.180 \to 0.373$
+and the metric's floor with it, $0.305 \to 0.544$. This is exactly what the
+\textsc{Coverage-only} row measures. It answers ``same crack'' to every
+registered pair without examining a crack, and scores pairwise $F_1$ of
+$0.544$, mAP of $0.533$ --- above OSNet, the best crop method --- and Rank-1 of
+$0.515$.
+
+So a substantial part of the geometric method's ranking and pairwise-$F_1$
+margin is attributable to \emph{which pairs it can align}, not to how well it
+matches cracks once aligned, and we report it that way. The exception is the
+metric the paper leads with: \textsc{Coverage-only} scores
+$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of exactly $\mathbf{0.000}$. Alignment
+coverage buys nothing whatsoever on the open-set decision, so that gap is
+entirely attributable to Chamfer matching under the licensed negative.
 
 The unscored fraction is not one phenomenon: part is pairs that could not be
 registered, a genuine non-answer; the rest is pairs that registered and in which
@@ -117,6 +209,37 @@ viewpoints --- consistent with the logistic fit, in which sharpness rather than
 viewpoint dominates.}
 \label{fig:viewpoint}
 \end{figure}
+
+\subsection{Ablation: which Chamfer score, and does crack-masking matter}
+\label{sec:chamferablation}
+Two design decisions in Sec.~\ref{sec:method} are stated as reasoned choices,
+so we ablate both under the identical protocol rather than leave them asserted.
+
+\textbf{The agreement score.} Eq.~(\ref{eq:chamfer}), the symmetric mean
+Chamfer distance in pixels, is what produced Table~\ref{tab:main}. Its
+scale-free alternative Eq.~(\ref{eq:coverage}) is better motivated --- a single
+global threshold applied to a per-pair pixel distance measures calibration as
+much as accuracy --- so we run it as a separate configuration, with $\tau$ taken
+from each pair's own registration inlier RMS.
+
+\textbf{Masking cracks out of the fit.} Sec.~\ref{sec:method} argues that
+excluding dilated crack masks from keypoint detection is not an optimisation but
+what makes projected position an \emph{independent} identity cue. We test it by
+disabling exclusion and leaving the pipeline otherwise identical, which is the
+ablation of the method's central mechanism.
+
+\begin{center}
+\small
+\begin{tabular}{lccccc}
+\toprule
+Configuration & R@1 & mAP & DIR@FAR & $F_1^{@v}$ & scored \\
+\midrule
+Chamfer distance, masked \emph{(reported)} & \multicolumn{5}{c}{Table~\ref{tab:main}} \\
+Chamfer coverage, masked & \multicolumn{5}{c}{\emph{[pending run]}} \\
+Chamfer distance, \emph{not} masked & \multicolumn{5}{c}{\emph{[pending run]}} \\
+\bottomrule
+\end{tabular}
+\end{center}
 
 \subsection{Ablation: the third front end}
 \label{sec:ecc}

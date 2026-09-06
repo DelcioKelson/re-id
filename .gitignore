@@ -1,2 +1,6 @@
-yolov8n.pt
+banchmark_out/scores/
 *.pyc
+__pycache__/
+third_party/
+.venv/
+yolov8n.pt

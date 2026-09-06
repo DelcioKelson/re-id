@@ -1,18 +1,41 @@
-method                  scope          nQ    R@1    R@5    mAP  DIR@FAR.1  pairF1   assF1  scored  total_s
-----------------------------------------------------------------------------------------------------------
-DeiT                    crop          280  0.621  0.879  0.497      0.250   0.305   0.381    1.00     72.6
-SIFT                    crop          280  0.432  0.829  0.417      0.036   0.313   0.324    1.00     33.3
-ORB                     crop          280  0.352  0.759  0.364      0.018   0.305   0.325    1.00     15.6
-registration+chamfer    full-image    280  0.920  0.956  0.862      0.768   0.645   0.769    0.50   3939.6
-LoFTR                   crop          280  0.549  0.824  0.441      0.336   0.359   0.401    1.00   2331.1
-YOLOv8-backbone         crop          280  0.561  0.821  0.453      0.157   0.356   0.364    1.00      4.6
-ViT                     crop          280  0.654  0.893  0.511      0.286   0.331   0.392    1.00    238.4
-CLIP                    crop          280  0.604  0.850  0.471      0.143   0.307   0.367    1.00     63.9
-OSNet                   crop          280  0.654  0.907  0.520      0.168   0.309   0.388    1.00      1.8
-CrackShape              crop          280  0.554  0.825  0.442      0.082   0.305   0.346    1.00      0.9
-SuperGlue               crop          280  0.555  0.893  0.453      0.414   0.353   0.352    1.00   1594.0
+method                  scope          nQ    R@1    R@5    mAP  DIR@FAR.1  pairF1* pairF1@v   assF1  scored  total_s
+------------------------------------------------------------------------------------------------------------------
+registration+chamfer    full-image    280  0.952  0.992  0.886      0.768   0.656   0.582   0.784    0.48   7817.3
+OSNet+ctx1              crop+ctx      280  0.775  0.957  0.595      0.404   0.354   0.337   0.404    1.00     14.6
+OSNet+ctx1+NOCRACK      crop+ctx      280  0.711  0.932  0.574      0.393   0.361   0.336   0.400    1.00     15.7
+coverage-only           full-image    280  0.515  0.874  0.533      0.000   0.544   0.544   0.591    0.48      0.0
+OSNet                   crop          280  0.654  0.907  0.520      0.168   0.309   0.309   0.388    1.00     14.7
+ViT                     crop          280  0.654  0.893  0.511      0.286   0.331   0.317   0.392    1.00     54.1
+CLIP+ctx1               crop+ctx      280  0.607  0.843  0.502      0.311   0.352   0.305   0.379    1.00     14.8
+CLIP+ctx1+NOCRACK       crop+ctx      280  0.600  0.814  0.502      0.286   0.346   0.305   0.376    1.00     14.7
+DeiT                    crop          280  0.621  0.879  0.497      0.250   0.305   0.293   0.381    1.00     16.2
+CLIP                    crop          280  0.604  0.850  0.471      0.143   0.307   0.306   0.367    1.00     14.1
+SuperGlue               crop          280  0.562  0.886  0.455      0.429   0.353   0.305   0.354    1.00   1631.2
+YOLOv8-backbone         crop          280  0.561  0.821  0.453      0.157   0.357   0.308   0.364    1.00     60.7
+CrackShape              crop          280  0.554  0.825  0.442      0.082   0.305   0.303   0.346    1.00      0.3
+LoFTR                   crop          280  0.549  0.828  0.440      0.336   0.359   0.351   0.400    1.00   2418.9
+SIFT                    crop          280  0.432  0.829  0.417      0.036   0.313   0.305   0.324    1.00     24.2
+ORB                     crop          280  0.352  0.759  0.364      0.018   0.305   0.305   0.325    1.00     10.5
 
+nQ = queries with a correct answer (the only ones R@1/mAP average over).
+pairF1*  = ORACLE: max F1 swept over thresholds on THIS (test) matrix. It is an
+           upper bound no deployment can pick, and is not comparable with assF1.
+pairF1@v = the same curve read at the threshold calibrated on VALIDATION -- the
+           number a deployed system gets. Quote this one; quote pairF1* as a ceiling.
+assF1  = one-to-one assignment F1 at the validation-calibrated threshold.
+scored = fraction of valid pairs the method returned a finite score for.
+         Below 1.00 is a PENALTY, not an easier subset: an unscored pair takes the
+         fail distance, ranks last, and its query is still counted. See the
+         coverage breakdown in results.json for what the missing fraction is made of.
+total_s = prepare + score. Embedding methods do all their work in prepare.
 
-new results: 
-
-registration+chamfer    full-image    280  0.952  0.992  0.886      0.768    0.656    0.582   0.784    0.48   7817.3
+Provenance: the ten crop-scope rows and the four crop(+ctx) controls plus
+coverage-only were run together (benchmark.py --ablations --controls); SuperGlue
+and LoFTR were run separately afterward, once, to add pairF1@v -- their earlier
+run had no validation matrix scored, so no calibrated threshold existed. Cost
+(total_s) is wall-clock on one workstation and is not controlled for load
+between separate runs; the compute-span claim in the paper is therefore stated
+qualitatively ("more than three orders of magnitude"), not as a precise
+multiplier, and cites the two measured endpoints (CrackShape, LoFTR) directly.
+registration+chamfer is the full cascade with ECC enabled (Sec. VI-F); the
+disabled-ECC ablation is a separate reported condition, not a row here.

@@ -4,22 +4,51 @@
 We state the limits in the body rather than a closing paragraph, because two of
 them bound the central claim.
 
-\subsection{Scope is uncontrolled between the two formulations}
+\subsection{Scope is controlled, and the control found something}
 The proposed method reads full photographs; the baselines read crops. That
 follows from the design --- homography estimation needs wall-level context a
-crop cannot supply --- but it means Table~\ref{tab:main} varies \emph{two}
-things at once: identity cue (appearance versus geometry) and input scope (crop
-versus full image). The result establishes that a geometry-first system on full
-images substantially outperforms crop-scope appearance matching here; it does
-not by itself establish that geometry rather than context is responsible.
+crop cannot supply --- but it means a bare Table~\ref{tab:main} would vary
+\emph{two} things at once: identity cue (appearance versus geometry) and input
+scope (crop versus full image).
 
-Two controls separate these and ship with the benchmark: a
-\emph{crop-plus-context} condition widening the crop until baselines see
-comparable surrounding wall, and a \emph{crack-erased} condition that inpaints
-the crack away, so any remaining performance is attributable to context alone.
-Both are designed but unrun --- they require regenerating score matrices for all
-ten baselines --- and we prefer to leave the gap visible. The ceiling result is
-unaffected, comparing crop methods only against each other.
+Sec.~\ref{sec:controls} runs the two controls that separate them. Scope does
+not account for the gap: the best crop$+$context condition reaches
+$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.404$ against the geometric method's
+$0.768$. But the crack-erased control returns an uncomfortable result we report
+rather than bury --- inpainting the crack out of a crop$+$context view costs
+only $0.011$ of that $0.404$. Within a single walk-around the surrounding wall
+texture is itself a location fingerprint, so a context-scope number on
+\textsc{CrackID} is substantially a background-matching number. We expect this
+to weaken across genuine revisits, where surrounding texture also changes,
+which is a further reason the cross-visit capture in Sec.~\ref{sec:next}
+matters. The controls were run on OSNet and CLIP only, not on all ten
+baselines.
+
+\subsection{Two metric properties that are easy to get wrong}
+Pairwise $F_1$ has a floor of $2p/(1+p)$ and that floor is a property of the
+\emph{pool}, not of the task: it is $0.305$ on the full test pool and $0.544$ on
+the subset the geometric method can score, because registration coverage is not
+independent of the label --- two photographs register when they overlap, which
+is when the answer is present, so the scorable subset retains $100\%$ of
+positive pairs and $36.8\%$ of negatives. We therefore charge unscorable pairs
+rather than dropping them, and report the \textsc{Coverage-only} control
+(Sec.~\ref{sec:reference}) so that the geometric method's pairwise $F_1$ is
+read against $0.544$ rather than against the crop methods' $0.305$. On that
+reading its pairwise-$F_1$ advantage is modest and its open-set advantage is
+not: \textsc{Coverage-only} scores $0.544$ on pairwise $F_1$ and $0.000$ on
+$\mathrm{DIR}@\mathrm{FAR}$.
+
+We flag the consequence for anyone extending the benchmark: a new method's
+ranking and pairwise-$F_1$ numbers are only comparable to ours at the same
+coverage, whereas $\mathrm{DIR}@\mathrm{FAR}$ is robust to it.
+
+\subsection{Every ranking number is a near-duplicate result}
+For $100\%$ of answerable test queries the nearest correct answer is the
+adjacent frame (Sec.~\ref{sec:scope}). Table~\ref{tab:main} is reported at
+\texttt{min\_frame\_gap}$=0$ and is therefore near-duplicate retrieval;
+Sec.~\ref{sec:gapsweep} sweeps the gap, but power falls to $105$ answerable
+queries by gap $3$, so the sweep constrains the trend rather than establishing
+a new operating point.
 
 \subsection{The effective sample is 19 identities}
 The test split's $280$ query instances come from $19$ identities visible in two
@@ -58,6 +87,7 @@ is not the crack, and should degrade on curved or featureless surfaces, and
 where the surrounding texture itself changes between visits.
 
 \subsection{The measurement that would change the most}
+\label{sec:next}
 One thing would convert the central claim from inferred to designed: a second
 capture session, weeks later, at marked distances and angles. It would make the
 protocol cross-visit rather than viewpoint-only, supply exact rather than
