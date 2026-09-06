@@ -18,11 +18,11 @@ the appropriate reference:
  & best crop & \ours{} & \ours{} over \\
  & over chance & over \textsc{Cov-only} & best crop \\
 \midrule
-Rank-1                 & $+0.323$ & $+0.437$ & $+0.298$ \\
-mAP                    & $+0.136$ & $+0.353$ & $+0.366$ \\
+Rank-1                 & $+0.318$ & $+0.437$ & $+0.298$ \\
+mAP                    & $+0.135$ & $+0.353$ & $+0.366$ \\
 pairwise $F_1^{*}$     & $+0.054$ & $+0.112$ & --- \\
-pairwise $F_1^{@v}$    & $+0.012$ & $+0.038$ & --- \\
-$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ & $+0.376$ & $\mathbf{+0.768}$ & $+0.354$ \\
+pairwise $F_1^{@v}$    & $+0.046$ & $+0.038$ & --- \\
+$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ & $+0.391$ & $\mathbf{+0.768}$ & $+0.339$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -45,7 +45,7 @@ control reaches only $0.404$, so it does not come from field of view either.
 \subsection{The open-set gap is the substantive result}
 \label{sec:openset}
 The clearest separation is on $\mathrm{DIR}@\mathrm{FAR}{=}0.1$: $0.768$ against
-$0.414$ for the best crop baseline (SuperGlue), $0.404$ for the best
+$0.429$ for the best crop baseline (SuperGlue), $0.404$ for the best
 crop$+$context control, $0.038$ for chance and $0.000$ for
 \textsc{Coverage-only}. It is the one column on which neither field of view nor
 alignment coverage explains any of the gap.
@@ -57,8 +57,8 @@ which on a wall of self-similar hairline cracks is often high. Our method
 instead aligns the photographs, projects the query into the gallery frame, and
 finds the location visible and empty --- holding a high detection rate at a
 false-alarm budget where appearance methods have spent theirs. Compute does not
-help: SuperGlue's $0.414$ costs $5.7$\,s per query, OSNet's $0.168$ costs
-$0.006$\,s.
+help: SuperGlue's $0.429$ costs $5.8$\,s per query, OSNet's $0.168$ costs
+$0.053$\,s.
 
 \subsection{Removing the adjacent frame}
 \label{sec:gapsweep}

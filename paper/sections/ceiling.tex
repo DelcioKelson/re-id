@@ -93,10 +93,10 @@ Method & Family & R@1 & R@5 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & $F_1^{@v}$ & sco
 \multicolumn{10}{l}{\emph{Crop scope}} \\
 ORB~\cite{rublee2011orb}            & keypoint   & 0.352 & 0.759 & 0.364 & 0.018 & 0.305 & 0.305 & 1.00 & 0.038 \\
 SIFT~\cite{lowe2004sift}            & keypoint   & 0.432 & 0.829 & 0.417 & 0.036 & 0.313 & 0.305 & 1.00 & 0.086 \\
-SuperGlue~\cite{sarlin2020superglue}& learned    & 0.555 & 0.893 & 0.453 & \best{0.414} & 0.353 & --- & 1.00 & 5.693 \\
-LoFTR~\cite{sun2021loftr}           & learned    & 0.549 & 0.824 & 0.441 & 0.336 & \best{0.359} & --- & 1.00 & 8.325 \\
+SuperGlue~\cite{sarlin2020superglue}& learned    & 0.562 & 0.886 & 0.455 & \best{0.429} & 0.353 & 0.305 & 1.00 & 5.826 \\
+LoFTR~\cite{sun2021loftr}           & learned    & 0.549 & 0.828 & 0.440 & 0.336 & \best{0.359} & \best{0.351} & 1.00 & 8.639 \\
 YOLOv8 backbone                     & embedding  & 0.561 & 0.821 & 0.453 & 0.157 & 0.357 & 0.308 & 1.00 & 0.217 \\
-ViT-B/16~\cite{dosovitskiy2021vit}  & embedding  & \best{0.654} & 0.893 & 0.511 & 0.286 & 0.331 & \best{0.317} & 1.00 & 0.193 \\
+ViT-B/16~\cite{dosovitskiy2021vit}  & embedding  & \best{0.654} & 0.893 & 0.511 & 0.286 & 0.331 & 0.317 & 1.00 & 0.193 \\
 DeiT-S~\cite{touvron2021deit}       & embedding  & 0.621 & 0.879 & 0.497 & 0.250 & 0.305 & 0.293 & 1.00 & 0.058 \\
 CLIP ViT-B/32~\cite{radford2021clip}& embedding  & 0.604 & 0.850 & 0.471 & 0.143 & 0.307 & 0.306 & 1.00 & 0.050 \\
 OSNet~\cite{zhou2019osnet}          & re-ID      & \best{0.654} & \best{0.907} & \best{0.520} & 0.168 & 0.309 & 0.309 & 1.00 & 0.053 \\
@@ -126,16 +126,34 @@ pairwise $F_1$ of the ten crop-scope methods is: ORB $0.000$, DeiT $0.000$,
 $0.026$, SuperGlue $0.048$, YOLOv8 $0.052$, LoFTR $0.054$. Three methods --- a
 classical descriptor, a distilled transformer, and a descriptor we designed
 around crack geometry --- achieve \emph{nothing at all}. This spans two decades
-of method development and a $2590\times$ range in compute.
+of method development and more than three orders of magnitude in compute, from
+\textsc{CrackShape}'s roughly $1$\,ms per query to LoFTR's $8.6$\,s. We give an
+order-of-magnitude figure rather than a precise multiplier because the fastest
+method's cost is near the timer's own resolution and varied several-fold
+between runs; the qualitative point --- cheap and expensive methods land in the
+same place --- does not depend on the third significant digit.
 
-\noindent\textbf{At a deployable threshold the picture is worse.} $F_1^{*}$
-maximises the threshold on the test matrix. Calibrating on the held-out
-validation walls instead, no tight-crop method exceeds chance by more than
-$0.012$ (ViT, $0.317$), and two fall \emph{below} it: DeiT at $0.293$ and
-\textsc{CrackShape} at $0.303$. For ORB, SIFT and both CLIP conditions the
-calibrated threshold degenerates to predicting every pair positive, and they
-report the floor exactly. A system deployed on these numbers would not be
-imperfect; it would be doing nothing while appearing to score $0.31$.
+\noindent\textbf{At a deployable threshold, nine of ten methods are within
+noise of chance and one is not.} $F_1^{*}$ maximises the threshold on the test
+matrix; calibrating on the held-out validation walls instead is the number a
+deployment gets. Excess over the $0.305$ floor for nine of the ten tight-crop
+methods spans only $-0.012$ (DeiT, $0.293$) to $+0.012$ (ViT, $0.317$): ORB,
+SIFT and SuperGlue report the floor to three decimal places,
+\textsc{CrackShape} ($0.303$) falls just below it, and CLIP, YOLOv8 and OSNet
+sit a few thousandths above. A system deployed on any of these nine would not
+be imperfect; on this evidence it would be doing nothing while appearing to
+score $0.31$.
+
+\textbf{LoFTR is the exception, and the only one.} Its calibrated pairwise
+$F_1$ is $0.351$, an excess of $0.046$ --- roughly four times the next-best
+margin (ViT, $0.012$) and the only calibrated result in the table that is not
+plausibly noise around the floor. It is also the most expensive crop-scope
+method by a wide margin ($8.6$\,s per query). We read this as the one place in
+Table~\ref{tab:main} where a crop-scope method shows a real, if modest,
+capability to decide identity rather than merely to rank it --- and as a
+result to qualify rather than to explain away: one exception in ten does not
+change the aggregate picture, but a claim that \emph{no} crop method retains
+anything at a deployable threshold would now overstate it.
 
 \noindent\textbf{Ranking ability does not transfer to decision ability.} On
 Rank-1 the same ten methods separate over a $0.302$ range, from $0.352$ to
@@ -143,9 +161,9 @@ $0.654$ --- $0.021$ to $0.323$ above the Rank-1 chance level of $0.336$. So the
 encoders differ substantially in how well they \emph{order} a gallery while
 differing almost not at all in whether they can \emph{decide} an identity.
 OSNet ties for the best Rank-1 ($0.654$) and sits $0.004$ above chance on
-pairwise $F_1$; SuperGlue ranks sixth on Rank-1 yet achieves the best open-set
-rate of any crop baseline ($0.414$ against OSNet's $0.168$). Ordering a gallery
-well and maintaining a record are not the same capability.
+pairwise $F_1$; SuperGlue ranks fifth on Rank-1 ($0.562$) yet achieves the best
+open-set rate of any crop baseline ($0.429$ against OSNet's $0.168$). Ordering a
+gallery well and maintaining a record are not the same capability.
 
 We deliberately do not report a rank correlation between the two. With three
 methods tied exactly at the pairwise-$F_1$ floor and two more within $0.004$ of
@@ -153,11 +171,12 @@ it, that variable is censored, and a correlation computed across a censoring
 boundary measures the censoring.
 
 \noindent\textbf{Compute buys little, and not where expected.} Cost per query
-spans $2590\times$. The two most expensive methods, LoFTR and SuperGlue, do
-hold the largest pairwise-$F_1$ excess ($0.054$ and $0.048$) and SuperGlue the
-best open-set rate --- so compute is not simply wasted. But the ceiling it buys
-its way to is still $0.054$ above chance, at $5.7$--$8.3$\,s per query against
-OSNet's $0.053$\,s.
+spans more than three orders of magnitude. The two most expensive methods, LoFTR and SuperGlue, do
+hold the largest pairwise-$F_1^{*}$ excess ($0.054$ and $0.048$), SuperGlue the
+best open-set rate, and LoFTR the only real margin at a calibrated threshold ---
+so compute is not simply wasted. But the ceiling it buys its way to is still
+$0.054$ above chance oracle-thresholded and $0.046$ calibrated, at
+$5.8$--$8.6$\,s per query against OSNet's $0.053$\,s.
 
 \subsection{Is it the crack, or the wall behind it?}
 \label{sec:controls}

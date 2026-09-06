@@ -11,12 +11,14 @@ labels as ground truth by construction.
 The benchmark's main finding is negative and, we think, structural. On the
 decision a maintenance record actually requires --- \emph{same crack or not}, at
 a threshold --- ten matchers across five families, two decades of method
-development and a $2590\times$ range in compute buy between $0.000$ and $0.054$
+development and more than three orders of magnitude in compute buy between
+$0.000$ and $0.054$
 above chance. Three of them, including a descriptor built around crack geometry,
 buy nothing. Calibrate the threshold honestly, on held-out walls rather than on
-the test matrix, and no tight-crop method buys more than $0.012$. Ordering a
-gallery well and deciding an identity are not the same capability, and only the
-second maintains a record.
+the test matrix, and nine of the ten span only $-0.012$ to $+0.012$ around
+chance; only LoFTR, the most expensive, holds a real margin ($0.046$). Ordering
+a gallery well and deciding an identity are not the same capability, and only
+the second maintains a record.
 
 Two controls say where the difficulty is not. Giving an embedder the wall around
 the crack helps a great deal --- and \emph{erasing the crack} from that view
@@ -24,7 +26,7 @@ costs almost none of it. What such a method retrieves on is location. The
 geometric reference baseline makes that cue explicit: a homography from
 non-crack wall texture, crack masks projected into a common frame, and Chamfer
 agreement under global assignment reach $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of
-$0.768$ against $0.414$ for the best crop method, while answering only $48\%$ of
+$0.768$ against $0.429$ for the best crop method, while answering only $48\%$ of
 pairs.
 
 We are precise about what that partial coverage buys, because it buys

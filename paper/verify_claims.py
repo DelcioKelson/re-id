@@ -23,7 +23,19 @@ print("\n[0] Table I is a faithful copy of the benchmark's own output")
 # the ten rows below were hardcoded here, so the one link that was never
 # verified was benchmark output -> published table. Parse it instead.
 def parse_results_table(path):
-    """method -> {column: value} from a results_table.txt / result.txt."""
+    """method -> {column: value} from a results_table.txt / result.txt.
+
+    STRICT on column count: a row whose token count does not match the
+    active header is skipped with a loud warning rather than silently
+    zipped against a truncated header. That silent-zip is exactly the bug
+    this replaced -- this file used to carry an old 11-token header above
+    newer 12-token rows (registration+chamfer, then SuperGlue and LoFTR,
+    each gained a pairF1@v column later), and zip() quietly shifted every
+    field after the mismatch by one: assF1 read as pairF1@v, scored read
+    as assF1, total_s read as scored, and the real total_s was dropped
+    without complaint. Never trust a table parser that does not fail loud
+    on a width mismatch.
+    """
     rows, header = {}, None
     for line in open(path):
         parts = line.split()
@@ -32,46 +44,73 @@ def parse_results_table(path):
         if parts[0] == "method":
             header = parts
             continue
-        if header is None or parts[0].startswith("-") or len(parts) < len(header) - 1:
+        if header is None or parts[0].startswith("-"):
             continue
-        # method names never contain spaces in this table
         vals = parts[1:]
         try:
             nums = [float(x) for x in vals[1:]]
         except ValueError:
+            continue
+        if len(nums) != len(header) - 2:
+            print(f"  WARN  result.txt row for {parts[0]!r} has {len(nums)} "
+                  f"numeric fields, header expects {len(header) - 2} -- "
+                  f"skipped rather than misaligned")
             continue
         rows[parts[0]] = dict(zip(header[2:], nums))
     return rows
 
 TABLE = J('banchmark_out/result.txt')
 parsed = parse_results_table(TABLE) if os.path.exists(TABLE) else {}
-check("methods parsed from result.txt", len(parsed), 11, tol=0)
+check("methods parsed from result.txt", len(parsed), 16, tol=0)
 
 print("\n[1] How much appearance buys (Table I, Sec. V)")
-CROP = dict(  # name -> (R@1, mAP, DIR, pairF1, secs)
-    ORB=(0.352, 0.364, 0.018, 0.305, 15.6), SIFT=(0.432, 0.417, 0.036, 0.313, 33.3),
-    SuperGlue=(0.555, 0.453, 0.414, 0.353, 1594.0), LoFTR=(0.549, 0.441, 0.336, 0.359, 2331.1),
-    YOLOv8=(0.561, 0.453, 0.157, 0.356, 4.6), ViT=(0.654, 0.511, 0.286, 0.331, 238.4),
-    DeiT=(0.621, 0.497, 0.250, 0.305, 72.6), CLIP=(0.604, 0.471, 0.143, 0.307, 63.9),
-    OSNet=(0.654, 0.520, 0.168, 0.309, 1.8), CrackShape=(0.554, 0.442, 0.082, 0.305, 0.9))
+# name -> (R@1, mAP, DIR, pairF1*, pairF1@v, s/query)
+# s/query is what Table I PRINTS (not raw total_s/280 from some other run):
+# SuperGlue and LoFTR were re-run once, later, solely to add pairF1@v (their
+# first run scored no validation matrix, so no calibrated threshold existed);
+# the other eight crop rows plus the controls and coverage-only were run
+# together in one invocation (benchmark.py --ablations --controls). Cost
+# therefore comes from two different sessions and is not tightly controlled
+# for machine load between them -- which is exactly why the paper states the
+# compute-span claim qualitatively ("more than three orders of magnitude")
+# rather than as a precise multiplier: CrackShape's own cost, near the
+# timer's resolution, varied several-fold between two runs we have visibility
+# into (0.9s and 0.3s total over 280 queries).
+CROP = dict(
+    ORB=(0.352, 0.364, 0.018, 0.305, 0.305, 0.038),
+    SIFT=(0.432, 0.417, 0.036, 0.313, 0.305, 0.086),
+    SuperGlue=(0.562, 0.455, 0.429, 0.353, 0.305, 5.826),
+    LoFTR=(0.549, 0.440, 0.336, 0.359, 0.351, 8.639),
+    YOLOv8=(0.561, 0.453, 0.157, 0.357, 0.308, 0.217),
+    ViT=(0.654, 0.511, 0.286, 0.331, 0.317, 0.193),
+    DeiT=(0.621, 0.497, 0.250, 0.305, 0.293, 0.058),
+    CLIP=(0.604, 0.471, 0.143, 0.307, 0.306, 0.050),
+    OSNet=(0.654, 0.520, 0.168, 0.309, 0.309, 0.053),
+    CrackShape=(0.554, 0.442, 0.082, 0.305, 0.303, 0.001))
 
 # Every quoted crop row must match the committed benchmark output.
 _ALIAS = {"YOLOv8": "YOLOv8-backbone"}
-for name, (r1_, map_, dir_, f1_, _s) in CROP.items():
+for name, (r1_, map_, dir_, f1s_, f1v_, _s) in CROP.items():
     row = parsed.get(_ALIAS.get(name, name))
     if not row:
         fails.append(f"{name} missing from result.txt")
         print(f"  FAIL  {name:52s} not present in result.txt")
         continue
-    for col, want in (("R@1", r1_), ("mAP", map_), ("DIR@FAR.1", dir_)):
+    for col, want in (("R@1", r1_), ("mAP", map_), ("DIR@FAR.1", dir_),
+                      ("pairF1*", f1s_), ("pairF1@v", f1v_)):
         check(f"{name} {col} matches result.txt", row[col], want, tol=1e-3)
 
 v = np.array(list(CROP.values()))
-r1, dirf, f1, sec = v[:, 0], v[:, 2], v[:, 3], v[:, 4] / 280.0
-check("pairF1 min", f1.min(), 0.305); check("pairF1 max", f1.max(), 0.359)
+r1, dirf, f1s, f1v, sec = v[:, 0], v[:, 2], v[:, 3], v[:, 4], v[:, 5]
+check("pairF1* min", f1s.min(), 0.305); check("pairF1* max", f1s.max(), 0.359)
 check("R@1 span", r1.max() - r1.min(), 0.302)
-check("compute span (x)", sec.max() / sec.min(), 2590, tol=5)
-check("REG DIR / best baseline DIR", 0.768 / dirf.max(), 1.86, tol=0.02)
+# Cost span is asserted as a BOUND, not a precise multiplier -- see the CROP
+# comment above for why a specific digit here would be false precision.
+check_bound = lambda label, got, lo: (
+    print(f"  {'OK ' if got >= lo else 'FAIL'}  {label:52s} got {got:>10.1f}  "
+          f"want >= {lo}") or fails.append(label) if got < lo else None)
+check_bound("compute span exceeds 3 orders of magnitude", sec.max() / sec.min(), 1000)
+check("REG DIR / best baseline DIR", 0.768 / dirf.max(), 1.79, tol=0.02)
 
 # --- the chance levels every quoted excess is measured against -----------
 # Without these the pairwise-F1 numbers above are unreadable: the metric has
@@ -82,6 +121,21 @@ check("REG DIR / best baseline DIR", 0.768 / dirf.max(), 1.86, tol=0.02)
 CH = json.load(open(J('banchmark_out/chance.json')))
 check("test prevalence", CH["prevalence"], 0.1798, tol=1e-3)
 check("analytic pairF1 floor 2p/(1+p)", CH["analytic_pair_f1_floor"], 0.3048, tol=1e-3)
+
+# The "at a deployable threshold" claim, stated as a RANGE rather than a
+# fixed-threshold inclusion count: "nine of ten span [-0.012, +0.012]" is
+# exact (their min and max ARE those two numbers to 3dp); "nine of ten are
+# within +/-0.012" is a threshold check that one of those nine (ViT, whose
+# own excess rounds to 0.012) can fail on floating-point technicality alone.
+names = list(CROP)
+excess_v = f1v - CH["analytic_pair_f1_floor"]
+is_loftr = np.array([n == "LoFTR" for n in names])
+check("max calibrated excess over chance (LoFTR)", excess_v[is_loftr][0], 0.046, tol=2e-3)
+rest = excess_v[~is_loftr]
+check("range of the other nine: low (DeiT)", rest.min(), -0.012, tol=1e-3)
+check("range of the other nine: high (ViT)", rest.max(), 0.012, tol=1e-3)
+check("methods below chance at calibrated threshold",
+      int(np.sum(excess_v < -1e-3)), 2, tol=0)
 check("simulated pairF1 chance", CH["chance"]["pair_f1"]["mean"], 0.3049, tol=2e-3)
 check("  ... its sd (a floor, not an average)",
       CH["chance"]["pair_f1"]["sd"], 0.0001, tol=1e-3)
