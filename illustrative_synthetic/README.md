@@ -5,6 +5,14 @@ in GIMP** to make its crack shorter. Nothing here is a second photograph, a
 second visit, or a second camera pass. There are no labels, no masks, and no
 entry for any of these files anywhere under `dataset/`.
 
+The label is the filename (`<wall>_synthetic_shortened.jpg`) plus this README
+and `manifest.json` — the images themselves carry no visible marking. That is
+sufficient inside this directory, where every consumer (`verify_claims.py`,
+anyone browsing the repo) sees the filename and this file together, but it
+means a frame extracted on its own, with the filename stripped, carries no
+disclosure. Keep that in mind before this material goes anywhere the filename
+might not travel with it.
+
 **These images are not read by any part of the pipeline.** `benchmark.py`,
 `reid_eval.py`, and every number in `paper/banchmark_out/result.txt` /
 `paper/sections/results.tex` are computed only from `dataset/`. Nothing in
