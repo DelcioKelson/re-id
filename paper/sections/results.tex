@@ -234,12 +234,29 @@ ablation of the method's central mechanism.
 \toprule
 Configuration & R@1 & mAP & DIR@FAR & $F_1^{@v}$ & scored \\
 \midrule
-Chamfer distance, masked \emph{(reported)} & \multicolumn{5}{c}{Table~\ref{tab:main}} \\
+Chamfer distance, masked \emph{(reported)} & $0.952$ & $0.886$ & $0.768$ & $0.582$ & $0.48$ \\
 Chamfer coverage, masked & \multicolumn{5}{c}{\emph{[pending run]}} \\
-Chamfer distance, \emph{not} masked & \multicolumn{5}{c}{\emph{[pending run]}} \\
+Chamfer distance, \emph{not} masked & $0.952$ & $0.886$ & $\mathbf{0.825}$ & $0.581$ & $0.48$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+Disabling the exclusion changes almost nothing about ranking or pairwise agreement --
+R@1, mAP, $F_1^{@v}$, and coverage all match the masked condition to three
+decimal places -- but $\mathrm{DIR}@\mathrm{FAR}$ rises from $0.768$ to $0.825$,
+a $0.057$ gain that is the largest movement any single design decision in this
+paper produces. That is the opposite of what
+Sec.~\ref{sec:method}'s stated reason for excluding cracks would predict if
+that reason were about accuracy: it is not, it is about circularity, a long
+crack dominating the correspondence set and pulling the fit toward
+superimposing the wrong crack. This dataset apparently does not exercise that
+failure often enough to cost the masked condition anything, and leaving crack
+pixels in the fit adds a second, correlated source of correspondence that
+open-set separation benefits from. We flag rather than resolve the tension:
+this ablation shows masking is not what buys the accuracy reported in
+Table~\ref{tab:main}, so the accuracy result does not by itself argue for it.
+The independence argument stands or falls on a different question than the one
+this ablation answers, and we did not design a test that isolates it.
 
 \subsection{Ablation: the third front end}
 \label{sec:ecc}

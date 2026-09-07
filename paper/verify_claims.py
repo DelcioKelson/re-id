@@ -61,7 +61,7 @@ def parse_results_table(path):
 
 TABLE = J('banchmark_out/result.txt')
 parsed = parse_results_table(TABLE) if os.path.exists(TABLE) else {}
-check("methods parsed from result.txt", len(parsed), 16, tol=0)
+check("methods parsed from result.txt", len(parsed), 17, tol=0)
 
 print("\n[1] How much appearance buys (Table I, Sec. V)")
 # name -> (R@1, mAP, DIR, pairF1*, pairF1@v, s/query)
@@ -111,6 +111,31 @@ check_bound = lambda label, got, lo: (
           f"want >= {lo}") or fails.append(label) if got < lo else None)
 check_bound("compute span exceeds 3 orders of magnitude", sec.max() / sec.min(), 1000)
 check("REG DIR / best baseline DIR", 0.768 / dirf.max(), 1.79, tol=0.02)
+
+# --- the crack-masking ablation (Sec. VI-F) -------------------------------
+# The masked row's own numbers, cross-checked against result.txt rather than
+# re-hardcoded from Table I -- this is the row the "REG DIR / best baseline
+# DIR" check above assumes without verifying.
+reg = parsed.get("registration+chamfer")
+if reg:
+    for col, want in (("R@1", 0.952), ("mAP", 0.886), ("DIR@FAR.1", 0.768),
+                      ("pairF1@v", 0.582), ("scored", 0.48)):
+        check(f"registration+chamfer (masked) {col}", reg[col], want, tol=1e-3)
+else:
+    fails.append("registration+chamfer missing from result.txt")
+    print("  FAIL  registration+chamfer not present in result.txt")
+
+nomask = parsed.get("registration+chamfer[distance,nomask]")
+if nomask:
+    for col, want in (("R@1", 0.952), ("mAP", 0.886), ("DIR@FAR.1", 0.825),
+                      ("pairF1@v", 0.581), ("scored", 0.48)):
+        check(f"registration nomask {col}", nomask[col], want, tol=1e-3)
+    if reg:
+        check("masking ablation: DIR gain from NOT masking",
+              nomask["DIR@FAR.1"] - reg["DIR@FAR.1"], 0.057, tol=1e-3)
+else:
+    fails.append("registration+chamfer[distance,nomask] missing from result.txt")
+    print("  FAIL  registration-nomask row not present in result.txt")
 
 # --- the chance levels every quoted excess is measured against -----------
 # Without these the pairwise-F1 numbers above are unreadable: the metric has
