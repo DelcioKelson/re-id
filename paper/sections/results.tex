@@ -229,16 +229,18 @@ disabling exclusion and leaving the pipeline otherwise identical, which is the
 ablation of the method's central mechanism.
 
 \begin{center}
+\resizebox{\columnwidth}{!}{%
 \small
 \begin{tabular}{lccccc}
 \toprule
 Configuration & R@1 & mAP & DIR@FAR & $F_1^{@v}$ & scored \\
 \midrule
-Chamfer distance, masked \emph{(reported)} & $0.952$ & $0.886$ & $0.768$ & $0.582$ & $0.48$ \\
-Chamfer coverage, masked & \multicolumn{5}{c}{\emph{[pending run]}} \\
+Chamfer distance, masked \emph{(reported)} & $\mathbf{0.952}$ & $\mathbf{0.886}$ & $0.768$ & $\mathbf{0.582}$ & $0.48$ \\
+Chamfer coverage, masked & $0.849$ & $0.646$ & $0.754$ & $0.556$ & $0.48$ \\
 Chamfer distance, \emph{not} masked & $0.952$ & $0.886$ & $\mathbf{0.825}$ & $0.581$ & $0.48$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{center}
 
 Disabling the exclusion changes almost nothing about ranking or pairwise agreement --
@@ -257,6 +259,27 @@ this ablation shows masking is not what buys the accuracy reported in
 Table~\ref{tab:main}, so the accuracy result does not by itself argue for it.
 The independence argument stands or falls on a different question than the one
 this ablation answers, and we did not design a test that isolates it.
+
+\textbf{Coverage, against its own motivation.} The result for the scale-free
+score runs the other way. We introduced Chamfer coverage as the
+\emph{better-motivated} choice --- a single global $\tau$ applied to a raw
+pixel distance conflates calibration with accuracy, coverage does not --- and
+then reported Table~\ref{tab:main} from the distance score anyway, on
+practical grounds. This ablation is the check on whether that practical
+choice cost anything, and on ranking it cost a great deal: mAP falls from
+$0.886$ to $0.646$ and R@1 from $0.952$ to $0.849$, a larger drop than any
+other single change in this paper. $\mathrm{DIR}@\mathrm{FAR}$ and
+$F_1^{@v}$ barely move ($0.768\to0.754$, $0.582\to0.556$). The pattern points
+to where the two scores diverge: coverage collapses every pair's distance
+distribution to one number, in-tolerance fraction, which is exactly the
+statistic a threshold-based accept/reject decision needs and exactly the
+statistic a full ranking over many candidates does not --- ranking many
+candidates against one query wants the finer distinction that a raw distance
+preserves and coverage discards. We do not walk back the motivation for
+coverage; we walk back treating it as a free improvement. On this benchmark it
+is a ranking cost paid for a calibration property Table~\ref{tab:main} did
+not end up needing, which is a fair description of why distance, not
+coverage, is what we report as the primary result.
 
 \subsection{Ablation: the third front end}
 \label{sec:ecc}

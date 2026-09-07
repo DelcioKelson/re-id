@@ -61,7 +61,7 @@ def parse_results_table(path):
 
 TABLE = J('banchmark_out/result.txt')
 parsed = parse_results_table(TABLE) if os.path.exists(TABLE) else {}
-check("methods parsed from result.txt", len(parsed), 17, tol=0)
+check("methods parsed from result.txt", len(parsed), 18, tol=0)
 
 print("\n[1] How much appearance buys (Table I, Sec. V)")
 # name -> (R@1, mAP, DIR, pairF1*, pairF1@v, s/query)
@@ -136,6 +136,22 @@ if nomask:
 else:
     fails.append("registration+chamfer[distance,nomask] missing from result.txt")
     print("  FAIL  registration-nomask row not present in result.txt")
+
+cov = parsed.get("registration+chamfer[coverage]")
+if cov:
+    for col, want in (("R@1", 0.849), ("mAP", 0.646), ("DIR@FAR.1", 0.754),
+                      ("pairF1@v", 0.556), ("scored", 0.48)):
+        check(f"registration coverage-scored {col}", cov[col], want, tol=1e-3)
+    if reg:
+        check("coverage ablation: mAP cost vs distance scoring",
+              reg["mAP"] - cov["mAP"], 0.240, tol=1e-3)
+        check("coverage ablation: R@1 cost vs distance scoring",
+              reg["R@1"] - cov["R@1"], 0.103, tol=1e-3)
+        check("coverage ablation: DIR barely moves",
+              reg["DIR@FAR.1"] - cov["DIR@FAR.1"], 0.014, tol=1e-3)
+else:
+    fails.append("registration+chamfer[coverage] missing from result.txt")
+    print("  FAIL  registration-coverage row not present in result.txt")
 
 # --- the chance levels every quoted excess is measured against -----------
 # Without these the pairwise-F1 numbers above are unreadable: the metric has
