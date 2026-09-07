@@ -346,6 +346,22 @@ check("median consecutive-frame gap (s)", float(np.median(g)), 3, tol=0)
 check("max consecutive-frame gap (s)", max(g), 20, tol=0)
 check("max per-wall span (s)", max(spans), 81, tol=0)
 
+print("\n[8] The illustrative evolution figure never touches data or claims")
+# Fig. evolution (Sec. VII) is a GIMP mock-up, not a measurement -- see
+# make_illustrative_fig.py. This section is the check that it stays that way:
+# its synthetic frames must never enter dataset/, and no benchmark output may
+# reference them by name.
+_illus_names = {f"stage{i}.jpg" for i in (1, 2, 3)} | {"illustrative_evolution"}
+_leaked = [n for n in _illus_names
+           if glob.glob(J('dataset', 'images', f'*{n}*'))
+           or glob.glob(J('dataset', 'masks', f'*{n}*'))]
+check("illustrative frames absent from dataset/", len(_leaked), 0, tol=0)
+_result_txt = open(TABLE).read() if os.path.exists(TABLE) else ""
+_referenced = [n for n in _illus_names if n in _result_txt]
+check("illustrative frames absent from result.txt", len(_referenced), 0, tol=0)
+check("illustrative fig source file exists",
+      int(os.path.exists(J('paper/make_illustrative_fig.py'))), 1, tol=0)
+
 print("\n" + "=" * 74)
 if fails:
     print(f"{len(fails)} CLAIM(S) FAILED TO REPRODUCE:"); [print("  -", f) for f in fails]

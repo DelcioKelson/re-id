@@ -93,3 +93,51 @@ capture session, weeks later, at marked distances and angles. It would make the
 protocol cross-visit rather than viewpoint-only, supply exact rather than
 estimated viewpoint ground truth, and test the condition under which we expect
 geometry to widen its advantage --- appearance drift with position preserved.
+That data does not exist yet, and until it does, every sentence in this
+subsection is a hypothesis, not a result.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/illustrative_evolution.pdf}
+\caption{\textbf{What the missing measurement would need to see, not a
+measurement.} Four panels of a single \textsc{CrackID} test photograph
+(\texttt{wall01\_s1\_0002}). The first three were digitally shortened in GIMP
+by cloning wall texture over the lower portion of the crack through a
+feathered mask (Sec.~\ref{sec:next} in \texttt{paper/make\_illustrative\_fig.py}
+gives the exact, reproducible procedure); the fourth is the original file. All
+four are one photograph edited, not four visits to a wall --- there is no
+independent ground truth here, no second camera pass, and nothing computed on
+them enters Table~\ref{tab:main} or any check in
+\texttt{verify\_claims.py}. We include it only because a growth trend is
+otherwise hard to picture from prose.}
+\label{fig:evolution}
+\end{figure}
+
+Fig.~\ref{fig:evolution} makes that hypothesis concrete rather than measuring
+it: if the same crack is re-photographed after it has grown, does the
+identity survive? Reading the panels as a growth sequence (left to right) is
+deliberate --- cracks lengthen, they do not shorten --- but nothing about how
+this figure was produced constitutes evidence either way. The edit changes
+exactly one thing, crack length, and holds everything a matcher could key on
+constant: same camera, same lighting, same wall, same JPEG noise. A number
+computed by running this figure through \texttt{benchmark.py} would therefore
+not measure robustness to evolution; it would measure whether a method can
+match a photograph against a clone of itself with part of the annotation
+erased, and the identity label would already be known to be correct by
+construction. We did not run it, and we would flag as suspect any version of
+this paper that reports a metric on images produced this way.
+
+What Fig.~\ref{fig:evolution} is useful for is stating the two competing
+predictions precisely enough that the real experiment could adjudicate them.
+An appearance embedding is trained to be invariant to exactly the kind of
+local change the crack itself undergoes as it grows, which argues for
+fragility --- but it is also reading the crop-plus-context wall texture
+(Sec.~\ref{sec:controls}) that a genuine revisit would perturb far more than
+this edit does, which argues the opposite. The geometric baseline's position
+estimate should be stable under crack growth by construction, since growth
+happens \emph{after} the wall-texture alignment it depends on --- provided
+registration coverage itself does not degrade over the longer, weather-exposed
+gap a real revisit spans, which is a separate open question this figure says
+nothing about. Both predictions are plausible from the mechanism description
+alone; neither is supported by anything in this subsection until the second
+capture session exists to test them.
