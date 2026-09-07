@@ -1,0 +1,257 @@
+{
+  "wall01_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall01_s1_0002.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": -300,
+    "taper_zone_y": [
+      1263,
+      1463
+    ],
+    "erased_y_range": [
+      1463,
+      2420
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall02_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall02_s1_0009.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": -400,
+    "taper_zone_y": [
+      1050,
+      1250
+    ],
+    "erased_y_range": [
+      1250,
+      1611
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall03_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall03_s1_0006.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      1400,
+      1600
+    ],
+    "erased_y_range": [
+      1600,
+      1800
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall04_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall04_s1_0011.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      2622,
+      2822
+    ],
+    "erased_y_range": [
+      2822,
+      2842
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall05_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall05_s1_0008.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": -300,
+    "taper_zone_y": [
+      1411,
+      1611
+    ],
+    "erased_y_range": [
+      1611,
+      1656
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall06_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall06_s1_0007.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      2342,
+      2542
+    ],
+    "erased_y_range": [
+      2542,
+      2595
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall07_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall07_s1_0003.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      906,
+      1106
+    ],
+    "erased_y_range": [
+      1106,
+      1285
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall08_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall08_s1_0001.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": -300,
+    "taper_zone_y": [
+      3208,
+      3408
+    ],
+    "erased_y_range": [
+      3408,
+      3601
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall09_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall09_s1_0006.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      2736,
+      2936
+    ],
+    "erased_y_range": [
+      2936,
+      3770
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall10_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall10_s1_0001.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      1824,
+      2024
+    ],
+    "erased_y_range": [
+      2024,
+      2146
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall11_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall11_s1_0003.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      1984,
+      2184
+    ],
+    "erased_y_range": [
+      2184,
+      2267
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall12_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall12_s1_0007.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      1468,
+      1668
+    ],
+    "erased_y_range": [
+      1668,
+      1683
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall13_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall13_s1_0005.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": -500,
+    "taper_zone_y": [
+      1174,
+      1374
+    ],
+    "erased_y_range": [
+      1374,
+      2218
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall14_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall14_s1_0007.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      1418,
+      1618
+    ],
+    "erased_y_range": [
+      1618,
+      1627
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall15_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall15_s1_0006.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 1300,
+    "taper_zone_y": [
+      2416,
+      2616
+    ],
+    "erased_y_range": [
+      2616,
+      2752
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall16_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall16_s1_0003.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      754,
+      954
+    ],
+    "erased_y_range": [
+      954,
+      1437
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  },
+  "wall17_synthetic_shortened.jpg": {
+    "source": "dataset/images/wall17_s1_0002.jpg",
+    "method": "GIMP layer-offset clone + feathered mask (see paper/make_illustrative_fig.py)",
+    "split_frac_kept": 0.45,
+    "clone_shift_px": 300,
+    "taper_zone_y": [
+      1360,
+      1560
+    ],
+    "erased_y_range": [
+      1560,
+      1575
+    ],
+    "note": "One real photograph edited; not a second visit or camera pass."
+  }
+}

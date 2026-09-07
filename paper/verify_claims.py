@@ -346,21 +346,27 @@ check("median consecutive-frame gap (s)", float(np.median(g)), 3, tol=0)
 check("max consecutive-frame gap (s)", max(g), 20, tol=0)
 check("max per-wall span (s)", max(spans), 81, tol=0)
 
-print("\n[8] The illustrative evolution figure never touches data or claims")
-# Fig. evolution (Sec. VII) is a GIMP mock-up, not a measurement -- see
-# make_illustrative_fig.py. This section is the check that it stays that way:
-# its synthetic frames must never enter dataset/, and no benchmark output may
-# reference them by name.
-_illus_names = {f"stage{i}.jpg" for i in (1, 2, 3)} | {"illustrative_evolution"}
-_leaked = [n for n in _illus_names
-           if glob.glob(J('dataset', 'images', f'*{n}*'))
-           or glob.glob(J('dataset', 'masks', f'*{n}*'))]
-check("illustrative frames absent from dataset/", len(_leaked), 0, tol=0)
+print("\n[8] Synthetic/illustrative images never touch data or claims")
+# Fig. evolution (Sec. VII) and illustrative_synthetic/ are GIMP mock-ups, not
+# measurements -- see make_illustrative_fig.py and
+# illustrative_synthetic/README.md. This section checks that stays true:
+# no file whose name marks it as synthetic may exist inside dataset/, and no
+# benchmark output may reference one. Substring-based (not an enumerated
+# list) so it also catches anything added to illustrative_synthetic/ later
+# without this file needing to be told about it by name.
+_marker = "synthetic"
+_leaked = (glob.glob(J('dataset', 'images', f'*{_marker}*'))
+           + glob.glob(J('dataset', 'masks', f'*{_marker}*'))
+           + glob.glob(J('dataset', 'labels', f'*{_marker}*')))
+check("no *synthetic* file inside dataset/", len(_leaked), 0, tol=0)
 _result_txt = open(TABLE).read() if os.path.exists(TABLE) else ""
-_referenced = [n for n in _illus_names if n in _result_txt]
-check("illustrative frames absent from result.txt", len(_referenced), 0, tol=0)
+check(f"'{_marker}' absent from result.txt", int(_marker in _result_txt), 0, tol=0)
 check("illustrative fig source file exists",
       int(os.path.exists(J('paper/make_illustrative_fig.py'))), 1, tol=0)
+_is_dir = J('illustrative_synthetic')
+if os.path.isdir(_is_dir):
+    check("illustrative_synthetic/ has its own README disclosing it",
+          int(os.path.exists(os.path.join(_is_dir, 'README.md'))), 1, tol=0)
 
 print("\n" + "=" * 74)
 if fails:
