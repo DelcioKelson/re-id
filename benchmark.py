@@ -573,7 +573,7 @@ def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
                 scorers.append(ShapeEmbeddingScorer(
                     name="CrackShape" + _suffix(context, None, None, invert),
                     embed_fn=fn, context=context))
-            elif key in ("deit", "vit", "clip", "osnet", "yolo"):
+            elif key in ("deit", "vit", "clip", "osnet", "yolo", "dinov2"):
                 emb = REGISTRY[key]()
                 # wrap embed_batch as an embed_fn over BGR crops
                 fn = lambda crops, e=emb: _l2(e.embed_batch(crops))
@@ -947,7 +947,7 @@ CONTROLS = ["osnet@ctx1", "osnet@ctx1@nocrack", "clip@ctx1", "clip@ctx1@nocrack"
 ABLATIONS = ["coverage-only", "registration-nomask", "registration-coverage"]
 
 DEFAULT_METHODS = ["sift", "orb", "loftr", "superglue",
-                   "deit", "vit", "clip", "osnet", "yolo",
+                   "deit", "vit", "clip", "osnet", "yolo", "dinov2",
                    "shape", "registration"]
 
 

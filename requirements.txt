@@ -35,6 +35,7 @@ ultralytics==8.4.104           # YOLOv8 backbone
 torchreid==0.2.5               # OSNet
 gdown==6.1.0                   # torchreid weight download
 yacs                           # torchreid runtime dep
+# DINOv2 is loaded via torch.hub (facebookresearch/dinov2), no extra package.
 
 # --- SuperGlue is NOT a package ---
 # It is a repository checkout under third_party/, cloned by colab_setup.sh.

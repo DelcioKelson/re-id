@@ -518,6 +518,51 @@ class YOLOEmbeddingMatcher(EmbeddingMatcher):
         return np.stack(out)
 
 
+class DINOv2EmbeddingMatcher(EmbeddingMatcher):
+    """DINOv2 self-supervised ViT via torch.hub (facebookresearch/dinov2).
+
+    The obvious strong instance-retrieval embedding that the paper
+    explicitly names as a natural next entry.  Uses the same
+    letterbox-to-square + ImageNet normalisation as the other ViT
+    matchers; only the model source differs.
+    """
+
+    def __init__(self, model_name: str = "dinov2_vits14",
+                 image_size: int = 224, min_score: float = 0.7,
+                 name: str | None = None):
+        self.model_name = model_name
+        self.image_size = image_size
+        self.min_score = min_score
+        self.name = name or "DINOv2"
+        self._model = None
+        self._tf = None
+
+    def _lazy(self):
+        if self._model is not None:
+            return
+        import torch
+        self._torch = torch
+        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._model = torch.hub.load("facebookresearch/dinov2", self.model_name)
+        self._model.eval().to(self._device)
+        from torchvision import transforms
+        self._tf = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+    def embed_batch(self, crops):
+        self._lazy()
+        torch = self._torch
+        batch = torch.stack([
+            self._tf(cv2.cvtColor(letterbox(c, self.image_size), cv2.COLOR_BGR2RGB))
+            for c in crops])
+        with torch.no_grad():
+            feats = self._model(batch.to(self._device))
+        return feats.cpu().numpy()
+
+
 # ---------------------------------------------------------------------------
 # Family 3: learned pairwise matchers (SuperGlue, LoFTR)
 # ---------------------------------------------------------------------------
@@ -826,6 +871,7 @@ REGISTRY: dict[str, Callable[[], BaseMatcher]] = {
     "clip":      lambda: CLIPEmbeddingMatcher(),
     "osnet":     lambda: OSNetEmbeddingMatcher(),
     "yolo":      lambda: YOLOEmbeddingMatcher(),
+    "dinov2":    lambda: DINOv2EmbeddingMatcher(),
     "shape":     lambda: CrackShapeMatcher(),
 }
 
