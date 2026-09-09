@@ -44,6 +44,11 @@ yacs                           # torchreid runtime dep
 #     https://github.com/magicleap/SuperGluePretrainedNetwork \
 #     third_party/SuperGluePretrainedNetwork
 #
+# --- LightGlue is NOT a pip package either ---
+# Install from source (Apache-2.0 licence):
+#   git clone https://github.com/cvg/LightGlue.git
+#   pip install -e LightGlue
+# Weights are auto-downloaded on first use.
 # --- crack segmentation masks ---
 # dataset/masks/ is COMMITTED, so nothing here needs the segmenter to
 # reproduce any reported number. See dataset/README.md for the checkpoint's

@@ -733,6 +733,84 @@ class LoFTRMatcher(BaseMatcher):
         return n_in + _tiebreak(n_in / n, q)
 
 
+class LightGlueMatcher(BaseMatcher):
+    """SuperPoint + LightGlue.  Faster successor to SuperGlue with adaptive
+    computation (early stopping + point pruning).  Install from source::
+
+        git clone https://github.com/cvg/LightGlue.git
+        pip install -e LightGlue
+
+    Like SuperGlue, inherently pairwise: prepare() caches the preprocessed
+    grayscale; the network runs per pair.  Score = RANSAC homography
+    inlier count, identical to SuperGlueMatcher."""
+
+    apply_mask = True
+
+    def __init__(self, max_keypoints: int = 2048, resize: int = 512,
+                 filter_threshold: float = 0.1, min_inliers: int = 6):
+        self.max_keypoints = max_keypoints
+        self.resize = resize
+        self.filter_threshold = filter_threshold
+        self.min_inliers = min_inliers
+        self.min_score = float(min_inliers)
+        self.name = "LightGlue"
+        self._extractor = None
+        self._matcher = None
+
+    def _lazy(self):
+        if self._matcher is not None:
+            return
+        import torch
+        from lightglue import SuperPoint, LightGlue as _LG
+        self._torch = torch
+        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._extractor = SuperPoint(max_num_keypoints=self.max_keypoints
+                                     ).eval().to(self._device)
+        self._matcher = _LG(features="superpoint",
+                            filter_threshold=self.filter_threshold
+                            ).eval().to(self._device)
+
+    def _prep_gray(self, crop):
+        gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY) if crop.ndim == 3 else crop
+        if self.resize > 0:
+            scale = self.resize / max(gray.shape[:2])
+            nw, nh = max(int(gray.shape[1] * scale), 8), max(int(gray.shape[0] * scale), 8)
+            gray = cv2.resize(gray, (nw, nh), interpolation=cv2.INTER_CUBIC)
+        return gray
+
+    def prepare(self, instances):
+        return [self._prep_gray(inst.crop) for inst in instances]
+
+    def score_pair(self, gray_a, gray_b) -> float:
+        self._lazy()
+        torch = self._torch
+        # grayscale BGR -> float32 RGB tensor (3, H, W) in [0, 1]
+        def _to_tensor(g):
+            rgb = np.stack([g, g, g], axis=-1)      # gray -> 3-ch
+            return torch.from_numpy(rgb.transpose(2, 0, 1)).float() / 255.0
+        ta = _to_tensor(gray_a).to(self._device)
+        tb = _to_tensor(gray_b).to(self._device)
+        with torch.no_grad():
+            feats_a = self._extractor.extract(ta, device=self._device)
+            feats_b = self._extractor.extract(tb, device=self._device)
+            pred = self._matcher({"image0": feats_a, "image1": feats_b})
+        # matches0: (1, M) index into image1 per img0 keypoint, -1 = unmatched
+        matches = pred["matches0"][0].cpu().numpy()
+        scores = pred["matching_scores0"][0].cpu().numpy()
+        valid = matches > -1
+        n = int(valid.sum())
+        q = float(scores[valid].mean()) if n else 0.0
+        if n < 4:
+            return n + _tiebreak(q)
+        kp_a = feats_a["keypoints"][0].cpu().numpy()
+        kp_b = feats_b["keypoints"][0].cpu().numpy()
+        mk0 = kp_a[valid]
+        mk1 = kp_b[matches[valid]]
+        _, inl = cv2.findHomography(mk0, mk1, cv2.RANSAC, 5.0)
+        if inl is None:
+            return n + _tiebreak(q)
+        n_in = int(inl.sum())
+        return n_in + _tiebreak(n_in / n, q)
 
 
 # ---------------------------------------------------------------------------
@@ -865,6 +943,7 @@ REGISTRY: dict[str, Callable[[], BaseMatcher]] = {
     "sift":      lambda: KeypointMatcher("sift"),
     "orb":       lambda: KeypointMatcher("orb"),
     "superglue": lambda: SuperGlueMatcher(),
+    "lightglue": lambda: LightGlueMatcher(),
     "loftr":     lambda: LoFTRMatcher(),
     "deit":      lambda: TimmEmbeddingMatcher("deit_small_patch16_224", name="DeiT"),
     "vit":       lambda: TimmEmbeddingMatcher("vit_base_patch16_224", name="ViT"),

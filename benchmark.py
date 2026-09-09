@@ -560,7 +560,7 @@ def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
     for raw in methods:
         key, context, apply_mask, invert = parse_method_key(raw)
         try:
-            if key in ("sift", "orb", "superglue", "loftr"):
+            if key in ("sift", "orb", "superglue", "lightglue", "loftr"):
                 m = REGISTRY[key]()
                 scorers.append(PairwiseMatcherScorer(
                     m, prune=prune, context=context, apply_mask=apply_mask,
@@ -946,7 +946,7 @@ CONTROLS = ["osnet@ctx1", "osnet@ctx1@nocrack", "clip@ctx1", "clip@ctx1@nocrack"
 #                          beat the raw-pixel one it actually used?
 ABLATIONS = ["coverage-only", "registration-nomask", "registration-coverage"]
 
-DEFAULT_METHODS = ["sift", "orb", "loftr", "superglue",
+DEFAULT_METHODS = ["sift", "orb", "loftr", "superglue", "lightglue",
                    "deit", "vit", "clip", "osnet", "yolo", "dinov2",
                    "shape", "registration"]
 
