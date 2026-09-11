@@ -13,11 +13,15 @@ means a frame extracted on its own, with the filename stripped, carries no
 disclosure. Keep that in mind before this material goes anywhere the filename
 might not travel with it.
 
-**These images are not read by any part of the pipeline.** `benchmark.py`,
-`reid_eval.py`, and every number in `paper/banchmark_out/result.txt` /
+`benchmark.py`, `reid_eval.py`, and every number in `paper/banchmark_out/result.txt` /
 `paper/sections/results.tex` are computed only from `dataset/`. Nothing in
-this directory has ever been scored, and `paper/verify_claims.py` checks
+this directory enters those benchmark results, and `paper/verify_claims.py` checks
 (section `[8]`) that no file named like these ever appears inside `dataset/`.
+
+`illustrative_comparison.py` may read these files for a **qualitative-only**
+Skeleton+LoFTR-versus-OSNet display. It derives a disclosed shortened-mask proxy
+from this manifest and writes a separate JSON report; it does not call the
+benchmark evaluator and its scores must not be reported as retrieval results.
 
 ## What's here
 
@@ -46,7 +50,5 @@ and does not claim.
 ## Status
 
 Generated as a batch, one per wall, at the request of the paper's authors, to
-be reviewed before any decision is made about whether or how any of it enters
-the paper. As of this commit, none of it does: no figure, no claim, no table
-row, and no file under `paper/` other than this README's mention references
-this directory.
+support qualitative inspection only. It supplies no benchmark row, numerical
+claim, or evidence about revisit robustness.

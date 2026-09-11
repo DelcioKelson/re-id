@@ -61,7 +61,7 @@ substantially **alignment coverage**, while its DIR@FAR margin is entirely
 | `benchmark.py` | dataset loading, scorer construction, the run driver |
 | `reid_eval.py` | the protocol: validity masks, CMC/mAP, open-set curve, pairwise and assignment F1, chance levels |
 | `crack_registration_reid.py` | the geometric method: masked registration, Chamfer agreement, Hungarian matching |
-| `crack_reid_baselines.py` | SIFT, ORB, SuperGlue, LoFTR, ViT, DeiT, CLIP, YOLO, OSNet, CrackShape |
+| `crack_reid_baselines.py` | SIFT, ORB, SuperGlue, LoFTR, ViT, DeiT, CLIP, YOLO, OSNet, CrackShape, and the interpretable Skeleton matcher |
 | `chance_baseline.py` | chance levels, the frame-gap structure, the coverage confound |
 | `viewpoint.py` | per-pair registration outcomes and the independent viewpoint covariate |
 | `image_quality.py` | sharpness measurement and the admission gate sweep |
@@ -75,6 +75,28 @@ Every number quoted in the paper is re-derived from committed artefacts by
 `paper/verify_claims.py`, which exits non-zero if any of them stops matching.
 See `paper/README.md` for the artefact-to-claim map and for the two claims that
 need the score matrices regenerated.
+
+## Skeleton versus OSNet
+
+`skeleton-loftr` turns each predicted crack mask into a centreline and compares
+endpoints, junctions, curvature/shape, topology/segment lengths, and relative
+width. LoFTR supplies pairwise learned keypoints; only correspondences in a
+dilated skeleton neighbourhood in both crops are retained, and their RANSAC
+consensus contributes 15% of the score. The structural terms remain separately
+reported. It requires optional `torch` and `kornia`.
+
+To compare synthetic queries against the untouched original-photo gallery:
+
+    python3 synthetic_viewpoint.py dataset --methods skeleton-loftr osnet@ctx1
+
+To include the requested context baseline in the real-data benchmark:
+
+    python3 benchmark.py dataset --methods skeleton-loftr osnet@ctx1 --out skeleton_vs_osnet
+
+For the separate GIMP illustrative images, use the qualitative-only runner;
+its JSON is deliberately not a benchmark result:
+
+    python3 illustrative_comparison.py --out illustrative_comparison_out
 
 ## Provenance of the crack masks
 

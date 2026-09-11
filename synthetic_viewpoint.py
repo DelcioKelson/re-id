@@ -43,7 +43,10 @@ Usage
 -----
     python synthetic_viewpoint.py dataset --out synth_sweep_out \
         --scales 1.0,1.5,2.0,3.0 --rotations 0,15,30,45 --tilts 0,30,60 \
-        --methods registration sift orb --min-sharpness 10
+        --methods skeleton-loftr osnet@ctx1 --min-sharpness 10
+
+`osnet@ctx1` gives OSNet one bbox-width of surrounding wall context. It has
+the same meaning here as in the main benchmark.
 
 Requires the same deps as benchmark.py for whichever --methods you pass.
 """
@@ -58,8 +61,7 @@ from collections import defaultdict
 import cv2
 import numpy as np
 
-from benchmark import Dataset, Photo, PROTOCOL, PairwiseMatcherScorer, _build_registration_scorer
-from crack_reid_baselines import REGISTRY as MATCHERS
+from benchmark import Dataset, Photo, PROTOCOL, build_scorers as build_benchmark_scorers
 from reid_eval import evaluate, results_table, InstanceRef
 from viewpoint import decompose
 
@@ -207,15 +209,8 @@ class SyntheticViewpointDataset(Dataset):
 # ===========================================================================
 
 def build_scorers(names: list[str], data: Dataset) -> dict:
-    scorers = {}
-    for name in names:
-        if name == "registration":
-            scorers[name] = _build_registration_scorer(data, prune=True)
-        elif name in MATCHERS:
-            scorers[name] = PairwiseMatcherScorer(MATCHERS[name](), prune=True)
-        else:
-            raise ValueError(f"unknown method '{name}' (known: registration, {list(MATCHERS)})")
-    return scorers
+    """Share method parsing with the real benchmark (including @ctx flags)."""
+    return {scorer.name: scorer for scorer in build_benchmark_scorers(names, data, prune=True)}
 
 
 def run_sweep(root: str, scales, rotations, tilts, methods: list[str],
@@ -310,7 +305,7 @@ def main():
     ap.add_argument("--scales", default="1.0,1.5,2.0,3.0")
     ap.add_argument("--rotations", default="0,15,30,45")
     ap.add_argument("--tilts", default="0,30,60")
-    ap.add_argument("--methods", nargs="+", default=["registration", "sift", "orb"])
+    ap.add_argument("--methods", nargs="+", default=["registration", "skeleton-loftr", "osnet@ctx1"])
     ap.add_argument("--min-sharpness", type=float, default=10)
     ap.add_argument("--max-sources-per-wall", type=int, default=6)
     ap.add_argument("--seed", type=int, default=0)

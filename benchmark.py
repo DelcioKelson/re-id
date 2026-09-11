@@ -560,7 +560,7 @@ def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
     for raw in methods:
         key, context, apply_mask, invert = parse_method_key(raw)
         try:
-            if key in ("sift", "orb", "superglue", "lightglue", "loftr"):
+            if key in ("sift", "orb", "superglue", "lightglue", "loftr", "skeleton-loftr"):
                 m = REGISTRY[key]()
                 scorers.append(PairwiseMatcherScorer(
                     m, prune=prune, context=context, apply_mask=apply_mask,
@@ -948,7 +948,7 @@ ABLATIONS = ["coverage-only", "registration-nomask", "registration-coverage"]
 
 DEFAULT_METHODS = ["sift", "orb", "loftr", "superglue", "lightglue",
                    "deit", "vit", "clip", "osnet", "yolo", "dinov2",
-                   "shape", "registration"]
+                   "shape", "skeleton-loftr", "registration"]
 
 
 def run(root: str, methods: list[str] | None = None,

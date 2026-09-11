@@ -41,3 +41,7 @@ qualitatively ("more than three orders of magnitude"), not as a precise
 multiplier, and cites the two measured endpoints (CrackShape, LoFTR) directly.
 registration+chamfer is the full cascade with ECC enabled (Sec. VI-F); the
 disabled-ECC ablation is a separate reported condition, not a row here.
+
+
+
+DINOv2                  crop          280  0.607  0.854  0.484      0.307    0.305    0.297   0.380    1.00      3.1

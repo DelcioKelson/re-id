@@ -934,6 +934,302 @@ class CrackShapeMatcher(EmbeddingMatcher):
 
 
 # ===========================================================================
+# Skeleton structural matcher
+# ===========================================================================
+
+@dataclass
+class SkeletonFeatures:
+    """Interpretable measurements of one crack's one-pixel centreline.
+
+    Coordinates are centred and scaled to unit RMS radius.  They are kept
+    separately from the scalar measurements so a comparison can report why a
+    pair scored as it did, rather than only returning an opaque similarity.
+    """
+    points: np.ndarray
+    endpoints: np.ndarray
+    junctions: np.ndarray
+    degree_hist: np.ndarray
+    segment_lengths: np.ndarray
+    curvature_hist: np.ndarray
+    widths: np.ndarray
+    total_length: float
+    scale: float
+
+
+def skeletonize_mask(mask: np.ndarray) -> np.ndarray:
+    """Morphological skeleton of a binary mask, without a scikit-image dependency."""
+    work = (mask > 0).astype(np.uint8)
+    skel = np.zeros_like(work)
+    cross = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    # Every iteration removes at least one boundary layer; termination is
+    # therefore guaranteed for a finite crop.
+    while cv2.countNonZero(work):
+        eroded = cv2.erode(work, cross)
+        skel |= work & ~cv2.dilate(eroded, cross)
+        work = eroded
+    return skel
+
+
+def _normalise_points(points: np.ndarray, centre: np.ndarray, scale: float) -> np.ndarray:
+    if len(points) == 0:
+        return np.empty((0, 2), dtype=np.float64)
+    return (points.astype(np.float64) - centre) / max(scale, 1e-6)
+
+
+def skeleton_features(mask: np.ndarray) -> SkeletonFeatures:
+    """Extract endpoints, junctions, lengths, curvature and width features.
+
+    Junction pixels are clustered because one physical three-way junction is
+    commonly a 2--5 pixel blob after thinning.  Segment lengths are the
+    skeleton runs between endpoints/junctions, measured in pixel steps.
+    """
+    skel = skeletonize_mask(mask)
+    ys, xs = np.nonzero(skel)
+    p = np.c_[xs, ys].astype(np.float64)
+    empty = SkeletonFeatures(np.empty((0, 2)), np.empty((0, 2)), np.empty((0, 2)),
+                             np.zeros(4), np.empty(0), np.zeros(12), np.empty(0), 0.0, 1.0)
+    if len(p) < 2:
+        return empty
+
+    # 8-connected degree at every skeleton pixel.
+    degree = cv2.filter2D(skel, cv2.CV_16S, np.ones((3, 3), np.uint8)) - skel
+    endpoint_xy = np.c_[np.nonzero((skel > 0) & (degree == 1))[1],
+                        np.nonzero((skel > 0) & (degree == 1))[0]].astype(np.float64)
+    junction_binary = ((skel > 0) & (degree >= 3)).astype(np.uint8)
+    n_j, labels, _, centres = cv2.connectedComponentsWithStats(junction_binary, 8)
+    junction_xy = centres[1:].astype(np.float64) if n_j > 1 else np.empty((0, 2))
+
+    centre = p.mean(axis=0)
+    scale = float(np.sqrt(np.mean(np.sum((p - centre) ** 2, axis=1))))
+    pts = _normalise_points(p, centre, scale)
+    endpoints = _normalise_points(endpoint_xy, centre, scale)
+    junctions = _normalise_points(junction_xy, centre, scale)
+
+    # Pixel graph edge length.  Count right/down diagonals once, with their
+    # Euclidean step sizes, and retain degree topology as a scale-free vector.
+    total = 0.0
+    for dy, dx, weight in ((0, 1, 1.0), (1, 0, 1.0), (1, 1, np.sqrt(2)), (1, -1, np.sqrt(2))):
+        a = skel[max(0, -dy):skel.shape[0] - max(0, dy), max(0, -dx):skel.shape[1] - max(0, dx)]
+        b = skel[max(0, dy):skel.shape[0] - max(0, -dy), max(0, dx):skel.shape[1] - max(0, -dx)]
+        total += float((a & b).sum()) * weight
+    deg_vals = degree[skel > 0]
+    hist = np.array([(deg_vals == d).sum() for d in (1, 2, 3)], dtype=float)
+    hist = np.r_[hist, (deg_vals >= 4).sum()]
+    hist /= max(hist.sum(), 1.0)
+
+    # Local turning angle at degree-two pixels; this is a robust curvature
+    # distribution that does not depend on choosing an arbitrary endpoint.
+    angles = []
+    h, w = skel.shape
+    for y, x in zip(ys, xs):
+        if degree[y, x] != 2:
+            continue
+        ns = []
+        for yy in range(max(0, y - 1), min(h, y + 2)):
+            for xx in range(max(0, x - 1), min(w, x + 2)):
+                if (yy != y or xx != x) and skel[yy, xx]:
+                    ns.append(np.array([xx - x, yy - y], dtype=float))
+        if len(ns) == 2:
+            c = np.clip(np.dot(ns[0], ns[1]) / (np.linalg.norm(ns[0]) * np.linalg.norm(ns[1])), -1, 1)
+            angles.append(np.pi - np.arccos(c))
+    curvature_hist, _ = np.histogram(angles, bins=12, range=(0, np.pi), density=False)
+    curvature_hist = curvature_hist.astype(float) / max(len(angles), 1)
+
+    # Width is sampled with a distance transform and made scale-free.
+    distance = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 3)
+    widths = distance[ys, xs] / max(scale, 1e-6)
+
+    # Approximate segments are endpoint/junction-to-endpoint/junction graph
+    # runs.  The total length and sorted run distribution are both retained.
+    nodes = (degree != 2) & (skel > 0)
+    visited, segments = set(), []
+    for y, x in zip(*np.nonzero(nodes)):
+        for yy in range(max(0, y - 1), min(h, y + 2)):
+            for xx in range(max(0, x - 1), min(w, x + 2)):
+                if not skel[yy, xx] or (yy == y and xx == x) or (y, x, yy, xx) in visited:
+                    continue
+                py, px, cy, cx, length = y, x, yy, xx, float(np.hypot(xx - x, yy - y))
+                visited.add((y, x, yy, xx)); visited.add((yy, xx, y, x))
+                while not nodes[cy, cx]:
+                    nxt = [(ny, nx) for ny in range(max(0, cy - 1), min(h, cy + 2))
+                           for nx in range(max(0, cx - 1), min(w, cx + 2))
+                           if skel[ny, nx] and (ny, nx) != (py, px)]
+                    if len(nxt) != 1:
+                        break
+                    ny, nx = nxt[0]
+                    length += float(np.hypot(nx - cx, ny - cy))
+                    visited.add((cy, cx, ny, nx)); visited.add((ny, nx, cy, cx))
+                    py, px, cy, cx = cy, cx, ny, nx
+                segments.append(length / max(total, 1e-6))
+    return SkeletonFeatures(pts, endpoints, junctions, hist, np.sort(segments),
+                            curvature_hist, widths, total, scale)
+
+
+def _set_coverage(a: np.ndarray, b: np.ndarray, tolerance: float) -> float:
+    """Symmetric fraction of landmark sets explained by the other set."""
+    if len(a) == len(b) == 0:
+        return 1.0
+    if len(a) == 0 or len(b) == 0:
+        return 0.0
+    d = np.sqrt(((a[:, None] - b[None]) ** 2).sum(2))
+    return float(((d.min(1) <= tolerance).mean() + (d.min(0) <= tolerance).mean()) / 2)
+
+
+class SkeletonMatcher(BaseMatcher):
+    """Rotation/scale-invariant, explainable crack-skeleton matcher.
+
+    `explain_pair` returns the requested structural percentage and its four
+    terms: endpoint, branch/junction, curvature/shape and topology.  The
+    matcher score is that percentage in [0, 1], so it can use the standard
+    benchmark and Hungarian assignment unchanged.
+    """
+    name = "Skeleton"
+    apply_mask = True
+
+    def __init__(self, min_score: float = 0.55,
+                 weights: tuple[float, float, float, float] = (0.20, 0.25, 0.40, 0.15)):
+        self.min_score, self.weights = min_score, np.asarray(weights, dtype=float)
+
+    def prepare(self, instances):
+        return [skeleton_features(i.mask_crop) for i in instances]
+
+    @staticmethod
+    def _best_alignment(a: np.ndarray, b: np.ndarray) -> tuple[np.ndarray, float]:
+        if not len(a) or not len(b):
+            return np.eye(2), np.inf
+        # Coarse rotation search makes correspondence independent of crop
+        # orientation; mirrored candidates also cover PCA-axis sign flips.
+        best_R, best = np.eye(2), np.inf
+        sample_a = a[::max(1, len(a) // 300)]
+        sample_b = b[::max(1, len(b) // 300)]
+        for mirror in (1.0, -1.0):
+            for theta in np.linspace(0, 2 * np.pi, 36, endpoint=False):
+                c, s = np.cos(theta), np.sin(theta)
+                R = np.array([[c * mirror, -s], [s * mirror, c]])
+                q = sample_a @ R.T
+                d = np.sqrt(((q[:, None] - sample_b[None]) ** 2).sum(2))
+                chamfer = float((d.min(1).mean() + d.min(0).mean()) / 2)
+                if chamfer < best:
+                    best_R, best = R, chamfer
+        return best_R, best
+
+    def explain_pair(self, a: SkeletonFeatures, b: SkeletonFeatures) -> dict[str, float]:
+        R, chamfer = self._best_alignment(a.points, b.points)
+        endpoints = _set_coverage(a.endpoints @ R.T, b.endpoints, 0.22)
+        branches = _set_coverage(a.junctions @ R.T, b.junctions, 0.25)
+        shape = float(np.exp(-chamfer / 0.18)) if np.isfinite(chamfer) else 0.0
+        curvature = float(np.minimum(a.curvature_hist, b.curvature_hist).sum())
+        shape = 0.75 * shape + 0.25 * curvature
+        topology = 1.0 - 0.5 * float(np.abs(a.degree_hist - b.degree_hist).sum())
+        # Length divided by the feature's RMS radius is scale-free and
+        # captures global tortuosity (a straight and a meandering crack can
+        # have identical endpoint layout).
+        norm_length_a = a.total_length / max(a.scale, 1e-6)
+        norm_length_b = b.total_length / max(b.scale, 1e-6)
+        topology *= float(np.exp(-abs(norm_length_a - norm_length_b) / 2.0))
+        if len(a.segment_lengths) or len(b.segment_lengths):
+            qa = np.quantile(a.segment_lengths, [0.25, .5, .75]) if len(a.segment_lengths) else np.zeros(3)
+            qb = np.quantile(b.segment_lengths, [0.25, .5, .75]) if len(b.segment_lengths) else np.zeros(3)
+            topology *= float(np.exp(-np.abs(qa - qb).mean() / .15))
+        width = 1.0
+        if len(a.widths) and len(b.widths):
+            width = float(np.exp(-abs(np.median(a.widths) - np.median(b.widths)) / .08))
+        topology = 0.85 * topology + 0.15 * width
+        terms = np.clip(np.array([endpoints, branches, shape, topology]), 0, 1)
+        score = float(np.dot(self.weights, terms) / self.weights.sum())
+        return {"score": score, "percentage": 100 * score, "endpoints": float(terms[0]),
+                "branches": float(terms[1]), "shape_curvature": float(terms[2]),
+                "topology_width": float(terms[3]), "chamfer": float(chamfer)}
+
+    def score_pair(self, prep_a, prep_b) -> float:
+        return self.explain_pair(prep_a, prep_b)["score"]
+
+
+class SkeletonLoFTRMatcher(SkeletonMatcher):
+    """Skeleton matcher with LoFTR correspondences as learned landmark evidence.
+
+    LoFTR is a *pairwise* detector-free matcher: it does not emit a stable
+    keypoint list for one image in isolation.  For a candidate pair we retain
+    only its correspondences that land in a dilated skeleton neighbourhood in
+    both crops, fit their geometric consensus, and blend that support (15%)
+    into the four interpretable skeleton terms (85%).  Thus wall-background
+    matches cannot masquerade as crack landmarks, and the structural score is
+    still visible in ``explain_pair``.
+    """
+    name = "Skeleton+LoFTR"
+    # Raw crop pixels let LoFTR see the local crack intensity.  Matches are
+    # subsequently constrained to the skeleton support, not the background.
+    apply_mask = False
+
+    def __init__(self, min_score: float = 0.55, loftr_weight: float = 0.15,
+                 skeleton_dilate_px: int = 15, **kw):
+        super().__init__(min_score=min_score, **kw)
+        self.loftr_weight = float(np.clip(loftr_weight, 0.0, 0.5))
+        self.skeleton_dilate_px = int(max(1, skeleton_dilate_px))
+        self._loftr = LoFTRMatcher(conf_thresh=0.5)
+
+    def prepare(self, instances):
+        # `_prep` lazily loads kornia/torch and returns the resized tensor
+        # actually passed to LoFTR.  Resize the skeleton support into that
+        # same coordinate system before filtering its keypoints.
+        out = []
+        for inst in instances:
+            tensor = self._loftr._prep(inst.crop).to(self._loftr._device)
+            support = cv2.dilate(skeletonize_mask(inst.mask_crop),
+                                 cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                                           (self.skeleton_dilate_px, self.skeleton_dilate_px)))
+            support = cv2.resize(support, (tensor.shape[-1], tensor.shape[-2]),
+                                 interpolation=cv2.INTER_NEAREST) > 0
+            out.append((skeleton_features(inst.mask_crop), tensor, support))
+        return out
+
+    @staticmethod
+    def _inside(points: np.ndarray, support: np.ndarray) -> np.ndarray:
+        if not len(points):
+            return np.zeros(0, dtype=bool)
+        x = np.rint(points[:, 0]).astype(int)
+        y = np.rint(points[:, 1]).astype(int)
+        valid = (x >= 0) & (x < support.shape[1]) & (y >= 0) & (y < support.shape[0])
+        out = np.zeros(len(points), dtype=bool)
+        out[valid] = support[y[valid], x[valid]]
+        return out
+
+    def explain_pair(self, prep_a, prep_b) -> dict[str, float]:
+        a, ta, support_a = prep_a
+        b, tb, support_b = prep_b
+        structural = super().explain_pair(a, b)
+        torch = self._loftr._torch
+        with torch.no_grad():
+            corr = self._loftr._matcher({"image0": ta, "image1": tb})
+        kp_a = corr["keypoints0"].cpu().numpy()
+        kp_b = corr["keypoints1"].cpu().numpy()
+        confidence = corr["confidence"].cpu().numpy()
+        keep = ((confidence >= self._loftr.conf_thresh)
+                & self._inside(kp_a, support_a) & self._inside(kp_b, support_b))
+        kp_a, kp_b, confidence = kp_a[keep], kp_b[keep], confidence[keep]
+        n = len(kp_a)
+        inliers = 0
+        if n >= 4:
+            # Similarity/partial-affine avoids granting a full arbitrary
+            # homography to a handful of collinear crack points.
+            _, inlier_mask = cv2.estimateAffinePartial2D(kp_a, kp_b, method=cv2.RANSAC,
+                                                          ransacReprojThreshold=3.0)
+            inliers = int(inlier_mask.sum()) if inlier_mask is not None else 0
+        # Saturating count avoids treating repetitive dense matches as more
+        # evidence than a handful of geometrically consistent landmarks.
+        support = ((inliers / max(n, 1)) * (1.0 - np.exp(-n / 12.0))
+                   * float(confidence.mean() if n else 0.0))
+        score = (1.0 - self.loftr_weight) * structural["score"] + self.loftr_weight * support
+        return {**structural, "structural_score": structural["score"],
+                "loftr_keypoints": int(n), "loftr_inliers": int(inliers),
+                "loftr_keypoint_score": float(support), "score": float(score),
+                "percentage": float(100 * score)}
+
+    def score_pair(self, prep_a, prep_b) -> float:
+        return self.explain_pair(prep_a, prep_b)["score"]
+
+
+# ===========================================================================
 # Registry + benchmark loop
 # ===========================================================================
 
@@ -952,6 +1248,7 @@ REGISTRY: dict[str, Callable[[], BaseMatcher]] = {
     "yolo":      lambda: YOLOEmbeddingMatcher(),
     "dinov2":    lambda: DINOv2EmbeddingMatcher(),
     "shape":     lambda: CrackShapeMatcher(),
+    "skeleton-loftr": lambda: SkeletonLoFTRMatcher(),
 }
 
 
