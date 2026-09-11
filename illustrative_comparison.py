@@ -68,22 +68,27 @@ def _context_crop(image: np.ndarray, inst: CrackInstance, context: float = 1.0) 
     return image[y0:y1, x0:x1].copy()
 
 
-def _osnet_score(source_img, source_inst, edited_img, edited_inst) -> tuple[float | None, str | None]:
-    """Return cosine similarity for OSNet with one bbox-width of context.
-
-    OSNet is optional; missing torchreid/weights becomes a recorded omission,
-    never a silently substituted score.
-    """
+def _load_osnet():
+    """Load OSNet once for the entire illustrative set, not once per wall."""
     try:
         from crack_reid_baselines import REGISTRY
-        matcher = REGISTRY["osnet"]()
-        emb = matcher.embed_batch([
-            _context_crop(source_img, source_inst),
-            _context_crop(edited_img, edited_inst),
-        ])
-        return float(np.dot(emb[0], emb[1])), None
+        return REGISTRY["osnet"](), None
     except (ImportError, RuntimeError, OSError) as exc:
         return None, f"{type(exc).__name__}: {exc}"
+
+
+def _osnet_score(source_img, source_inst, edited_img, edited_inst, matcher) -> float:
+    """Return cosine similarity for OSNet with one bbox-width of context.
+
+    ``matcher`` is deliberately injected: construction downloads/loads weights,
+    so doing it inside the per-wall loop turns a 17-pair comparison into 17
+    model initialisations.
+    """
+    emb = matcher.embed_batch([
+        _context_crop(source_img, source_inst),
+        _context_crop(edited_img, edited_inst),
+    ])
+    return float(np.dot(emb[0], emb[1]))
 
 
 def compare(illustrations: str, out_dir: str, skip_osnet: bool = False) -> list[dict]:
@@ -91,6 +96,8 @@ def compare(illustrations: str, out_dir: str, skip_osnet: bool = False) -> list[
         manifest = json.load(f)
     rows = []
     skeleton = SkeletonLoFTRMatcher()
+    osnet, osnet_load_error = ((None, "skipped by --skip-osnet") if skip_osnet
+                               else _load_osnet())
     for edited_name, recipe in sorted(manifest.items()):
         source_path = os.path.join(ROOT, recipe["source"])
         source_id = os.path.splitext(os.path.basename(source_path))[0]
@@ -115,13 +122,13 @@ def compare(illustrations: str, out_dir: str, skip_osnet: bool = False) -> list[
         if a is None or b is None:
             raise RuntimeError(f"no target instance after shortening {edited_name}")
         structural = skeleton.explain_pair(skeleton.prepare([a])[0], skeleton.prepare([b])[0])
-        osnet, osnet_error = (None, "skipped by --skip-osnet") if skip_osnet else _osnet_score(source_img, a, edited_img, b)
+        osnet_score = None if osnet is None else _osnet_score(source_img, a, edited_img, b, osnet)
         rows.append({
             "illustration": edited_name, "source": recipe["source"],
             "disclosure": "QUALITATIVE ONLY: GIMP-edited near-clone, not a revisit or benchmark datum.",
             "mask_proxy": "source target component truncated below disclosed taper end",
             "cutoff_y": cutoff, "skeleton_loftr": structural,
-            "osnet_ctx1_cosine": osnet, "osnet_status": osnet_error,
+            "osnet_ctx1_cosine": osnet_score, "osnet_status": osnet_load_error,
         })
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "illustrative_comparison.json"), "w") as f:
