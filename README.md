@@ -82,8 +82,9 @@ need the score matrices regenerated.
 endpoints, junctions, curvature/shape, topology/segment lengths, and relative
 width. LoFTR supplies pairwise learned keypoints; only correspondences in a
 dilated skeleton neighbourhood in both crops are retained, and their RANSAC
-consensus contributes 15% of the score. The structural terms remain separately
-reported. It requires optional `torch` and `kornia`.
+consensus adds up to 15% corroborating evidence. Missing LoFTR points do not
+penalise a structural match. The structural terms remain separately reported.
+It requires optional `torch` and `kornia`.
 
 To compare synthetic queries against the untouched original-photo gallery:
 

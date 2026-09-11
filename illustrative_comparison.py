@@ -88,7 +88,10 @@ def _osnet_score(source_img, source_inst, edited_img, edited_inst, matcher) -> f
         _context_crop(source_img, source_inst),
         _context_crop(edited_img, edited_inst),
     ])
-    return float(np.dot(emb[0], emb[1]))
+    # The OSNet embedder returns raw descriptors. Mirror benchmark.py's L2
+    # normalisation so this field is truly a cosine similarity, not a raw dot.
+    denom = max(float(np.linalg.norm(emb[0]) * np.linalg.norm(emb[1])), 1e-12)
+    return float(np.dot(emb[0], emb[1]) / denom)
 
 
 def compare(illustrations: str, out_dir: str, skip_osnet: bool = False) -> list[dict]:

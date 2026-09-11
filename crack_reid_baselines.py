@@ -1151,8 +1151,10 @@ class SkeletonLoFTRMatcher(SkeletonMatcher):
     LoFTR is a *pairwise* detector-free matcher: it does not emit a stable
     keypoint list for one image in isolation.  For a candidate pair we retain
     only its correspondences that land in a dilated skeleton neighbourhood in
-    both crops, fit their geometric consensus, and blend that support (15%)
-    into the four interpretable skeleton terms (85%).  Thus wall-background
+    both crops, fit their geometric consensus, and use that support to add up
+    to 15% corroborating evidence to the structural score. A thin/low-texture
+    crack can legitimately yield no LoFTR points, so absence is *unknown*, not
+    evidence against an otherwise matching skeleton. Thus wall-background
     matches cannot masquerade as crack landmarks, and the structural score is
     still visible in ``explain_pair``.
     """
@@ -1219,7 +1221,9 @@ class SkeletonLoFTRMatcher(SkeletonMatcher):
         # evidence than a handful of geometrically consistent landmarks.
         support = ((inliers / max(n, 1)) * (1.0 - np.exp(-n / 12.0))
                    * float(confidence.mean() if n else 0.0))
-        score = (1.0 - self.loftr_weight) * structural["score"] + self.loftr_weight * support
+        # A sparse crack may have no LoFTR correspondences. Treat that as no
+        # additional evidence, rather than penalising its structural match.
+        score = structural["score"] + self.loftr_weight * (1.0 - structural["score"]) * support
         return {**structural, "structural_score": structural["score"],
                 "loftr_keypoints": int(n), "loftr_inliers": int(inliers),
                 "loftr_keypoint_score": float(support), "score": float(score),
