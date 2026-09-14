@@ -170,6 +170,15 @@ class EditedViewpointDataset(Dataset):
         self._synth_points: dict[str, list[dict]] = {}
         self.synth_transform: dict[str, dict] = {}
         super().__init__(*a, **kw)
+        # super().__init__() -> _build_refs() reads EVERY real photo to
+        # extract instances, leaving all of them decoded in _img_cache /
+        # _mask_cache -- 140 photos at 3072x4080 is >5 GB before the sweep
+        # begins, and that is what pushes Colab past ~12 GB. The refs and
+        # per-instance crops we keep are small; the full-res pixels are
+        # reloaded lazily by image()/mask() when a wall is actually scored,
+        # and forget_wall() then drops them again.
+        self._img_cache.clear()
+        self._mask_cache.clear()
 
     def image(self, image_id: str) -> np.ndarray:
         if image_id in self._synth_recipe and image_id not in self._img_cache:
@@ -296,19 +305,67 @@ class EditedViewpointDataset(Dataset):
         source of a wall the whole wall can be evicted from the image
         cache instead of accumulating 140 full-res photos in RAM.
         Column-scope crops used by the scorers live in ``_crop_cache`` /
-        ``_ref_to_instance`` and are already small, so only the pixel
-        caches are dropped here.
+        ``_ref_to_instance``; they are dropped too so big-crack crops do
+        not pile up across walls.
         """
         for pid, photo in self.photos.items():
             if (photo.wall_id == wall_id
                     and pid not in self._synth_recipe):
                 self._img_cache.pop(pid, None)
                 self._mask_cache.pop(pid, None)
+        own = [(k, v) for k, v in self._inst_cache.items()
+               if k[0] not in self._synth_recipe and self._photo_wall(k[0]) == wall_id]
+        for k, _ in own:
+            del self._inst_cache[k]
+        prefix = f"{wall_id}_"
+        self._crop_cache = {k: v for k, v in self._crop_cache.items()
+                            if not k.startswith(prefix)}
+        self._ref_to_instance = {k: v for k, v in self._ref_to_instance.items()
+                                 if not k.startswith(prefix)}
+        self.refs = [r for r in self.refs if r.wall_id != wall_id]
+
+    def _photo_wall(self, image_id: str) -> str | None:
+        photo = self.photos.get(image_id)
+        return photo.wall_id if photo is not None else None
 
 
 # ===========================================================================
 # 3. Sweep + evaluate
 # ===========================================================================
+
+def _evict_scorer_caches(scorer, image_id: str) -> None:
+    """Drop scorer-side per-instance caches for one image (real or synth).
+
+    The scorer wrappers cache one prepared object per instance_id
+    (LoFTR resized tensors, OSNet embeddings) and never release them. With
+    thousands of synthetic bins that cache grows linearly in instance
+    count, so it must be pruned together with the dataset caches. The
+    wrapper internals are duck-typed here: any dict-valued attribute whose
+    keys look like instance ids ('<image>_cNN') of this image is pruned.
+    """
+    img_prefix = f"{image_id}_"
+    for attr in vars(scorer).values():
+        if not isinstance(attr, dict):
+            continue
+        for k in [k for k in attr if isinstance(k, str) and k.startswith(img_prefix)]:
+            del attr[k]
+
+
+def _evict_all_scorer_caches(scorers: dict, image_id: str) -> None:
+    for scorer in scorers.values():
+        _evict_scorer_caches(scorer, image_id)
+
+
+def _evict_wall_scorer_caches(scorers: dict, wall_id: str) -> None:
+    """Drop scorer cache entries for every (real or synthetic) image whose
+    image_id starts with the wall id."""
+    wall_prefix = f"{wall_id}_"
+    for scorer in scorers.values():
+        for attr in vars(scorer).values():
+            if not isinstance(attr, dict):
+                continue
+            for k in [k for k in attr if isinstance(k, str) and k.startswith(wall_prefix)]:
+                del attr[k]
 
 def build_scorers(names: list[str], data: Dataset) -> dict:
     """Share method parsing with the real benchmark (including @ctx flags)."""
@@ -366,6 +423,7 @@ def run_edit_sweep(root: str,
             # so the previous wall's real photos will not be needed again.
             if current_wall is not None:
                 data.forget_wall(current_wall)
+                _evict_wall_scorer_caches(scorers, current_wall)
             current_wall = wall_id
         real_gallery = [r for r in data.refs
                         if r.wall_id == wall_id
@@ -408,6 +466,7 @@ def run_edit_sweep(root: str,
             # now been consumed (metrics are summary numbers); free them so
             # thousands of bins do not accumulate in ~12 GB of Colab RAM.
             data.forget_synthetic(synth_id)
+            _evict_all_scorer_caches(scorers, synth_id)
 
         elapsed = time.time() - t_total
         eta = elapsed * (len(sources) - si - 1) / max(si + 1, 1)
@@ -417,6 +476,7 @@ def run_edit_sweep(root: str,
 
     if current_wall is not None:
         data.forget_wall(current_wall)
+        _evict_wall_scorer_caches(scorers, current_wall)
 
     print()
     return rows
