@@ -51,3 +51,41 @@ def test_loftr_skeleton_variant_is_available_without_loading_weights():
     matcher = REGISTRY["skeleton-loftr"]()
     assert isinstance(matcher, SkeletonLoFTRMatcher)
     assert matcher.name == "Skeleton+LoFTR"
+
+
+def test_shorten_crack_mask_removes_from_one_end():
+    """The structural edit must shorten a crack without relocating it."""
+    from edited_viewpoint_eval import shorten_crack_mask
+    m = np.zeros((200, 100), np.uint8)
+    m[50:150, 45:55] = 255            # vertical crack
+
+    short = shorten_crack_mask(m, frac_removed=0.5)
+    orig_ys, _ = np.nonzero(m)
+    short_ys, _ = np.nonzero(short)
+
+    assert 0 < short.sum() < m.sum()          # strictly shorter, non-empty
+    assert short_ys.min() >= orig_ys.min()    # top preserved
+    assert short_ys.max() <= orig_ys.max()    # bottom removed or equal
+    assert (short > 0).sum() < (m > 0).sum()
+
+
+def test_shorten_crack_mask_zero_is_identity():
+    from edited_viewpoint_eval import shorten_crack_mask
+    m = np.zeros((80, 80), np.uint8)
+    cv2.line(m, (20, 60), (60, 20), 255, 5)
+    out = shorten_crack_mask(m, frac_removed=0.0)
+    assert np.array_equal(out, m)
+    assert out is not m                       # defensive copy
+
+
+def test_shorten_crack_mask_preserves_identity():
+    """A shortened crack should still match its own unedited self."""
+    from edited_viewpoint_eval import shorten_crack_mask
+    m = np.zeros((160, 160), np.uint8)
+    cv2.line(m, (20, 140), (140, 20), 255, 5)
+    matcher = SkeletonMatcher()
+    full = skeleton_features(m)
+    for frac in (0.25, 0.5, 0.75):
+        short = shorten_crack_mask(m, frac_removed=frac)
+        s = matcher.score_pair(full, skeleton_features(short))
+        assert s > 0.5, f"frac={frac}: structural score {s:.3f}"

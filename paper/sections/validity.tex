@@ -124,8 +124,90 @@ computed by running this figure through \texttt{benchmark.py} would therefore
 not measure robustness to evolution; it would measure whether a method can
 match a photograph against a clone of itself with part of the annotation
 erased, and the identity label would already be known to be correct by
-construction. We did not run it, and we would flag as suspect any version of
-this paper that reports a metric on images produced this way.
+construction. We do not enter these images in the benchmark, and would flag as
+suspect any version of this paper that reports them as a retrieval result.
+
+\paragraph{Qualitative diagnostic, not benchmark evidence.}
+We nevertheless use the 17 separately disclosed GIMP edits in
+\texttt{illustrative\_synthetic/} as a mechanism check, isolated from the
+dataset, splits, threshold calibration, and every table in this paper. For
+each source/edit pair, we derive a shortened-mask proxy by truncating the
+source component at the manifest's disclosed end of the feathered taper; this
+is \emph{not} a segmentation result on the edited JPEG.
+
+The scorer we run against OSNet-with-context answers a question a crop
+embedding cannot: \emph{what fraction of the structural features of skeleton
+A is explained by skeleton B?} Each mask is skeletonised and its centreline
+normalised for translation, scale, and rotation, and the reply is a percentage
+assembled from four matched feature families --- endpoint correspondence,
+branch/junction correspondence, curvature/shape agreement, and topology and
+width (degree histogram, tortuosity, segment-length quartiles, median width),
+weighted roughly $(0.20,0.25,0.40,0.15)$ and confined to $[0,1]$. Learned
+correspondence (LoFTR) may add up to $15\%$ corroborating evidence, but only
+matches landing inside a dilated neighbourhood of \emph{both} skeletons and
+surviving a RANSAC consistency check count, so the estimate cannot borrow
+wall-background agreement the way a context crop can
+(Sec.~\ref{sec:controls}); the pure structural readout is reported alongside.
+
+That percentage is not a separate opinion from the embedding. We place both
+scores on a common $[0,1]$ scale to state this precisely: the structural score
+is already a fraction, and we map the OSNet-with-ctx cosine in $[-1,1]$ with
+the affine stretch $(1+\cos)/2$, a monotone map that leaves ordering and rank
+correlations unchanged. Across the 17 edits the reserves become comparable:
+medians $0.860$ (structural) and $0.968$ (OSNet); means $0.816$ and $0.944$
+($r=0.872$), and LoFTR shifts the structural mean by only $0.3$\,pts. The two
+do not agree on absolute level --- the embedding sits near the top of the
+scale on near-clones while the structural score reserves more headroom ---
+but they do agree on ordering, which is the claim the correlation makes.
+Where they part is decomposability. Branch/junction
+agreement is the most robust family (median $100\%$) --- shortening removes a
+terminal arm, so the junction structure of the retained part survives ---
+while topology and width is the family the edit damages most on average
+(median $76.3\%$), and endpoint agreement is preserved in most edits yet
+exactly $0$ where the truncated tip \emph{was} the endpoint (wall04, wall17).
+Each of the three strongest structural losses therefore traces to a nameable
+break rather than a uniform slide: wall04 ($0.364$; OSNet $0.823$) loses an
+endpoint and its topology together, wall17 ($0.400$; $0.826$) loses an
+endpoint, and wall12 ($0.494$; $0.908$) loses a junction. This is the
+diagnostic a ranked list of cosine similarities cannot give an end-user.
+
+LoFTR supplies at least four skeleton-adjacent correspondences with a RANSAC
+inlier in $9/17$ edits; its absence in the remaining edits is treated as
+missing corroboration, not negative evidence. These scores describe
+consistency under an artificial, near-clone edit only. They do not establish
+robustness to growth, camera, illumination, or time, and are not comparable to
+the benchmark retrieval metrics.
+
+\paragraph{Controlled discrimination: structural edit plus genuine viewpoint.}
+The near-clone diagnostic has two limitations: every pair is positive (neither
+method can be wrong), and the gallery is absent (there are no hard negatives).
+A combined experiment corrects both. For each source photograph,
+\texttt{edited\_viewpoint\_eval.py} creates a synthetic query by (i)~shortening
+the crack mask along its principal axis by a chosen fraction $k$ (skeletonise,
+project onto the PCA axis, remove the bottom $k$ of the projection range,
+dilate the remaining skeleton back to a mask), (ii)~inpainting the removed
+crack region with wall texture so the image is photometrically plausible, and
+(iii)~warping the edited image and mask by a known affine viewpoint transform.
+The query is scored against the real gallery of same-wall photographs using the
+standard \texttt{reid\_eval} protocol, so Rank-1, mAP, $\mathrm{DIR}@\mathrm{FAR}$,
+and pairwise $F_1$ are computed in identical units for both methods. The gallery
+contains hard negatives (other cracks on the same wall under the same material
+and illumination), and $\mathrm{DIR}@\mathrm{FAR}$ penalises false alarms on
+unanswerable queries. Sweeping the edit fraction $k \in \{0, 0.25, 0.50, 0.75\}$
+traces each method's discrimination degradation as the structural loss
+increases, and we read the curve at two named operating points: the
+no-viewpoint bin ($k$ only, isolating the structural change from geometry) and
+the maximum-viewpoint bin of the sweep ($k$ plus the strongest synthesized
+deformation), so the structural-edit effect and the structural+geometry effect
+are separately observable. Because the edit is parametric and the viewpoint
+transform is exact, the resulting degradation curve is reproducible and directly
+comparable between methods --- unlike the near-clone diagnostic, which measures
+closure rather than discrimination. This experiment is not a benchmark entry: it
+uses synthetic queries derived from real photographs, not independent revisits,
+and its numbers enter no table in this paper. Its purpose is to test whether the
+two competing predictions (Sec.~\ref{sec:next}) --- appearance fragility versus
+geometric stability under structural change --- diverge when the comparison is
+in the same retrieval units with real negatives present.
 
 What Fig.~\ref{fig:evolution} is useful for is stating the two competing
 predictions precisely enough that the real experiment could adjudicate them.

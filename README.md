@@ -99,6 +99,25 @@ its JSON is deliberately not a benchmark result:
 
     python3 illustrative_comparison.py --out illustrative_comparison_out
 
+## Controlled discrimination: structural edit plus genuine viewpoint
+
+To test how both methods degrade when the crack itself changes *and* the
+viewpoint shifts, `edited_viewpoint_eval.py` builds synthetic queries that
+combine a parametric structural edit (crack shortened along its principal
+axis by fraction `k`) with a known affine viewpoint transform, then scores
+them against the real same-wall gallery:
+
+    python3 edited_viewpoint_eval.py dataset --out edit_viewpoint_out \
+        --edit-fracs 0.0,0.25,0.50,0.75 \
+        --scales 1.0,1.5 --rotations 0,15 --tilts 0,20 \
+        --methods skeleton-loftr osnet@ctx1
+
+Both methods face identical inputs, so Rank-1, mAP, DIR@FAR, and pairwise F1
+are directly comparable in the same units, and the gallery's hard negatives
+mean the discrimination is real: these are measurements, not closure scores.
+Output goes to `edit_viewpoint_out/edit_viewpoint_rows.json`, a summary
+table, and a per-method degradation curve over edit fraction.
+
 ## Provenance of the crack masks
 
 `dataset/masks/` is **committed**, so no reported number requires re-running
