@@ -266,6 +266,45 @@ class EditedViewpointDataset(Dataset):
             self._ref_to_instance[ref.instance_id] = inst
         return synth_id
 
+    def forget_synthetic(self, synth_id: str) -> None:
+        """Drop every cached artefact of one synthetic query.
+
+        The full-resolution edited and warped images would otherwise pile
+        up in ``_img_cache`` / ``_synth_recipe`` across thousands of
+        source×bin combinations and exhaust Colab's ~12 GB.  Called right
+        after the query's evaluations are complete; nothing that happens
+        afterwards re-reads the synthetic image.
+        """
+        self._img_cache.pop(synth_id, None)
+        self._mask_cache.pop(synth_id, None)
+        self._synth_recipe.pop(synth_id, None)   # frees edited_image/edited_mask
+        self._synth_points.pop(synth_id, None)
+        self.synth_transform.pop(synth_id, None)
+        prefix = f"{synth_id}_"
+        self._inst_cache = {k: v for k, v in self._inst_cache.items()
+                            if k[0] != synth_id}
+        self._crop_cache = {k: v for k, v in self._crop_cache.items()
+                            if not k.startswith(prefix)}
+        self._ref_to_instance = {k: v for k, v in self._ref_to_instance.items()
+                                 if not k.startswith(prefix)}
+        self.refs = [r for r in self.refs if r.image_id != synth_id]
+
+    def forget_wall(self, wall_id: str) -> None:
+        """Free the real images and masks of a wall once it is done.
+
+        ``run_edit_sweep`` visits sources wall-by-wall, so after the last
+        source of a wall the whole wall can be evicted from the image
+        cache instead of accumulating 140 full-res photos in RAM.
+        Column-scope crops used by the scorers live in ``_crop_cache`` /
+        ``_ref_to_instance`` and are already small, so only the pixel
+        caches are dropped here.
+        """
+        for pid, photo in self.photos.items():
+            if (photo.wall_id == wall_id
+                    and pid not in self._synth_recipe):
+                self._img_cache.pop(pid, None)
+                self._mask_cache.pop(pid, None)
+
 
 # ===========================================================================
 # 3. Sweep + evaluate
@@ -318,9 +357,16 @@ def run_edit_sweep(root: str,
 
     rows: list[dict] = []
     t_total = time.time()
+    current_wall = None
 
     for si, source_id in enumerate(sources):
         wall_id = data.photos[source_id].wall_id
+        if wall_id != current_wall:
+            # Sources are processed wall-by-wall (see by_wall construction),
+            # so the previous wall's real photos will not be needed again.
+            if current_wall is not None:
+                data.forget_wall(current_wall)
+            current_wall = wall_id
         real_gallery = [r for r in data.refs
                         if r.wall_id == wall_id
                         and r.image_id not in data._synth_recipe
@@ -358,11 +404,19 @@ def run_edit_sweep(root: str,
                     "scoreable_pair_rate": res["scoreable_pair_rate"],
                 })
 
+            # The synthetic query's edited+warped full-res artefacts have
+            # now been consumed (metrics are summary numbers); free them so
+            # thousands of bins do not accumulate in ~12 GB of Colab RAM.
+            data.forget_synthetic(synth_id)
+
         elapsed = time.time() - t_total
         eta = elapsed * (len(sources) - si - 1) / max(si + 1, 1)
         print(f"\r  {si + 1}/{len(sources)} source photos done  "
               f"({elapsed/60:.1f}m elapsed, {eta/60:.1f}m left)   ",
               end="", flush=True)
+
+    if current_wall is not None:
+        data.forget_wall(current_wall)
 
     print()
     return rows
