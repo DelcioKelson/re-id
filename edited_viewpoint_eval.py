@@ -22,6 +22,11 @@ controlled crack-identity change on top of the viewpoint change, so the
 experiment measures how each method degrades when the crack itself
 differs — the scenario Fig.~\\ref{fig:evolution} hypothesises about.
 
+The GIMP illustrative near-clones (illustrative_synthetic/) join the same
+experiment as real queries: each is scored once, without any viewpoint
+change, against its wall's real gallery with its disclosed edit fraction,
+so the two experiment families share one table and one protocol.
+
 Usage:
     python edited_viewpoint_eval.py dataset --out edit_viewpoint_out \\
         --edit-fracs 0.0,0.25,0.50,0.75 \\
@@ -47,6 +52,9 @@ from benchmark import Dataset, Photo, PROTOCOL, build_scorers as build_benchmark
 from crack_reid_baselines import skeletonize_mask, extract_crack_instances, CrackInstance
 from reid_eval import evaluate, InstanceRef
 from synthetic_viewpoint import make_transform, _selftest
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ILLUSTRATIVE_DIR = os.path.join(HERE, "illustrative_synthetic")
 
 
 # ===========================================================================
@@ -275,6 +283,102 @@ class EditedViewpointDataset(Dataset):
             self._ref_to_instance[ref.instance_id] = inst
         return synth_id
 
+    def add_illustrative_synthetic(self, source_image_id: str,
+                                   illustrative_path: str,
+                                   cutoff_y: int,
+                                   frac_removed: float,
+                                   scale: float = 1.0,
+                                   rotation_deg: float = 0.0,
+                                   tilt_deg: float = 0.0) -> str | None:
+        """Register one GIMP illustrative near-clone as a query.
+
+        The illustrative images (illustrative_synthetic/) are near-clones
+        of a single real source photo: the crack's lower portion was cloned
+        over with wall texture through a feathered mask, so the crack is
+        intact above the taper end and gone below it.  The mask is
+        reconstructed deterministically from the disclosed GIMP recipe
+        (source mask, rows at/below the taper end zeroed) and the source
+        photo's label points that still lie in the kept region supply the
+        identity -- so this is a genuine same-identity query, exactly like
+        the parametric ones, but with a realistic hand-made edit.
+
+        By default no viewpoint change is applied (scale=1, rotation_deg=0,
+        tilt_deg=0), which reproduces the original near-clone behaviour and
+        is suitable for the qualitative baseline.
+
+        Pass non-identity warp parameters to apply an affine transform to
+        the GIMP image and mask BEFORE scoring.  This destroys the
+        pixel-identical kept region that would otherwise allow appearance
+        embedders (e.g. OSNet) to trivially match by texture cloning rather
+        than by crack identity.  The warp tag is encoded in the synth_id so
+        multiple warp bins of the same GIMP image can coexist in the dataset.
+
+        Label points above the cutoff are warped by the same H, so identity
+        resolution remains correct after the geometric change.
+        """
+        if source_image_id not in self.photos:
+            return None
+        kept_points = [p for p in self._load_points(source_image_id)
+                       if p["xy"][1] < cutoff_y]
+        if not kept_points:
+            return None
+
+        src_photo = self.photos[source_image_id]
+        edited_image = cv2.imread(illustrative_path, cv2.IMREAD_COLOR)
+        if edited_image is None:
+            return None
+        edited_mask = self.mask(source_image_id).copy()
+        edited_mask[cutoff_y:, :] = 0
+        if not edited_mask.any():
+            return None
+
+        # Affine warp -- identity when scale=1, rotation=0, tilt=0, which
+        # preserves the original near-clone behaviour.  Non-identity breaks
+        # the pixel-level equality between query and gallery so appearance
+        # embedders must match across a real geometric change.
+        h_img, w_img = edited_image.shape[:2]
+        H = make_transform(scale, rotation_deg, tilt_deg, w_img, h_img)
+
+        warp_tag = f"s{scale:g}_r{rotation_deg:g}_t{tilt_deg:g}"
+        synth_id = f"{src_photo.wall_id}_sql_{warp_tag}"
+        if synth_id in self.photos:
+            return synth_id
+
+        self.photos[synth_id] = Photo(
+            image_id=synth_id, wall_id=src_photo.wall_id,
+            session=f"{src_photo.session}__illustrative_{warp_tag}",
+            img_path="<synthetic>", mask_path="<synthetic>",
+            label_path="<synthetic>")
+        self._synth_recipe[synth_id] = dict(
+            source_image_id=source_image_id, frac_removed=frac_removed,
+            H=H, edited_image=edited_image, edited_mask=edited_mask)
+        self.synth_transform[synth_id] = dict(
+            source_image_id=source_image_id, frac_removed=frac_removed,
+            scale=scale, rotation_deg=rotation_deg, tilt_deg=tilt_deg)
+
+        # Warp label points by the same H so identity resolution is correct
+        # after the geometric change.
+        pts = np.float32([p["xy"] for p in kept_points]).reshape(-1, 1, 2)
+        warped_pts = cv2.transform(pts, H[:2, :]).reshape(-1, 2)
+        self._synth_points[synth_id] = [
+            {"identity": p["identity"],
+             "xy": [int(round(x)), int(round(y))]}
+            for p, (x, y) in zip(kept_points, warped_pts)]
+
+        insts = self.instances(synth_id, apply_mask=False)
+        points = self._synth_points[synth_id]
+        for c_idx, inst in enumerate(insts):
+            identity = self._resolve_identity(inst, points)
+            ref = InstanceRef(
+                instance_id=f"{synth_id}_c{c_idx:02d}",
+                image_id=synth_id,
+                wall_id=src_photo.wall_id,
+                session=self.photos[synth_id].session,
+                identity=identity)
+            self.refs.append(ref)
+            self._ref_to_instance[ref.instance_id] = inst
+        return synth_id
+
     def forget_synthetic(self, synth_id: str) -> None:
         """Drop every cached artefact of one synthetic query.
 
@@ -284,6 +388,7 @@ class EditedViewpointDataset(Dataset):
         after the query's evaluations are complete; nothing that happens
         afterwards re-reads the synthetic image.
         """
+        self.photos.pop(synth_id, None)
         self._img_cache.pop(synth_id, None)
         self._mask_cache.pop(synth_id, None)
         self._synth_recipe.pop(synth_id, None)   # frees edited_image/edited_mask
@@ -381,15 +486,36 @@ def run_edit_sweep(root: str,
                    methods: list[str],
                    min_sharpness: float | None = 10,
                    max_sources_per_wall: int | None = 4,
-                   seed: int = 0) -> list[dict]:
+                   seed: int = 0,
+                   illus_scales: list[float] | None = None,
+                   illus_rotations: list[float] | None = None,
+                   illus_tilts: list[float] | None = None) -> list[dict]:
     """Create edited+viewpoint queries and evaluate every method.
 
     For each (source, edit_frac, scale, rot, tilt) combination the query
     is scored against real gallery photographs of the same wall.  Both
     closed-set (Rank-1, mAP) and open-set (DIR@FAR) metrics are computed
     by reid_eval, so the numbers are in identical units across methods.
+
+    illus_scales / illus_rotations / illus_tilts control the affine warp
+    applied to each GIMP illustrative image before it is scored.  Defaults
+    to [(1.0, 0.0, 0.0)] (identity) so existing callers are unaffected.
+    Pass non-identity values to break the pixel-identical kept region that
+    would otherwise allow appearance embedders to trivially match by texture
+    cloning rather than by crack identity.  Each (scale, rotation, tilt)
+    combination produces a separate row tagged with warp_scale,
+    warp_rotation_deg, and warp_tilt_deg.
     """
     _selftest()
+
+    # Default: one identity warp bin (original near-clone behaviour).
+    if illus_scales is None:
+        illus_scales = [1.0]
+    if illus_rotations is None:
+        illus_rotations = [0.0]
+    if illus_tilts is None:
+        illus_tilts = [0.0]
+    illus_warp_bins = list(itertools.product(illus_scales, illus_rotations, illus_tilts))
 
     data = EditedViewpointDataset(root, min_sharpness=min_sharpness)
     scorers = build_scorers(methods, data)
@@ -411,10 +537,27 @@ def run_edit_sweep(root: str,
     n_evals = len(sources) * len(bins) * len(scorers)
     print(f"{len(sources)} source photos × {len(bins)} edit×viewpoint bins × "
           f"{len(scorers)} methods = {n_evals} evaluations")
+    print(f"  + {17} GIMP illustrative images × {len(illus_warp_bins)} warp bins "
+          f"× {len(scorers)} methods")
 
     rows: list[dict] = []
     t_total = time.time()
     current_wall = None
+
+    # GIMP illustrative near-clones (one per wall).
+    # Each is scored once per (warp_scale, warp_rotation, warp_tilt) bin.
+    # At the identity warp this is the original near-clone behaviour.
+    # At non-identity warps the GIMP image is affine-transformed before
+    # scoring, breaking the pixel-identical texture that OSNet exploits.
+    illustrative: dict[str, dict] = {}
+    manif = os.path.join(ILLUSTRATIVE_DIR, "manifest.json")
+    if os.path.isfile(manif):
+        with open(manif) as f:
+            for name, recipe in json.load(f).items():
+                src_path = os.path.join(HERE, recipe["source"])
+                src_id = os.path.splitext(os.path.basename(src_path))[0]
+                if src_id in data.photos:
+                    illustrative[data.photos[src_id].wall_id] = (name, recipe)
 
     for si, source_id in enumerate(sources):
         wall_id = data.photos[source_id].wall_id
@@ -425,6 +568,55 @@ def run_edit_sweep(root: str,
                 data.forget_wall(current_wall)
                 _evict_wall_scorer_caches(scorers, current_wall)
             current_wall = wall_id
+
+        if wall_id in illustrative:
+            name, recipe = illustrative.pop(wall_id)
+            src_path = os.path.join(HERE, recipe["source"])
+            src_id = os.path.splitext(os.path.basename(src_path))[0]
+            frac = 1.0 - float(recipe["split_frac_kept"])
+            cutoff = int(recipe["taper_zone_y"][1])
+            illus_gallery = [r for r in data.refs
+                             if r.wall_id == wall_id
+                             and r.image_id not in data._synth_recipe
+                             and r.image_id != src_id]
+
+            for w_scale, w_rot, w_tilt in illus_warp_bins:
+                query = data.add_illustrative_synthetic(
+                    src_id,
+                    os.path.join(ILLUSTRATIVE_DIR, name),
+                    cutoff, frac,
+                    scale=w_scale, rotation_deg=w_rot, tilt_deg=w_tilt)
+                query_refs = [r for r in data.refs
+                              if query is not None and r.image_id == query
+                              and r.identity is not None]
+                if query is not None and query_refs and illus_gallery:
+                    for method, scorer in scorers.items():
+                        res = evaluate(scorer, query_refs, illus_gallery,
+                                       data, **PROTOCOL)
+                        rows.append({
+                            "method": method,
+                            "source_image_id": src_id,
+                            "wall_id": wall_id,
+                            "frac_removed": frac,
+                            "scale": w_scale,
+                            "rotation_deg": w_rot,
+                            "tilt_deg": w_tilt,
+                            "illustrative": True,
+                            "warp_scale": w_scale,
+                            "warp_rotation_deg": w_rot,
+                            "warp_tilt_deg": w_tilt,
+                            "n_queries": res["closed_set"]["n_queries"],
+                            "rank1": res["closed_set"]["rank1"],
+                            "mAP": res["closed_set"]["mAP"],
+                            "dir_at_far10": res["open_set_dir_at_far10"],
+                            "pair_f1": res.get("pair_f1_at_threshold", 0.0),
+                            "scoreable_pair_rate": res["scoreable_pair_rate"],
+                        })
+                if query is not None:
+                    data.forget_synthetic(query)
+                    _evict_all_scorer_caches(scorers, query)
+
+
         real_gallery = [r for r in data.refs
                         if r.wall_id == wall_id
                         and r.image_id not in data._synth_recipe
@@ -454,6 +646,7 @@ def run_edit_sweep(root: str,
                     "scale": scale,
                     "rotation_deg": rot,
                     "tilt_deg": tilt,
+                    "illustrative": False,
                     "n_queries": res["closed_set"]["n_queries"],
                     "rank1": res["closed_set"]["rank1"],
                     "mAP": res["closed_set"]["mAP"],
@@ -585,6 +778,16 @@ def main():
                     help="Comma-separated in-plane rotation degrees")
     ap.add_argument("--tilts", default="0,20",
                     help="Comma-separated out-of-plane tilt degrees")
+    ap.add_argument("--illus-scales", default="1.0",
+                    help="Comma-separated scale factors for GIMP illustrative warps "
+                         "(default 1.0 = no warp). Use e.g. '1.0,1.1,1.2' to add "
+                         "geometric perturbation that breaks pixel identity.")
+    ap.add_argument("--illus-rotations", default="0",
+                    help="Comma-separated in-plane rotations (degrees) for GIMP "
+                         "illustrative warps (default 0). Use e.g. '0,5,10'.")
+    ap.add_argument("--illus-tilts", default="0",
+                    help="Comma-separated out-of-plane tilts (degrees) for GIMP "
+                         "illustrative warps (default 0). Use e.g. '0,10'.")
     ap.add_argument("--methods", nargs="+",
                     default=["skeleton-loftr", "osnet@ctx1"])
     ap.add_argument("--min-sharpness", type=float, default=10)
@@ -596,12 +799,18 @@ def main():
     scales = [float(x) for x in args.scales.split(",")]
     rotations = [float(x) for x in args.rotations.split(",")]
     tilts = [float(x) for x in args.tilts.split(",")]
+    illus_scales = [float(x) for x in args.illus_scales.split(",")]
+    illus_rotations = [float(x) for x in args.illus_rotations.split(",")]
+    illus_tilts = [float(x) for x in args.illus_tilts.split(",")]
 
     rows = run_edit_sweep(
         args.root, edit_fracs, scales, rotations, tilts, args.methods,
         min_sharpness=args.min_sharpness,
         max_sources_per_wall=args.max_sources_per_wall,
-        seed=args.seed)
+        seed=args.seed,
+        illus_scales=illus_scales,
+        illus_rotations=illus_rotations,
+        illus_tilts=illus_tilts)
 
     os.makedirs(args.out, exist_ok=True)
     with open(os.path.join(args.out, "edit_viewpoint_rows.json"), "w") as f:

@@ -99,6 +99,12 @@ its JSON is deliberately not a benchmark result:
 
     python3 illustrative_comparison.py --out illustrative_comparison_out
 
+Note: the same illustrative images are **also** included in the
+discrimination experiment below — `edited_viewpoint_eval.py` picks up the
+GIMP manifest automatically and scores them as real queries at their
+disclosed edit fraction and zero viewpoint change, using the same
+protocol.
+
 ## Controlled discrimination: structural edit plus genuine viewpoint
 
 To test how both methods degrade when the crack itself changes *and* the
@@ -116,7 +122,11 @@ Both methods face identical inputs, so Rank-1, mAP, DIR@FAR, and pairwise F1
 are directly comparable in the same units, and the gallery's hard negatives
 mean the discrimination is real: these are measurements, not closure scores.
 Output goes to `edit_viewpoint_out/edit_viewpoint_rows.json`, a summary
-table, and a per-method degradation curve over edit fraction.
+table, and a per-method degradation curve over edit fraction. The GIMP
+illustrative near-clones (rows labelled `"illustrative": true`) appear in
+the same output at their disclosed edit fraction (~55%) and scale=1,
+rot=0, tilt=0, scored against the same-wall real gallery in the identical
+protocol, so the hand-made edits and the parametric edits share one table.
 
 ## Provenance of the crack masks
 

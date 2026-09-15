@@ -209,6 +209,20 @@ two competing predictions (Sec.~\ref{sec:next}) --- appearance fragility versus
 geometric stability under structural change --- diverge when the comparison is
 in the same retrieval units with real negatives present.
 
+Because the discrimination protocol is generic, the 17 GIMP near-clones join it
+as real queries: their masks are reconstructed from the disclosed manifest, they
+carry the source component's label points, and each is scored once at its
+disclosed edit fraction ($1-\text{split\_frac\_kept} \approx 0.55$) with no
+viewpoint change, under the identical \texttt{reid\_eval} protocol as the
+parametric bins. They therefore land on the same degradation curve at the
+no-viewpoint operating point, giving the hand-made GIMP edit a measured
+position next to the parametric edits of similar fraction (\texttt{rows}
+labelled illustrative in the JSON); being near-clones of a real photograph, they
+are exactly as informative as the parametric rows and exactly as non-benchmark.
+This is deliberate: the figure in \texttt{illustrative\_synthetic/} remains a
+mechanism check for the mechanism's own sake, while the discrimination table
+gives it a quantitative, hard-negative context.
+
 What Fig.~\ref{fig:evolution} is useful for is stating the two competing
 predictions precisely enough that the real experiment could adjudicate them.
 An appearance embedding is trained to be invariant to exactly the kind of
