@@ -678,7 +678,7 @@ def run_edit_sweep(root: str,
         max_view = (max(scales), max(rotations), max(tilts))
         bins = ([(f, *no_view) for f in edit_fracs]
                 + [(f, *max_view) for f in edit_fracs])
-        print(f"degradation-only: restricting {len(itertools.product(edit_fracs, scales, rotations, tilts))} "
+        print(f"degradation-only: restricting {len(list(itertools.product(edit_fracs, scales, rotations, tilts)))} "
               f"bins to the 2 operating points degradation_table reports "
               f"({no_view} and {max_view}) -> {len(bins)} bins")
 
