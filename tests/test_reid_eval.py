@@ -26,13 +26,16 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from reid_eval import (  # noqa: E402
     assignment_accuracy,
+    build_validity_mask,
     chance_pair_f1,
     closed_set_metrics,
     dir_at_far,
+    frame_index,
     open_set_curve,
     pair_f1_at,
     pair_pr_curve,
 )
+from reid_eval import InstanceRef  # noqa: E402
 
 SEED = 0
 
@@ -289,3 +292,71 @@ def test_constant_scores_give_expected_value_rank1():
     exp = np.mean([(relevant[i] & valid[i]).sum() / valid[i].sum()
                    for i in range(valid.shape[0]) if valid[i].any()])
     assert r1 == pytest.approx(exp, abs=1e-6)
+
+
+# ---------------------------------------------------------------------------
+# 5. the frame gap binds for synthetic query ids (min_frame_gap + resolver)
+# ---------------------------------------------------------------------------
+
+def ref(image_id, wall_id, identity="id", session="s"):
+    return InstanceRef(instance_id=f"{image_id}_c0", image_id=image_id,
+                       wall_id=wall_id, session=session, identity=identity)
+
+
+def test_frame_index_parses_trailing_number():
+    assert frame_index("wall01_s1_0007") == 7
+    assert frame_index("wall01_s1_0007__SYN__e0_s1_r0_t0") is None
+
+
+def test_frame_gap_drops_nearby_frames():
+    """At min_frame_gap=1, a gallery photo one frame from the query's source
+    is invalid; others stay valid.  Without the gap the near-duplicate frame
+    is still comparable."""
+    q = ref("wall01_s1_0007", "wall01", session="s__synth_e0")
+    gal = [ref("wall01_s1_0006", "wall01", "id_a"),
+           ref("wall01_s1_0009", "wall01", "id_a")]
+    assert build_validity_mask([q], gal, min_frame_gap=0).all()
+    v = build_validity_mask([q], gal, min_frame_gap=1)
+    # one frame away is dropped, three frames away is kept
+    assert not v[0, 0]
+    assert bool(v[0, 1])
+
+
+def test_frame_gap_resolves_synthetic_source_frame():
+    """A synthetic query id carries its edit recipe, not a capture number;
+    the resolver maps it back to the source photograph's frame so the gap
+    binds against a real-photo gallery frame.  That is the edited-viewpoint
+    sweep's confound: without the override the gap can never bind for
+    synthetic queries."""
+    src = "wall01_s1_0007"
+    synth = f"{src}__SYN__e0_s1_r0_t0"
+    q = ref(synth, "wall01", session="s__synth_e0")
+    gal = [ref("wall01_s1_0006", "wall01", "id_a"),
+           ref("wall01_s1_0009", "wall01", "id_a")]
+
+    # Default resolver cannot see the source frame -> gap never binds.
+    v = build_validity_mask([q], gal, min_frame_gap=1)
+    assert v.all()
+
+    # Override resolver maps synth back to its source -> gap binds.
+    def resolve(image_id):
+        if image_id == synth:
+            return frame_index(src)
+        return frame_index(image_id)
+
+    v = build_validity_mask([q], gal, min_frame_gap=1,
+                            q_frame_index=resolve)
+    assert not v[0, 0]
+    assert bool(v[0, 1])
+
+
+def test_frame_gap_keeps_answer_further_than_gap():
+    """The answer must survive the gap when it is a few frames away, so an
+    honest run at gap>0 still has enough labelled positives to report."""
+    q = ref("wall01_s1_0007", "wall01", "crack", session="s__synth_e0")
+    gal = [ref("wall01_s1_0005", "wall01", "crack"),   # same identity, 2 away
+           ref("wall01_s1_0006", "wall01", "other"),   # distractor, 1 away
+           ref("wall01_s1_0009", "wall01", "crack")]   # same identity, 2 away
+    v = build_validity_mask([q], gal, min_frame_gap=1)
+    assert (v & (np.array([r.identity for r in gal]) == "crack")).any()
+    assert not v[0, 1]

@@ -46,6 +46,10 @@ Usage:
         --min-sharpness 10 --max-sources-per-wall 4 \\
         --cross-photo
 
+    Sweep the near-duplicate confound:
+    python edited_viewpoint_eval.py dataset --out edit_viewpoint_gap1 \\
+        --min-frame-gap 1 --degradation-only
+
 Requires the same deps as benchmark.py for whichever --methods you pass.
 """
 from __future__ import annotations
@@ -62,7 +66,7 @@ import numpy as np
 
 from benchmark import Dataset, Photo, PROTOCOL, build_scorers as build_benchmark_scorers
 from crack_reid_baselines import skeletonize_mask, extract_crack_instances, CrackInstance
-from reid_eval import evaluate, InstanceRef
+from reid_eval import evaluate, frame_index, InstanceRef
 from synthetic_viewpoint import make_transform, _selftest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -511,10 +515,11 @@ def _pick_secondary_photo(data: Dataset, wall_id: str, exclude_id: str,
 
 def _row_key(method: str, source_image_id: str, frac: float, scale: float,
              rot: float, tilt: float, cross_photo: bool,
-             illustrative: bool) -> tuple:
+             illustrative: bool, min_frame_gap: int = 0) -> tuple:
     """Identity of one evaluation cell, for checkpoint/resume bookkeeping."""
     return (method, source_image_id, float(frac), float(scale), float(rot),
-            float(tilt), bool(cross_photo), bool(illustrative))
+            float(tilt), bool(cross_photo), bool(illustrative),
+            int(min_frame_gap))
 
 
 def _completed_keys(path: str) -> set[tuple]:
@@ -531,17 +536,33 @@ def _completed_keys(path: str) -> set[tuple]:
                                   r["frac_removed"], r["scale"],
                                   r["rotation_deg"], r["tilt_deg"],
                                   r.get("cross_photo", False),
-                                  r.get("illustrative", False)))
+                                  r.get("illustrative", False),
+                                  r.get("min_frame_gap", 0)))
     return done
 
 
 def _bin_done(completed: set[tuple], scorer_names: list[str],
               source_image_id: str, frac: float, scale: float, rot: float,
-              tilt: float, cross_photo: bool, illustrative: bool) -> bool:
+              tilt: float, cross_photo: bool, illustrative: bool,
+              min_frame_gap: int = 0) -> bool:
     """True when every method's eval for one (source, bin, family) is done."""
     return all(_row_key(m, source_image_id, frac, scale, rot, tilt,
-                        cross_photo, illustrative) in completed
+                        cross_photo, illustrative, min_frame_gap) in completed
                for m in scorer_names)
+
+
+def _frame_resolver(data):
+    """Return an (image_id -> int|None) that maps synthetic ids to
+    their source photograph's position in the capture sequence, so
+    min_frame_gap can bind for them."""
+
+    def resolve(image_id: str):
+        recipe = data._synth_recipe.get(image_id)
+        if recipe is not None:
+            return frame_index(recipe["source_image_id"])
+        return frame_index(image_id)
+
+    return resolve
 
 
 def _capped_gallery_refs(refs: list, limit: int | None) -> list:
@@ -601,6 +622,7 @@ def run_edit_sweep(root: str,
                    out_dir: str | None = None,
                    resume: bool = False,
                    max_gallery_per_wall: int | None = None,
+                   min_frame_gap: int = 0,
                    degradation_only: bool = False) -> list[dict]:
     """Create edited+viewpoint queries and evaluate every method.
 
@@ -637,12 +659,22 @@ def run_edit_sweep(root: str,
       * max_gallery_per_wall -- deterministic, answer-preserving cap on each
                               wall's gallery (see _capped_gallery_refs).  Both
                               methods see the identical reduced pool.
+      * min_frame_gap      -- drop gallery photographs within this many
+                              frames of the query's SOURCE photograph.  The
+                              synthetic query is a manipulated copy of a frame
+                              from a single continuous walk-around, so without
+                              a gap the nearest correct answer is an adjacent
+                              near-duplicate frame and the sweep reports
+                              near-duplicate retrieval.  Sweeping 0..3 is the
+                              difficulty axis of the real protocol.
       * out_dir + resume  -- rows are appended to
                               <out_dir>/edit_viewpoint_rows.jsonl as the sweep
                               runs; --resume reloads it and skips finished
                               cells, so a killed run loses at most the current
                               cell.  Resume requires the same bins, gallery
-                              cap and families as the interrupted run.
+                              cap and families as the interrupted run; the
+                              checkpoint key now includes min_frame_gap, so a
+                              different gap never reuses stale cells.
     """
     _selftest()
 
@@ -710,6 +742,15 @@ def run_edit_sweep(root: str,
             ckpt.write(json.dumps(r) + "\n")
             ckpt.flush()
 
+    # Frame gap: with min_frame_gap > 0 the gallery drops the query's
+    # source-neighbour photos, so the sweep measures re-identification
+    # rather than near-duplicate retrieval (see build_validity_mask).
+    sweep_protocol = {**PROTOCOL, "min_frame_gap": min_frame_gap}
+    frame_of = _frame_resolver(data)
+    if min_frame_gap:
+        print(f"min_frame_gap={min_frame_gap}: gallery frames within "
+              f"{min_frame_gap} of a query's source photo are excluded")
+
     t_total = time.time()
     current_wall = None
 
@@ -749,7 +790,8 @@ def run_edit_sweep(root: str,
 
             for w_scale, w_rot, w_tilt in illus_warp_bins:
                 if _bin_done(completed, scorer_names, src_id, frac,
-                             w_scale, w_rot, w_tilt, False, True):
+                             w_scale, w_rot, w_tilt, False, True,
+                             min_frame_gap):
                     continue
                 query = data.add_illustrative_synthetic(
                     src_id,
@@ -762,10 +804,11 @@ def run_edit_sweep(root: str,
                 if query is not None and query_refs and illus_gallery:
                     for method, scorer in scorers.items():
                         if _row_key(method, src_id, frac, w_scale, w_rot,
-                                    w_tilt, False, True) in completed:
+                                    w_tilt, False, True, min_frame_gap) in completed:
                             continue
                         res = evaluate(scorer, query_refs, illus_gallery,
-                                       data, **PROTOCOL)
+                                       data, **sweep_protocol,
+                                       q_frame_index=frame_of)
                         emit({
                             "method": method,
                             "source_image_id": src_id,
@@ -779,6 +822,7 @@ def run_edit_sweep(root: str,
                             "warp_scale": w_scale,
                             "warp_rotation_deg": w_rot,
                             "warp_tilt_deg": w_tilt,
+                            "min_frame_gap": min_frame_gap,
                             "n_queries": res["closed_set"]["n_queries"],
                             "rank1": res["closed_set"]["rank1"],
                             "mAP": res["closed_set"]["mAP"],
@@ -805,7 +849,8 @@ def run_edit_sweep(root: str,
                     if x_gallery:
                         for frac, scale, rot, tilt in bins:
                             if _bin_done(completed, scorer_names, secondary,
-                                         frac, scale, rot, tilt, True, False):
+                                         frac, scale, rot, tilt, True, False,
+                                         min_frame_gap):
                                 continue
                             qid = data.add_edited_synthetic(
                                 secondary, frac, scale, rot, tilt)
@@ -818,10 +863,12 @@ def run_edit_sweep(root: str,
                                 continue
                             for method, scorer in scorers.items():
                                 if _row_key(method, secondary, frac, scale,
-                                            rot, tilt, True, False) in completed:
+                                            rot, tilt, True, False,
+                                            min_frame_gap) in completed:
                                     continue
                                 res = evaluate(scorer, qrefs, x_gallery, data,
-                                               **PROTOCOL)
+                                               **sweep_protocol,
+                                               q_frame_index=frame_of)
                                 emit({
                                     "method": method,
                                     "source_image_id": secondary,
@@ -832,6 +879,7 @@ def run_edit_sweep(root: str,
                                     "tilt_deg": tilt,
                                     "illustrative": False,
                                     "cross_photo": True,
+                                    "min_frame_gap": min_frame_gap,
                                     "n_queries": res["closed_set"]["n_queries"],
                                     "rank1": res["closed_set"]["rank1"],
                                     "mAP": res["closed_set"]["mAP"],
@@ -850,7 +898,8 @@ def run_edit_sweep(root: str,
 
         for frac, scale, rot, tilt in bins:
             if _bin_done(completed, scorer_names, source_id,
-                         frac, scale, rot, tilt, False, False):
+                         frac, scale, rot, tilt, False, False,
+                         min_frame_gap):
                 continue
             synth_id = data.add_edited_synthetic(
                 source_id, frac, scale, rot, tilt)
@@ -864,10 +913,11 @@ def run_edit_sweep(root: str,
 
             for method, scorer in scorers.items():
                 if _row_key(method, source_id, frac, scale, rot, tilt,
-                            False, False) in completed:
+                            False, False, min_frame_gap) in completed:
                     continue
                 res = evaluate(scorer, query_refs, real_gallery, data,
-                               **PROTOCOL)
+                               **sweep_protocol,
+                               q_frame_index=frame_of)
                 emit({
                     "method": method,
                     "source_image_id": source_id,
@@ -878,6 +928,7 @@ def run_edit_sweep(root: str,
                     "tilt_deg": tilt,
                     "illustrative": False,
                     "cross_photo": False,
+                    "min_frame_gap": min_frame_gap,
                     "n_queries": res["closed_set"]["n_queries"],
                     "rank1": res["closed_set"]["rank1"],
                     "mAP": res["closed_set"]["mAP"],
@@ -1047,6 +1098,14 @@ def main():
                          "(deterministic, keeps >=1 answer per identity). "
                          "Tames the big walls: wall02 alone has 629 "
                          "instances. 0 = no cap.")
+    ap.add_argument("--min-frame-gap", type=int, default=0,
+                    help="Drop gallery photos within this many frames of a "
+                         "query's SOURCE photograph. At 0 the query is a "
+                         "manipulated copy of a frame in a single continuous "
+                         "walk-around, so the nearest correct answer is an "
+                         "adjacent near-duplicate frame and the result is "
+                         "near-duplicate retrieval. Sweep 0..3 to make the "
+                         "gap a controlled difficulty axis.")
     ap.add_argument("--resume", action="store_true",
                     help="Re-read <out>/edit_viewpoint_rows.jsonl and skip "
                          "already-finished (source x bin x method) cells. "
@@ -1076,6 +1135,7 @@ def main():
         resume=args.resume,
         max_gallery_per_wall=(args.max_gallery_per_wall
                               if args.max_gallery_per_wall > 0 else None),
+        min_frame_gap=args.min_frame_gap,
         degradation_only=args.degradation_only)
 
     os.makedirs(args.out, exist_ok=True)

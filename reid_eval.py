@@ -119,7 +119,9 @@ def frame_index(image_id: str) -> int | None:
 def build_validity_mask(queries: list[InstanceRef], gallery: list[InstanceRef],
                         exclude_same_session: bool = True,
                         same_wall_only: bool = True,
-                        min_frame_gap: int = 0) -> np.ndarray:
+                        min_frame_gap: int = 0,
+                        q_frame_index=None,
+                        g_frame_index=None) -> np.ndarray:
     """Boolean (n_query, n_gallery): True where the pair may be compared.
 
     exclude_same_session: a query must be matched against a DIFFERENT
@@ -145,10 +147,19 @@ def build_validity_mask(queries: list[InstanceRef], gallery: list[InstanceRef],
         informative result than a single number, and it is the first thing
         a reviewer will ask for. Costs nothing to compute -- the saved
         score matrices already carry image_id.
+
+    q_frame_index / g_frame_index: optional (image_id -> int|None)
+        resolvers overriding the built-in frame_index(). Used by
+        edited_viewpoint_eval so a SYNTHETIC query crops its source
+        photograph's frame from the sequence: its own id names an edit
+        recipe rather than a capture, so the default parser would return
+        None and the gap could never bind.
     """
+    resolve_q = q_frame_index or frame_index
+    resolve_g = g_frame_index or frame_index
     valid = np.ones((len(queries), len(gallery)), dtype=bool)
-    q_frame = [frame_index(q.image_id) for q in queries]
-    g_frame = [frame_index(g.image_id) for g in gallery]
+    q_frame = [resolve_q(q.image_id) for q in queries]
+    g_frame = [resolve_g(g.image_id) for g in gallery]
     for i, q in enumerate(queries):
         for j, g in enumerate(gallery):
             if g.image_id == q.image_id:
