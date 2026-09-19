@@ -10,7 +10,7 @@ For each source photograph, this creates a synthetic QUERY by:
 
 The query is then scored against the REAL gallery (other photographs of
 the same wall) using the standard reid_eval.evaluate() pipeline.  Both
-methods — skeleton-loftr and osnet@ctx1 — face identical inputs, so
+methods — hybrid and osnet@ctx1 — face identical inputs, so
 Rank-1, mAP, DIR@FAR, and pairwise F1 are directly comparable in the
 same units.
 
@@ -42,7 +42,7 @@ Usage:
     python edited_viewpoint_eval.py dataset --out edit_viewpoint_out \\
         --edit-fracs 0.0,0.25,0.50,0.75 \\
         --scales 1.0,1.5 --rotations 0,15 --tilts 0,20 \\
-        --methods skeleton-loftr osnet@ctx1 \\
+        --methods hybrid osnet@ctx1 \\
         --min-sharpness 10 --max-sources-per-wall 4 \\
         --cross-photo
 
@@ -570,7 +570,7 @@ def _capped_gallery_refs(refs: list, limit: int | None) -> list:
 
     Evaluate() scores each synthetic query against the whole wall gallery,
     and the big walls carry hundreds of instances (wall02 has 629) -- so
-    skeleton-loftr's pairwise LoFTR grid dominates the runtime.  When the
+    the pairwise registration grid dominates the runtime.  When the
     gallery exceeds `limit`, keep at least one labelled instance per
     identity (so no query loses its answer and turns artificially
     open-set), then fill the rest deterministically: remaining instances of
@@ -647,10 +647,10 @@ def run_edit_sweep(root: str,
     Rows are tagged cross_photo=True and are kept out of the main-sweep
     averages so the near-clone, sweep, and cross-photo families never mix.
 
-    Cost controls: the pairwise matchers (skeleton-loftr) run one LoFTR
-    forward per (query instance, gallery instance) cell, and the wall
+    Cost controls: the pairwise matchers run one registration per
+    (query instance, gallery instance) cell, and the wall
     galleries are large (wall02 alone has 629 instances), so a full default
-    sweep is several hours of GPU.  Three levers:
+    sweep is several hours of CPU.  Three levers:
       * degradation_only   -- run only the two viewpoint bins degradation_table
                               reports (no-viewpoint and max-viewpoint) instead
                               of every point in the product grid (~4x fewer).
@@ -1057,7 +1057,7 @@ def degradation_table(rows: list[dict]) -> str:
 def main():
     ap = argparse.ArgumentParser(
         description="Structural-edit + genuine-viewpoint discrimination "
-                    "evaluation for skeleton-loftr vs osnet@ctx1.")
+                    "evaluation for hybrid vs osnet@ctx1.")
     ap.add_argument("root", help="Path to dataset/ directory")
     ap.add_argument("--out", default="edit_viewpoint_out")
     ap.add_argument("--edit-fracs", default="0.0,0.25,0.50,0.75",
@@ -1079,7 +1079,7 @@ def main():
                     help="Comma-separated out-of-plane tilts (degrees) for GIMP "
                          "illustrative warps (default 0). Use e.g. '0,10'.")
     ap.add_argument("--methods", nargs="+",
-                    default=["skeleton-loftr", "osnet@ctx1"])
+                    default=["hybrid", "osnet@ctx1"])
     ap.add_argument("--min-sharpness", type=float, default=10)
     ap.add_argument("--max-sources-per-wall", type=int, default=4)
     ap.add_argument("--seed", type=int, default=0)

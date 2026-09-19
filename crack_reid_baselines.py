@@ -954,6 +954,7 @@ class SkeletonFeatures:
     widths: np.ndarray
     total_length: float
     scale: float
+    mask: np.ndarray | None = None
 
 
 def skeletonize_mask(mask: np.ndarray) -> np.ndarray:
@@ -987,7 +988,8 @@ def skeleton_features(mask: np.ndarray) -> SkeletonFeatures:
     ys, xs = np.nonzero(skel)
     p = np.c_[xs, ys].astype(np.float64)
     empty = SkeletonFeatures(np.empty((0, 2)), np.empty((0, 2)), np.empty((0, 2)),
-                             np.zeros(4), np.empty(0), np.zeros(12), np.empty(0), 0.0, 1.0)
+                             np.zeros(4), np.empty(0), np.zeros(12), np.empty(0), 0.0, 1.0,
+                             mask=mask)
     if len(p) < 2:
         return empty
 
@@ -1062,7 +1064,7 @@ def skeleton_features(mask: np.ndarray) -> SkeletonFeatures:
                     py, px, cy, cx = cy, cx, ny, nx
                 segments.append(length / max(total, 1e-6))
     return SkeletonFeatures(pts, endpoints, junctions, hist, np.sort(segments),
-                            curvature_hist, widths, total, scale)
+                            curvature_hist, widths, total, scale, mask=mask)
 
 
 def _set_coverage(a: np.ndarray, b: np.ndarray, tolerance: float) -> float:
@@ -1078,13 +1080,16 @@ def _set_coverage(a: np.ndarray, b: np.ndarray, tolerance: float) -> float:
 class SkeletonMatcher(BaseMatcher):
     """Rotation/scale-invariant, explainable crack-skeleton matcher.
 
-    `explain_pair` returns the requested structural percentage and its four
-    terms: endpoint, branch/junction, curvature/shape and topology.  The
-    matcher score is that percentage in [0, 1], so it can use the standard
-    benchmark and Hungarian assignment unchanged.
+    Delegates to the hybrid structural comparator (hybrid_reid): the
+    skeleton graph is extracted with a proper thinning routine, junction
+    blobs are collapsed to single nodes and the comparison is
+    translation/rotation/scale-invariant with the reference side treated as
+    the pre-existing structure.  ``explain_pair`` keeps the legacy report
+    keys so callers and the pairwise benchmark are unchanged.
     """
     name = "Skeleton"
     apply_mask = True
+    legacy = False          # set True to force the old self-contained path
 
     def __init__(self, min_score: float = 0.55,
                  weights: tuple[float, float, float, float] = (0.20, 0.25, 0.40, 0.15)):
@@ -1092,6 +1097,28 @@ class SkeletonMatcher(BaseMatcher):
 
     def prepare(self, instances):
         return [skeleton_features(i.mask_crop) for i in instances]
+
+    def explain_pair(self, a: SkeletonFeatures, b: SkeletonFeatures) -> dict[str, float]:
+        if not self.legacy and a.mask is not None and b.mask is not None:
+            return self._hybrid_explain(a, b)
+        return self._legacy_explain_pair(a, b)
+
+    def _hybrid_explain(self, a: SkeletonFeatures, b: SkeletonFeatures) -> dict[str, float]:
+        import hybrid_reid
+        s = hybrid_reid.structural_similarity(
+            hybrid_reid.skeleton_graph_from_mask(a.mask),
+            hybrid_reid.skeleton_graph_from_mask(b.mask))
+        report = {
+            "score": float(s.score),
+            "percentage": 100.0 * float(s.score),
+            "endpoints": float(s.endpoints),
+            "branches": float(s.topology),
+            "shape_curvature": float(0.75 * s.shape + 0.25 * s.curvature),
+            "topology_width": float(0.6 * s.topology + 0.4 * s.branch_lengths),
+            "chamfer": float(s.chamfer),
+            "method": "hybrid-skeleton",
+        }
+        return report
 
     @staticmethod
     def _best_alignment(a: np.ndarray, b: np.ndarray) -> tuple[np.ndarray, float]:
@@ -1113,7 +1140,7 @@ class SkeletonMatcher(BaseMatcher):
                     best_R, best = R, chamfer
         return best_R, best
 
-    def explain_pair(self, a: SkeletonFeatures, b: SkeletonFeatures) -> dict[str, float]:
+    def _legacy_explain_pair(self, a: SkeletonFeatures, b: SkeletonFeatures) -> dict[str, float]:
         R, chamfer = self._best_alignment(a.points, b.points)
         endpoints = _set_coverage(a.endpoints @ R.T, b.endpoints, 0.22)
         branches = _set_coverage(a.junctions @ R.T, b.junctions, 0.25)
@@ -1145,94 +1172,6 @@ class SkeletonMatcher(BaseMatcher):
         return self.explain_pair(prep_a, prep_b)["score"]
 
 
-class SkeletonLoFTRMatcher(SkeletonMatcher):
-    """Skeleton matcher with LoFTR correspondences as learned landmark evidence.
-
-    LoFTR is a *pairwise* detector-free matcher: it does not emit a stable
-    keypoint list for one image in isolation.  For a candidate pair we retain
-    only its correspondences that land in a dilated skeleton neighbourhood in
-    both crops, fit their geometric consensus, and use that support to add up
-    to 15% corroborating evidence to the structural score. A thin/low-texture
-    crack can legitimately yield no LoFTR points, so absence is *unknown*, not
-    evidence against an otherwise matching skeleton. Thus wall-background
-    matches cannot masquerade as crack landmarks, and the structural score is
-    still visible in ``explain_pair``.
-    """
-    name = "Skeleton+LoFTR"
-    # Raw crop pixels let LoFTR see the local crack intensity.  Matches are
-    # subsequently constrained to the skeleton support, not the background.
-    apply_mask = False
-
-    def __init__(self, min_score: float = 0.55, loftr_weight: float = 0.15,
-                 skeleton_dilate_px: int = 15, **kw):
-        super().__init__(min_score=min_score, **kw)
-        self.loftr_weight = float(np.clip(loftr_weight, 0.0, 0.5))
-        self.skeleton_dilate_px = int(max(1, skeleton_dilate_px))
-        self._loftr = LoFTRMatcher(conf_thresh=0.5)
-
-    def prepare(self, instances):
-        # `_prep` lazily loads kornia/torch and returns the resized tensor
-        # actually passed to LoFTR.  Resize the skeleton support into that
-        # same coordinate system before filtering its keypoints.
-        out = []
-        for inst in instances:
-            tensor = self._loftr._prep(inst.crop).to(self._loftr._device)
-            support = cv2.dilate(skeletonize_mask(inst.mask_crop),
-                                 cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
-                                                           (self.skeleton_dilate_px, self.skeleton_dilate_px)))
-            support = cv2.resize(support, (tensor.shape[-1], tensor.shape[-2]),
-                                 interpolation=cv2.INTER_NEAREST) > 0
-            out.append((skeleton_features(inst.mask_crop), tensor, support))
-        return out
-
-    @staticmethod
-    def _inside(points: np.ndarray, support: np.ndarray) -> np.ndarray:
-        if not len(points):
-            return np.zeros(0, dtype=bool)
-        x = np.rint(points[:, 0]).astype(int)
-        y = np.rint(points[:, 1]).astype(int)
-        valid = (x >= 0) & (x < support.shape[1]) & (y >= 0) & (y < support.shape[0])
-        out = np.zeros(len(points), dtype=bool)
-        out[valid] = support[y[valid], x[valid]]
-        return out
-
-    def explain_pair(self, prep_a, prep_b) -> dict[str, float]:
-        a, ta, support_a = prep_a
-        b, tb, support_b = prep_b
-        structural = super().explain_pair(a, b)
-        torch = self._loftr._torch
-        with torch.no_grad():
-            corr = self._loftr._matcher({"image0": ta, "image1": tb})
-        kp_a = corr["keypoints0"].cpu().numpy()
-        kp_b = corr["keypoints1"].cpu().numpy()
-        confidence = corr["confidence"].cpu().numpy()
-        keep = ((confidence >= self._loftr.conf_thresh)
-                & self._inside(kp_a, support_a) & self._inside(kp_b, support_b))
-        kp_a, kp_b, confidence = kp_a[keep], kp_b[keep], confidence[keep]
-        n = len(kp_a)
-        inliers = 0
-        if n >= 4:
-            # Similarity/partial-affine avoids granting a full arbitrary
-            # homography to a handful of collinear crack points.
-            _, inlier_mask = cv2.estimateAffinePartial2D(kp_a, kp_b, method=cv2.RANSAC,
-                                                          ransacReprojThreshold=3.0)
-            inliers = int(inlier_mask.sum()) if inlier_mask is not None else 0
-        # Saturating count avoids treating repetitive dense matches as more
-        # evidence than a handful of geometrically consistent landmarks.
-        support = ((inliers / max(n, 1)) * (1.0 - np.exp(-n / 12.0))
-                   * float(confidence.mean() if n else 0.0))
-        # A sparse crack may have no LoFTR correspondences. Treat that as no
-        # additional evidence, rather than penalising its structural match.
-        score = structural["score"] + self.loftr_weight * (1.0 - structural["score"]) * support
-        return {**structural, "structural_score": structural["score"],
-                "loftr_keypoints": int(n), "loftr_inliers": int(inliers),
-                "loftr_keypoint_score": float(support), "score": float(score),
-                "percentage": float(100 * score)}
-
-    def score_pair(self, prep_a, prep_b) -> float:
-        return self.explain_pair(prep_a, prep_b)["score"]
-
-
 # ===========================================================================
 # Registry + benchmark loop
 # ===========================================================================
@@ -1252,7 +1191,7 @@ REGISTRY: dict[str, Callable[[], BaseMatcher]] = {
     "yolo":      lambda: YOLOEmbeddingMatcher(),
     "dinov2":    lambda: DINOv2EmbeddingMatcher(),
     "shape":     lambda: CrackShapeMatcher(),
-    "skeleton-loftr": lambda: SkeletonLoFTRMatcher(),
+    "skeleton":  lambda: SkeletonMatcher(),
 }
 
 

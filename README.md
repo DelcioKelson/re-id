@@ -62,6 +62,8 @@ substantially **alignment coverage**, while its DIR@FAR margin is entirely
 | `reid_eval.py` | the protocol: validity masks, CMC/mAP, open-set curve, pairwise and assignment F1, chance levels |
 | `crack_registration_reid.py` | the geometric method: masked registration, Chamfer agreement, Hungarian matching |
 | `crack_reid_baselines.py` | SIFT, ORB, SuperGlue, LoFTR, ViT, DeiT, CLIP, YOLO, OSNet, CrackShape, and the interpretable Skeleton matcher |
+| `hybrid_reid.py` | the hybrid method: homography-first alignment with an intact-structure skeleton fallback, ranking + verdicts |
+| `hybrid_eval.py` | two designed "revisit" datasets (damage evolution; appearance-only change) scored against the real same-wall gallery |
 | `chance_baseline.py` | chance levels, the frame-gap structure, the coverage confound |
 | `viewpoint.py` | per-pair registration outcomes and the independent viewpoint covariate |
 | `image_quality.py` | sharpness measurement and the admission gate sweep |
@@ -76,23 +78,31 @@ Every number quoted in the paper is re-derived from committed artefacts by
 See `paper/README.md` for the artefact-to-claim map and for the two claims that
 need the score matrices regenerated.
 
-## Skeleton versus OSNet
+## Hybrid re-identification versus OSNet
 
-`skeleton-loftr` turns each predicted crack mask into a centreline and compares
-endpoints, junctions, curvature/shape, topology/segment lengths, and relative
-width. LoFTR supplies pairwise learned keypoints; only correspondences in a
-dilated skeleton neighbourhood in both crops are retained, and their RANSAC
-consensus adds up to 15% corroborating evidence. Missing LoFTR points do not
-penalise a structural match. The structural terms remain separately reported.
-It requires optional `torch` and `kornia`.
+`hybrid` re-identifies a crack mask by first trying to **register** the query
+photograph to each reference (masked SIFT + MAGSAC + ECC). When the homography
+is usable, the aligned masks are compared with containment-aware terms that
+tolerate crack growth (`retention` weighted above `precision`, Chamfer
+coverage, Hu-contour similarity); the two sources of evidence are blended with
+the alignment weighted ~0.55. When registration fails, it falls back to the
+**intact-structure skeleton** matcher: a rotation/scale-invariant comparison of
+endpoints, junctions, curvature/shape, topology, and segment lengths built from
+a Zhang-Suen-style skeleton (scikit-image thinning). Every pair gets a rank,
+a score, and a verdict (`reliable` / `ambiguous` / `rejected`) labelled with
+which method produced it, so an evaluation can report "this pair was answered
+by the homography", not just "answered". The crop-scope `skeleton` method is
+the structural matcher alone; `osnet@ctx1` supplies the appearance baseline.
+
+The hybrid requires no optional deep weights beyond the geometric stack.
 
 To compare synthetic queries against the untouched original-photo gallery:
 
-    python3 synthetic_viewpoint.py dataset --methods skeleton-loftr osnet@ctx1
+    python3 synthetic_viewpoint.py dataset --methods hybrid osnet@ctx1
 
-To include the requested context baseline in the real-data benchmark:
+To include the requested baseline in the real-data benchmark:
 
-    python3 benchmark.py dataset --methods skeleton-loftr osnet@ctx1 --out skeleton_vs_osnet
+    python3 benchmark.py dataset --methods hybrid osnet@ctx1 --out hybrid_vs_osnet
 
 For the separate GIMP illustrative images, use the qualitative-only runner;
 its JSON is deliberately not a benchmark result:
@@ -116,7 +126,7 @@ them against the real same-wall gallery:
     python3 edited_viewpoint_eval.py dataset --out edit_viewpoint_out \
         --edit-fracs 0.0,0.25,0.50,0.75 \
         --scales 1.0,1.5 --rotations 0,15 --tilts 0,20 \
-        --methods skeleton-loftr osnet@ctx1
+        --methods hybrid osnet@ctx1
 
 Both methods face identical inputs, so Rank-1, mAP, DIR@FAR, and pairwise F1
 are directly comparable in the same units, and the gallery's hard negatives
@@ -127,6 +137,37 @@ illustrative near-clones (rows labelled `"illustrative": true`) appear in
 the same output at their disclosed edit fraction (~55%) and scale=1,
 rot=0, tilt=0, scored against the same-wall real gallery in the identical
 protocol, so the hand-made edits and the parametric edits share one table.
+
+## Two designed "revisit" datasets
+
+The captured data has one walk-around per wall, so a revisit-protocol
+experiment has to be *synthesised with exact ground truth* — same design
+decision as `synthetic_viewpoint.py`. `hybrid_eval.py` builds 10 queries of
+each kind from real photos (`--n-sources 10`):
+
+* **Dataset A — damage evolution.** The query is a modest viewpoint warp of
+  the source whose mask additionally **grows**: one crack tip is extended and
+  the stroke thickened near it. The pre-existing region is preserved exactly,
+  by construction. Re-identification must not collapse under legitimate
+  evolution.
+* **Dataset B — significant appearance change, identical structure.** The
+  query is the warp plus photometric corruption (blur, noise, contrast/
+  brightness); the mask is unchanged from the pure warp. Appearance embeddings
+  should degrade; the structural/hybrid path should hold.
+
+Each query is scored against the real same-wall gallery (source excluded)
+under the standard protocol. The hybrid scorer also reports where the verdict
+came from, so the summary answers "what fraction of cells were answered by a
+homography, the skeleton fallback, or a blend" and shows the confidence
+distribution:
+
+    python3 hybrid_eval.py dataset --out hybrid_eval_out \
+        --methods hybrid registration skeleton osnet@ctx1
+
+Every evaluated cell is checkpointed to `<out>/hybrid_eval_rows.jsonl`, so
+an interrupted run is resumed with the same command plus `--resume` (alias
+`--continue`); finished cells are skipped and the final tables are rebuilt
+from the checkpoint plus the new cells.
 
 ## Provenance of the crack masks
 

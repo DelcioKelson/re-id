@@ -25,7 +25,7 @@ import os
 import cv2
 import numpy as np
 
-from crack_reid_baselines import CrackInstance, SkeletonLoFTRMatcher
+from crack_reid_baselines import CrackInstance, SkeletonMatcher
 
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -98,7 +98,7 @@ def compare(illustrations: str, out_dir: str, skip_osnet: bool = False) -> list[
     with open(os.path.join(illustrations, "manifest.json")) as f:
         manifest = json.load(f)
     rows = []
-    skeleton = SkeletonLoFTRMatcher()
+    skeleton = SkeletonMatcher()
     osnet, osnet_load_error = ((None, "skipped by --skip-osnet") if skip_osnet
                                else _load_osnet())
     for edited_name, recipe in sorted(manifest.items()):
@@ -130,7 +130,7 @@ def compare(illustrations: str, out_dir: str, skip_osnet: bool = False) -> list[
             "illustration": edited_name, "source": recipe["source"],
             "disclosure": "QUALITATIVE ONLY: GIMP-edited near-clone, not a revisit or benchmark datum.",
             "mask_proxy": "source target component truncated below disclosed taper end",
-            "cutoff_y": cutoff, "skeleton_loftr": structural,
+            "cutoff_y": cutoff, "skeleton": structural,
             "osnet_ctx1_cosine": osnet_score, "osnet_status": osnet_load_error,
         })
     os.makedirs(out_dir, exist_ok=True)

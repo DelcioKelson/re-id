@@ -11,6 +11,9 @@ set -u
 echo "== timm / transformers / kornia / ultralytics =="
 pip -q install timm transformers kornia ultralytics
 
+echo "== scikit-image (hybrid/skeleton thinning backend) =="
+pip -q install scikit-image
+
 echo "== torchreid (OSNet) =="
 # The PyPI repackage nests under torchreid.reid; crack_reid_baselines.py
 # already tries both import paths. --no-deps keeps it from pulling tb-nightly

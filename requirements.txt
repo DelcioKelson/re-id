@@ -15,11 +15,16 @@
 # --- core: needed for the dataset, the metrics, and the geometric method ---
 numpy==2.5.1
 scipy==1.18.0
-opencv-python==5.0.0.93        # SIFT/ORB/MAGSAC/ECC/CLAHE all live here
+opencv-python==4.11.0.86      # SIFT/ORB/MAGSAC(USAC)/ECC/CLAHE all live here.
+                             # NOT 5.0.0.93: that wheel breaks cv2.line on
+                             # 1-channel uint8 (fills the frame) and cv2.dilate
+                             # corrupts thin masks nondeterministically on
+                             # py3.14/numpy2.5 (see hybrid_eval.draw_line_mask).
 
 # --- analysis, figures, tests ---
 matplotlib==3.11.1
 scikit-learn==1.9.0
+scikit-image>=0.25.2      # skimage.morphology.skeletonize for hybrid_reid thinning
 pytest==9.1.1
 
 # --- crop-scope baselines (optional; each is skipped cleanly if absent) ---

@@ -43,7 +43,7 @@ Usage
 -----
     python synthetic_viewpoint.py dataset --out synth_sweep_out \
         --scales 1.0,1.5,2.0,3.0 --rotations 0,15,30,45 --tilts 0,30,60 \
-        --methods skeleton-loftr osnet@ctx1 --min-sharpness 10
+        --methods hybrid osnet@ctx1 --min-sharpness 10
 
 `osnet@ctx1` gives OSNet one bbox-width of surrounding wall context. It has
 the same meaning here as in the main benchmark.
@@ -305,7 +305,7 @@ def main():
     ap.add_argument("--scales", default="1.0,1.5,2.0,3.0")
     ap.add_argument("--rotations", default="0,15,30,45")
     ap.add_argument("--tilts", default="0,30,60")
-    ap.add_argument("--methods", nargs="+", default=["registration", "skeleton-loftr", "osnet@ctx1"])
+    ap.add_argument("--methods", nargs="+", default=["registration", "hybrid", "osnet@ctx1"])
     ap.add_argument("--min-sharpness", type=float, default=10)
     ap.add_argument("--max-sources-per-wall", type=int, default=6)
     ap.add_argument("--seed", type=int, default=0)

@@ -560,7 +560,7 @@ def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
     for raw in methods:
         key, context, apply_mask, invert = parse_method_key(raw)
         try:
-            if key in ("sift", "orb", "superglue", "lightglue", "loftr", "skeleton-loftr"):
+            if key in ("sift", "orb", "superglue", "lightglue", "loftr", "skeleton"):
                 m = REGISTRY[key]()
                 scorers.append(PairwiseMatcherScorer(
                     m, prune=prune, context=context, apply_mask=apply_mask,
@@ -590,6 +590,13 @@ def build_scorers(methods: list[str], data: Dataset, prune: bool = True):
                     scorers.append(EmbeddingScorer(
                         name=emb.name, embed_fn=fn, input_scope="crop",
                     ))
+            elif key == "hybrid":
+                from hybrid_reid import HybridReIDScorer
+                if apply_mask is not None or invert:
+                    print(f"  (@mask/@nomask/@NOCRACK have no effect on 'hybrid')")
+                scorers.append(HybridReIDScorer(
+                    name="Hybrid" + _suffix(context, None, None, False),
+                    prune=prune))
             elif key in ("registration", "registration-coverage",
                          "registration-nomask"):
                 scorers.append(_build_registration_scorer(
@@ -948,7 +955,7 @@ ABLATIONS = ["coverage-only", "registration-nomask", "registration-coverage"]
 
 DEFAULT_METHODS = ["sift", "orb", "loftr", "superglue", "lightglue",
                    "deit", "vit", "clip", "osnet", "yolo", "dinov2",
-                   "shape", "skeleton-loftr", "registration"]
+                   "shape", "hybrid", "registration"]
 
 
 def run(root: str, methods: list[str] | None = None,
