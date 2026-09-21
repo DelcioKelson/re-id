@@ -407,6 +407,8 @@ def run_eval(root: str, methods: list[str], n_sources: int = 10,
                     "mAP": res["closed_set"]["mAP"],
                     "dir_at_far10": res["open_set_dir_at_far10"],
                     "scoreable_pair_rate": res["scoreable_pair_rate"],
+                    "pair_f1": res["pair_f1_at_threshold"],
+                    "assign_f1": res["assignment"]["f1"],
                 })
                 if isinstance(scorer, HybridReIDScorer):
                     emit_diag({"dataset": tag, "method": name,
@@ -426,7 +428,8 @@ def summarize(rows: list[dict]) -> str:
     groups = defaultdict(list)
     for r in rows:
         groups[(r["dataset"], r["method"])].append(r)
-    hdr = f"{'ds':>3}{'method':<22}{'n':>5}{'R@1':>7}{'mAP':>7}{'DIR.1':>7}{'scored':>8}"
+    hdr = (f"{'ds':>3}{'method':<22}{'n':>5}{'R@1':>7}{'mAP':>7}"
+           f"{'DIR.1':>7}{'pF1':>7}{'aF1':>7}{'scored':>8}")
     lines = [hdr, "-" * len(hdr)]
     for key in sorted(groups):
         ds, method = key
@@ -438,8 +441,11 @@ def summarize(rows: list[dict]) -> str:
         mAP = float(np.sum(w * [r["mAP"] for r in g]))
         dirf = float(np.mean([r["dir_at_far10"] for r in g]))
         scored = float(np.mean([r["scoreable_pair_rate"] for r in g]))
+        pf1 = float(np.sum(w * [r.get("pair_f1") or 0.0 for r in g]))
+        af1 = float(np.sum(w * [r.get("assign_f1") or 0.0 for r in g]))
         lines.append(f"{ds:>3}{method:<22}{n:>5d}"
-                     f"{rank1:>7.3f}{mAP:>7.3f}{dirf:>7.3f}{scored:>8.2f}")
+                     f"{rank1:>7.3f}{mAP:>7.3f}{dirf:>7.3f}"
+                     f"{pf1:>7.3f}{af1:>7.3f}{scored:>8.2f}")
     return "\n".join(lines)
 
 
