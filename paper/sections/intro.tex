@@ -1,118 +1,82 @@
 \section{Introduction}
 
-Automated building-maintenance systems increasingly convert photographic
-observations into tracked records. A defect is photographed, a ticket or issue
-is opened, and subsequent activity --- status changes, follow-up inspection,
-resolution --- accumulates against that record over the defect's lifetime. This
-creates a re-identification requirement for any defect type that gets
-re-photographed across visits: a new photo must match the existing record for
-that specific physical defect, or a new record must be opened, without a human
-reconciling every submission by hand. Wall cracks are a common and difficult
-case, since the same crack is routinely re-photographed from a different
-distance, angle, or lighting condition across separate inspection visits ---
-and, over a long enough gap, the crack itself has grown
-(Fig.~\ref{fig:evolution} pictures the effect; Sec.~\ref{sec:next} explains why
-\textsc{CrackID}, a single-visit dataset, does not yet measure it).
+Automated building-maintenance systems convert photographs into tracked defect
+records: a re-photographed defect must be \emph{re-identified} --- matched to its
+record, or given a new one. Wall cracks are a common and difficult case, because
+the same crack is re-photographed from different distances, angles and lighting,
+and (Sec.~\ref{sec:dataset}) grows.
 
-Crack analysis is a mature computer vision task, but a mature \emph{detection}
-and \emph{segmentation} task: the public datasets are annotated within single
-images, and the largest consolidations of them --- CrackSeg9k's 9k
-images~\cite{kulkarni2022crackseg9k}, OmniCrack30k's 30k over twenty
-sub-datasets~\cite{benz2024omnicrack30k} --- carry no cross-observation identity
-labels, because the task they serve does not need any. We are not aware of a
-dataset or benchmark for crack \emph{re-identification}: deciding which recorded
-crack a new observation corresponds to, or whether it is new
-(Sec.~\ref{sec:related-temporal}).
+Crack analysis is a mature \emph{detection} and \emph{segmentation} task, and its
+datasets --- CrackSeg9k~\cite{kulkarni2022crackseg9k},
+OmniCrack30k~\cite{benz2024omnicrack30k} --- carry no cross-observation identity
+labels, because the task they serve needs none. We know of no benchmark for crack
+\emph{re-identification}; the natural approach, crop-and-match as in person and
+vehicle re-ID~\cite{zhou2019osnet,qian2024reidtrends}, assumes a crack has
+stable, locally distinctive appearance, and whether it does has never been
+measured. We introduce \textsc{CrackID} --- 140 photographs, 17 walls, 212 crack
+identities --- to make that measurement (Fig.~\ref{fig:ceiling}). Capture is one
+continuous walk-around per wall, so what is measured is \emph{within-visit}
+viewpoint and scale correspondence --- an upper bound on multi-visit
+performance; we add a synthetic revisit protocol as a venue-controlled
+secondary check (Sec.~\ref{sec:hybridbench}).
 
-This gap matters because the natural approach --- treat it as instance
-re-identification, crop the reported region, and match embeddings --- carries an
-assumption from person and vehicle re-ID~\cite{zhou2019osnet,qian2024reidtrends}
-that does not obviously transfer: that the object being matched has stable,
-locally distinctive appearance. A crack is thin, low-texture, and locally
-self-similar; whether crop appearance is actually sufficient to re-identify one
-has, to our knowledge, never been measured.
+\smallskip
+\noindent\textbf{Appearance buys almost nothing on the decision.} On ranking the
+nine matchers separate as expected (Rank-1 $0.352$--$0.654$ against $0.336$
+chance); on pairwise $F_1$ --- the \emph{same-crack-or-not} decision a record
+makes at a threshold --- all nine land between $0.000$ and $0.054$ above the
+$0.305$ floor, two (ORB, DeiT) at exactly zero,
+and at a validation-calibrated threshold eight of the nine span only $-0.012$ to $+0.012$
+around chance while LoFTR holds a real margin of $0.046$.
 
-We introduce \textsc{CrackID} to make that measurement possible, and to
-establish where the difficulty of this task actually lies.
+\smallskip
+\noindent\textbf{Two controls say where the difficulty is not.} Giving an
+embedder the surrounding wall raises OSNet's open-set rate $0.168 \to 0.404$;
+\emph{erasing the crack} from that view costs almost none of it ($0.393$) ---
+such a method retrieves on the wall, and the cue that works, even implicitly, is
+\emph{location}.
+
+\smallskip
+\noindent\textbf{A geometric baseline makes location explicit.} Registering on
+non-crack texture, projecting crack masks into a common frame, and Chamfer-matching
+under global assignment reaches $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$
+against $0.429$ (best crop) and $0.404$ (best context), answering $48\%$ of
+pairs; a \textsc{Coverage-only} control scores $0.000$ on the same metric, so the
+open-set gap is matching, not alignment coverage. This is a conditional result,
+not a deployment-ready system: two test walls have zero registration success,
+and the annotation and baseline both use homography-based alignment.
+
+\smallskip
+\noindent\textbf{The revisit check reverses the ranking story.} The real data are
+one continuous walk-around per wall, minutes apart, not separate visits. Under
+the synthetic warp-plus-appearance protocol, OSNet$+$context beats the hybrid at
+R@1 ($0.826/0.671$ versus $0.275/0.274$) and open-set rate
+($0.739/0.663$ versus $0.343/0.342$) for growth/appearance change; the hybrid's
+small assignment-$F_1$ advantage is not evidence that geometry solves real
+multi-visit re-identification.
+
+\smallskip
+\noindent\textbf{Contributions:} (i)~\textsc{CrackID} with an explicit
+annotation-quality report --- $45\%$ of identities were formed by an automatic
+merge, reported rather than assumed (Sec.~\ref{sec:annotation}); (ii)~a
+nine-method benchmark against stated chance levels, with crop$+$context and
+crack-erased controls (Sec.~\ref{sec:ceiling}); (iii)~a synthetic revisit protocol isolating appearance change from damage
+evolution --- the only multi-visit evidence this paper has
+(Sec.~\ref{sec:hybridbench});
+(iv)~a geometric reference
+baseline and a protocol for this task's failure modes --- coverage-aware
+metrics, unanswerable queries, an admission gate, wall-resampled confidence
+(Sec.~\ref{sec:method}, \ref{sec:protocol},~\ref{sec:results}).
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/ceiling.pdf}
-\caption{\textbf{The appearance ceiling.} Pairwise $F_1$ for ten crop-scope
-matchers spanning five method families, on the \textsc{CrackID} test split.
-Every method falls inside a band of width $0.054$, irrespective of family, era,
-or compute budget. The geometric reference baseline (red) leaves the band.
-Ranking metrics separate these same methods over a $0.30$ range; the decision
-metric does not.}
+\caption{\textbf{The appearance ceiling.} Pairwise $F_1$ for nine crop-scope
+matchers spanning four method families on \textsc{CrackID} test. Every method
+falls inside the band $0.305$--$0.359$ --- width $0.054$ --- pressed against the
+$0.305$ chance floor ($2p/(1+p)$ for this pool), irrespective of family, era, or
+compute budget. The geometric reference baseline (red) leaves the band. Ranking
+metrics separate the same methods over a $0.30$ range; the decision metric does
+not.}
 \label{fig:ceiling}
 \end{figure}
-
-\smallskip
-\noindent\textbf{Appearance buys almost nothing on the decision.} On ranking
-metrics the ten benchmarked matchers separate as expected --- Rank-1 spans
-$0.352$ to $0.654$, against a chance level of $0.336$. But on pairwise $F_1$,
-the metric measuring the decision a maintenance system actually makes
-(\emph{same crack or not}, at a threshold), the picture is different in kind.
-That metric has a hard floor: we report the best $F_1$ over a threshold grid,
-and the grid contains the degenerate point at which every pair is called
-positive, which scores $2p/(1+p) = 0.305$ here whatever the scores are. All ten
-methods land between $0.305$ and $0.359$ --- that is, between $0.000$ and
-$0.054$ \emph{above chance} (Fig.~\ref{fig:ceiling}). ORB, DeiT and the shape
-descriptor we designed specifically for cracks achieve exactly zero. At a
-threshold calibrated on held-out validation walls rather than on the test
-matrix, excess over chance for nine of the ten tight-crop methods spans only
-$-0.012$ to $+0.012$ --- two of them below chance --- and one, LoFTR, holds a
-real margin of $0.046$.
-
-\smallskip
-\noindent\textbf{Two controls say where the difficulty is not.} Widening the
-crop until an embedder sees the surrounding wall helps a great deal --- OSNet's
-open-set rate goes $0.168 \to 0.404$. Then \emph{erasing the crack} from that
-same widened view costs almost none of it ($0.393$). A crop$+$context method is
-therefore retrieving on the wall behind the crack, not on the crack; and the
-cue that works, even in that crude implicit form, is \emph{location}.
-
-\smallskip
-\noindent\textbf{Building it required solving an annotation problem.}
-Propagating a single click-point identity across a wall's photographs via
-homography is the only tractable way to label crack instances at this scale, but
-it fragments a physical crack into multiple identities whenever propagation
-breaks, requiring a merge step --- and a merge that incorrectly joins two
-distinct cracks silently converts a hard negative into a free positive and
-inflates every downstream matching metric at once. We treat this as a
-first-class part of the contribution rather than a footnote: $45\%$ of
-\textsc{CrackID} identities were formed by such a merge, and we report that rate,
-the gap distribution it bridged, and the agreement between merged and pre-merge
-labellings, instead of presenting the result as ground truth by construction
-(Sec.~\ref{sec:annotation}).
-
-\smallskip
-\noindent\textbf{Contributions.}
-\begin{enumerate}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
-\item \textsc{CrackID}, 140 photographs across 17 walls and 212 crack
-identities, released with an explicit annotation-quality report --- merge rate,
-bridged-gap distribution, chance-corrected agreement against the pre-merge
-labelling --- plus the instrumentation for a human error-rate audit
-(Sec.~\ref{sec:dataset}).
-\item A ten-method benchmark spanning classical keypoints, learned
-correspondence, general vision embeddings, a dedicated re-identification
-architecture, and a purpose-built crack-shape descriptor, measuring how much
-each buys \emph{over chance} on the decision metric --- between $0.000$ and
-$0.054$ --- together with crop$+$context and crack-erased controls that
-localise the difficulty to crack appearance rather than to field of view
-(Sec.~\ref{sec:ceiling}).
-\item A geometric reference baseline --- registration on wall texture with
-cracks masked out, followed by Chamfer-matched crack masks under global
-assignment --- reported against a \textsc{Coverage-only} control that exploits
-its exact registration coverage without examining a crack, so that alignment
-and matching are separated rather than confounded
-(Sec.~\ref{sec:method},~\ref{sec:results}).
-\item A protocol for this task's failure modes: chance levels reported for
-every metric because two of them are far from zero, a frame-gap sweep that
-turns the benchmark's near-duplicate structure into a stated difficulty axis, a
-blur admission gate set by measured impact on registration yield rather than
-convention, a viewpoint covariate estimated independently of the scoring
-pipeline to avoid circularity, coverage-aware metrics that keep unanswerable
-queries and charge unscorable pairs, and leave-one-wall-out resampling in place
-of a point estimate on a small identity count (Sec.~\ref{sec:protocol}).
-\end{enumerate}

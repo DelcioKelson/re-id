@@ -29,7 +29,7 @@ pytest==9.1.1
 
 # --- crop-scope baselines (optional; each is skipped cleanly if absent) ---
 # benchmark.py catches ImportError per scorer and prints what is missing,
-# so a core-only install still runs SIFT, ORB, CrackShape, coverage-only
+# so a core-only install still runs SIFT, ORB, coverage-only
 # and the full geometric pipeline.
 torch==2.13.0
 torchvision==0.28.0

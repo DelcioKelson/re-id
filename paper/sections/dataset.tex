@@ -5,105 +5,35 @@
 We photographed 17 exterior walls at one site over four half-days with two
 consumer handsets, yielding 140 photographs at $4080\times3072$. The walls span
 two surface families that behave very differently under keypoint matching:
-stippled render, which is densely textured, and smooth painted plaster
-photographed at cornice junctions, where the crack is frequently the only
-structure in frame. Walls are split disjointly into 6 validation walls (66
-photographs, 66 identities) and 11 test walls (74 photographs, 146 identities);
-no wall appears in both.
-
-Statistical power is governed not by the identity count but by identities
-visible in \emph{two or more} photographs, since only those form a query with an
-answer: 18 in validation, 19 in test, 37 in total. This is the single largest
-constraint on what the benchmark can conclude, so we state it here rather than
-in a footnote (Sec.~\ref{sec:validity}).
-
-\subsection{What the dataset measures, and what it does not}
-\label{sec:scope}
-Each wall was captured in a single continuous walk-around. Consecutive frames
-are a median of $3$\,s apart (maximum $20$\,s), and a wall's entire capture spans
-a median of $29$\,s (maximum $81$\,s). Every query and its gallery therefore
-share one illumination condition, one weather state, and one sensor
-configuration.
-
-We state the consequence plainly. \textsc{CrackID} in its present form measures
-\textbf{viewpoint and scale correspondence}: given a crack seen from one camera
-position, find it from a different position, distance, and angle. It does
-\textbf{not} yet measure correspondence across separate visits, which is the
-deployment case the maintenance-record setting implies. We therefore use
-\emph{correspondence} rather than \emph{re-identification} for the measured
-property, and treat every figure here as an upper bound on multi-visit
-performance. Sec.~\ref{sec:viewpoint} quantifies the residual viewpoint
-variation the data does span, using an estimator the scoring pipeline never
-sees.
+stippled render (densely textured) and smooth painted plaster, where the crack is
+frequently the only structure in frame. Walls split disjointly into 6 validation
+walls (66 photographs, 66 identities) and 11 test walls (74 photographs, 146
+identities). Statistical power is governed by identities visible in two or more
+photographs --- only these form a query with an answer: 18 in validation, 19 in
+test. Each wall was captured in one continuous walk-around (consecutive frames a
+median of $3$\,s apart), so the dataset measures \textbf{viewpoint and scale
+correspondence} within one visit --- an upper bound on multi-visit performance,
+not yet a measurement of it.
 
 \smallskip
-\noindent\textbf{The adjacent frame is always an answer.} One consequence is
-sharp enough that it must be stated as a number rather than as a caveat. For
-\textbf{$100\%$ of the $280$ answerable test queries, the nearest correct
-gallery entry is the immediately adjacent frame} --- a median of $3$\,s of
-wall-clock away. There is no query in either split whose answer requires
-looking further than one frame. At the default protocol setting
-(\texttt{min\_frame\_gap}$=0$) every ranking number in this paper is therefore
-a near-duplicate retrieval result, and must be read as one.
-
-We do not treat this as a defect to be hidden or a confound to be deleted, but
-as the benchmark's difficulty axis. Excluding gallery photographs within $k$
-frames of the query makes the task progressively harder and the pool
-progressively smaller:
-
-\begin{center}
-\small
-\begin{tabular}{ccccc}
-\toprule
-\texttt{min\_frame\_gap} & answerable queries & valid pairs & prevalence & chance $F_1$ \\
-\midrule
-0 \emph{(reported)} & 280 & 31{,}822 & 0.180 & 0.305 \\
-1 & 205 & 23{,}464 & 0.145 & 0.253 \\
-2 & 149 & 17{,}264 & 0.121 & 0.215 \\
-3 & 105 & 12{,}540 & 0.102 & 0.185 \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\noindent Note that the chance level of pairwise $F_1$ moves with the gap
-(Sec.~\ref{sec:reference}), so results at different gaps are not comparable
-against a single floor. Sec.~\ref{sec:gapsweep} reports the sweep. Statistical
-power falls quickly --- $105$ answerable queries over $11$ walls at gap $3$ ---
-which is why we report it as a trend with wall-resampled intervals rather than
-replacing Table~\ref{tab:main} with a point estimate at a larger gap.
+\noindent\textbf{The adjacent frame is always an answer.} For $100\%$ of the
+$280$ answerable test queries the nearest correct gallery entry is the adjacent
+frame. Ranking numbers are therefore near-duplicate retrieval;
+Sec.~\ref{sec:results} sweeps the exclusion gap to show the structure is not what
+produces the result.
 
 \subsection{Annotation, and why it needs auditing}
 \label{sec:annotation}
-Labelling crack instances by hand across 140 high-resolution photographs is not
-tractable, so identities are seeded automatically. An annotator places one click
-point per distinct physical crack; the point is propagated between consecutive
-photographs through an ORB homography and a one-to-one assignment; and
-identities whose components appear to be fragments of one physical crack are
-then merged.
-
-The merge step is where the risk concentrates. A merge that wrongly joins two
-distinct cracks converts a hard negative into a free positive and inflates mAP
-for \emph{every} method at once --- so it cannot be caught by comparing methods
-against each other. We therefore report its extent rather than assume its
-correctness.
-
-\textbf{95 of the 212 identities ($45\%$) were formed by a merge} --- 70 of 146
-on test ($48\%$), 25 of 66 on validation ($38\%$) --- bridging a median maximum
-gap of $228$\,px on test and $286$\,px on validation (p90 $308$ and $317$\,px,
-max $319$ and $320$\,px). The merge restructured the partition almost
-completely: the adjusted Rand index between the final labelling and the
-pre-merge automatic output --- a measure of how much the merge changed the
-partition, not of inter-annotator agreement --- is $0.080$ over $1{,}051$
-matched points. That is the same fact as ``$45\%$ absorbed more than
-one seed,'' seen from the other side. It is not an argument against merging,
-which is what makes the identities physically meaningful; it is why an audited
-error rate must exist before mAP on these labels is treated as exact.
-
-We release the instrumentation for that audit rather than the audit itself: per
-identity merge provenance, a reproducible stratified sample over merged and
-unmerged identities with rendered contact sheets, and scoring that turns human
-verdicts into an error rate with a Wilson interval. An automatic triage flags
-the 57 identities with the widest bridged gaps, where disagreement will
-concentrate. \textbf{The verdicts are not yet filled in}, so we report no
-sampled error rate and no inter-annotator statistic and claim none;
-Sec.~\ref{sec:validity} states what follows.
+One click point per crack is propagated across consecutive photographs through an
+ORB homography and one-to-one assignment; identities whose components appear to
+be fragments of one physical crack are then merged. The merge is where risk
+concentrates: a wrongly joined merge converts a hard negative into a free
+positive and inflates \emph{every} method's mAP together, so it cannot be caught
+by comparing methods. We therefore report its extent rather than assume its
+correctness: \textbf{$95/212$ identities ($45\%$) were formed by a merge} (48\%
+on test), bridging a median maximum gap of $228$\,px; the adjusted Rand index
+against the pre-merge labelling is $0.080$ --- the merge restructured the
+partition rather than refining it. We release the instrumentation for an audited
+error rate (per-identity provenance, a stratified sample with contact sheets,
+Wilson scoring) rather than the audit itself; the verdicts are not yet filled in,
+so we claim no sampled error rate.

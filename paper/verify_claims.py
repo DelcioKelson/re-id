@@ -72,10 +72,10 @@ print("\n[1] How much appearance buys (Table I, Sec. V)")
 # together in one invocation (benchmark.py --ablations --controls). Cost
 # therefore comes from two different sessions and is not tightly controlled
 # for machine load between them -- which is exactly why the paper states the
-# compute-span claim qualitatively ("more than three orders of magnitude")
-# rather than as a precise multiplier: CrackShape's own cost, near the
-# timer's resolution, varied several-fold between two runs we have visibility
-# into (0.9s and 0.3s total over 280 queries).
+# compute-span claim qualitatively ("more than two orders of magnitude")
+# rather than as a precise multiplier: the cheapest matchers fall near the
+# timer's resolution and their measured cost varied several-fold between two
+# runs we have visibility into.
 CROP = dict(
     ORB=(0.352, 0.364, 0.018, 0.305, 0.305, 0.038),
     SIFT=(0.432, 0.417, 0.036, 0.313, 0.305, 0.086),
@@ -86,7 +86,7 @@ CROP = dict(
     DeiT=(0.621, 0.497, 0.250, 0.305, 0.293, 0.058),
     CLIP=(0.604, 0.471, 0.143, 0.307, 0.306, 0.050),
     OSNet=(0.654, 0.520, 0.168, 0.309, 0.309, 0.053),
-    CrackShape=(0.554, 0.442, 0.082, 0.305, 0.303, 0.001))
+)
 
 # Every quoted crop row must match the committed benchmark output.
 _ALIAS = {"YOLOv8": "YOLOv8-backbone"}
@@ -109,7 +109,7 @@ check("R@1 span", r1.max() - r1.min(), 0.302)
 check_bound = lambda label, got, lo: (
     print(f"  {'OK ' if got >= lo else 'FAIL'}  {label:52s} got {got:>10.1f}  "
           f"want >= {lo}") or fails.append(label) if got < lo else None)
-check_bound("compute span exceeds 3 orders of magnitude", sec.max() / sec.min(), 1000)
+check_bound("compute span exceeds 2 orders of magnitude", sec.max() / sec.min(), 100)
 check("REG DIR / best baseline DIR", 0.768 / dirf.max(), 1.79, tol=0.02)
 
 # --- the crack-masking ablation (Sec. VI-F) -------------------------------
@@ -153,6 +153,24 @@ else:
     fails.append("registration+chamfer[coverage] missing from result.txt")
     print("  FAIL  registration-coverage row not present in result.txt")
 
+# --- amortised cost (Sec. VI-H "Cost") ------------------------------------
+# total_s is wall-clock for the whole test scoring pass (registration of the
+# test image pairs + per-query Chamfer). Charging registration to queries gives
+# 7817.3/280 = 27.9 s/query; charging it to the image pairs it is computed once
+# per, gives 7817.3/301 = 26.0 s/pair. The paper quotes the pair-level figure
+# and states the per-query penalty only as "more than two orders of magnitude"
+# above OSNet (asserted as a bound below, matching the CROP cost-span check).
+if reg:
+    check("REG total_s in result.txt", reg["total_s"], 7817.3, tol=0.1)
+    check("amortised seconds per image pair", reg["total_s"] / 301, 26.0, tol=0.3)
+    osn = parsed.get("OSNet")
+    if osn:
+        print(f"  {'OK ' if reg['total_s'] / osn['total_s'] >= 100 else 'FAIL':4s}"
+              f"{'REG vs OSNet cost exceeds 2 orders of magnitude':<52s} "
+              f"got {reg['total_s'] / osn['total_s']:>10.1f}  want >= 100")
+        if reg['total_s'] / osn['total_s'] < 100:
+            fails.append("REG vs OSNet cost exceeds 2 orders of magnitude")
+
 # --- the chance levels every quoted excess is measured against -----------
 # Without these the pairwise-F1 numbers above are unreadable: the metric has
 # a floor at 2p/(1+p), three methods sit exactly on it, and the "band" the
@@ -176,7 +194,7 @@ rest = excess_v[~is_loftr]
 check("range of the other nine: low (DeiT)", rest.min(), -0.012, tol=1e-3)
 check("range of the other nine: high (ViT)", rest.max(), 0.012, tol=1e-3)
 check("methods below chance at calibrated threshold",
-      int(np.sum(excess_v < -1e-3)), 2, tol=0)
+      int(np.sum(excess_v < -1e-3)), 1, tol=0)
 check("simulated pairF1 chance", CH["chance"]["pair_f1"]["mean"], 0.3049, tol=2e-3)
 check("  ... its sd (a floor, not an average)",
       CH["chance"]["pair_f1"]["sd"], 0.0001, tol=1e-3)
@@ -190,7 +208,7 @@ floor = CH["analytic_pair_f1_floor"]
 excess = {k: CROP[k][3] - floor for k in CROP}
 check("max crop excess over chance (LoFTR)", max(excess.values()), 0.054, tol=2e-3)
 check("min crop excess over chance", min(excess.values()), 0.000, tol=2e-3)
-check("methods at exactly chance", sum(1 for e in excess.values() if e < 1e-3), 3, tol=0)
+check("methods at exactly chance", sum(1 for e in excess.values() if e < 1e-3), 2, tol=0)
 # ORB is BELOW chance on three metrics; the paper says so.
 check("ORB R@5 below chance", CROP["ORB"][0] * 0 + 0.759 - CH["chance"]["rank5"]["mean"],
       -0.008, tol=0.012)
@@ -301,13 +319,30 @@ for _ in range(300):
     mu = 1 / (1 + np.exp(-(X @ b))); W = mu * (1 - mu) + 1e-9
     b = np.linalg.solve(X.T @ (X * W[:, None]), X.T @ (W * (X @ b + (y - mu) / W)))
 mu = 1 / (1 + np.exp(-(X @ b)))
-se = np.sqrt(np.diag(np.linalg.inv(X.T @ (X * (mu * (1 - mu))[:, None]))))
-check("sharpness Wald z", b[1] / se[1], 8.23, tol=0.02)
-check("frame-gap Wald z", b[2] / se[2], -5.03, tol=0.02)
+# Independent-pairs (iid) standard errors -- the paper reports these ONLY to
+# say they overstate the contrast; the quoted Wald z values are clustered by
+# wall, computed below.
+se_iid = np.sqrt(np.diag(np.linalg.inv(X.T @ (X * (mu * (1 - mu))[:, None]))))
+check("sharpness Wald z, iid (context only)", b[1] / se_iid[1], 8.23, tol=0.02)
+check("frame-gap Wald z, iid (context only)", b[2] / se_iid[2], -5.03, tol=0.02)
 check("median sharpness | registered",
       float(np.median([vp[k]['sharp_min'] for k in keys if po[k]])), 133.8, tol=0.2)
 check("median sharpness | failed",
       float(np.median([vp[k]['sharp_min'] for k in keys if not po[k]])), 7.2, tol=0.2)
+# Wall-clustered (sandwich) standard errors: pairs within a wall are highly
+# correlated (failure is categorical by wall: 0%, 52%, 100%), so the quoted
+# z-values in the paper are the clustered ones.
+clu = np.array([k.split("_")[0] for k in keys])
+U = X * (y - mu)[:, None]
+meat = np.zeros((3, 3))
+for c in np.unique(clu):
+    s = U[clu == c].sum(0)
+    meat += np.outer(s, s)
+bread_inv = np.linalg.inv(X.T @ (X * (mu * (1 - mu))[:, None]))
+V_cl = bread_inv @ meat @ bread_inv
+se_cl = np.sqrt(np.diag(V_cl))
+check("sharpness Wald z, wall-clustered", b[1] / se_cl[1], 5.11, tol=0.02)
+check("frame-gap Wald z, wall-clustered", b[2] / se_cl[2], -2.78, tol=0.02)
 
 print("\n[6] Annotation provenance (Sec. IV-C)")
 cl = json.load(open(J('dataset/labels/_changelog.json')))
@@ -383,6 +418,50 @@ _is_dir = J('illustrative_synthetic')
 if os.path.isdir(_is_dir):
     check("illustrative_synthetic/ has its own README disclosing it",
           int(os.path.exists(os.path.join(_is_dir, 'README.md'))), 1, tol=0)
+
+print("\n[9] Hybrid revisit benchmark (Sec. VI-H)")
+# The hybrid_eval comparison table (hybrid_eval.py -> comparasion_result.txt)
+# is the direct source of Table ~\ref{tab:hybrid}. Format:
+#   dsmethod  n  R@1  mAP  DIR.1  scored
+#   AHybrid   69  0.275 ...
+_HYBRID_TXT = J('hybrid_eval_out/comparasion_result.txt')
+_hybrid = {}
+_HYBRID_COLS = ("n", "R@1", "mAP", "DIR.1", "pF1", "aF1", "scored")
+if os.path.isfile(_HYBRID_TXT):
+    _in_main = False
+    for _line in open(_HYBRID_TXT):
+        _parts = _line.split()
+        if not _parts:
+            continue
+        if _parts[0] == "dsmethod":
+            if "R@1" in _parts:
+                _in_main = True           # the results table
+            else:
+                break                      # Per-cell usage block: stop
+            continue
+        if _in_main and _parts[0].startswith("-"):
+            continue
+        if _in_main and len(_parts) == 1 + len(_HYBRID_COLS):
+            try:
+                _nums = [float(x) for x in _parts[1:]]
+            except ValueError:
+                continue
+            ds, method = _parts[0][0], _parts[0][1:]
+            _hybrid[(ds, method)] = dict(zip(_HYBRID_COLS, _nums))
+    _want = {("A", "Hybrid"): (69, 0.275, 0.401, 0.343, 0.569, 0.646, 1.0),
+             ("A", "OSNet+ctx1"): (69, 0.826, 0.647, 0.739, 0.601, 0.631, 1.0),
+             ("B", "Hybrid"): (82, 0.274, 0.403, 0.342, 0.574, 0.640, 1.0),
+             ("B", "OSNet+ctx1"): (82, 0.671, 0.570, 0.663, 0.594, 0.609, 1.0)}
+    for _key, _vals in _want.items():
+        _row = _hybrid.get(_key)
+        if _row is None:
+            check(f"hybrid row {_key} present", 0, 1, tol=0)
+            continue
+        for _col, _w in zip(_HYBRID_COLS, _vals):
+            check(f"hybrid {_key[0]}/{_key[1]} {_col}", _row[_col], _w,
+                  tol=0 if _col == "n" else 5e-3)
+else:
+    check(f"comparasion_result.txt exists (missing: {_HYBRID_TXT!r})", 0, 1, tol=0)
 
 print("\n" + "=" * 74)
 if fails:

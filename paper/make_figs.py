@@ -42,17 +42,16 @@ CROP = [   # name, family, R@1, R@5, mAP, DIR@FAR.1, pairF1, assF1, total_s
     ("DeiT-S",    "embedding", 0.621, 0.879, 0.497, 0.250, 0.305, 0.381,   72.6),
     ("CLIP",      "embedding", 0.604, 0.850, 0.471, 0.143, 0.307, 0.367,   63.9),
     ("OSNet",     "re-ID",     0.654, 0.907, 0.520, 0.168, 0.309, 0.388,    1.8),
-    ("CrackShape","shape",     0.554, 0.825, 0.442, 0.082, 0.305, 0.346,    0.9),
 ]
 REG = ("Registration+Chamfer", 0.952, 0.992, 0.886, 0.768, 0.656, 0.784, 7817.3)
 NQ = 280
 
 FAMCOL = {"keypoint": "#7c7c7c", "learned": "#4f7a9e", "embedding": "#6b8f5e",
-          "re-ID": "#a3803e", "shape": "#8a6f9e"}
+          "re-ID": "#a3803e"}
 
 
 def fig_ceiling():
-    """Fig 1 (teaser): pairwise F1 is flat across ten matchers; geometry breaks out."""
+    """Fig 1 (teaser): pairwise F1 is flat across nine matchers; geometry breaks out."""
     fig, ax = plt.subplots(figsize=(3.45, 1.62))
     names = [c[0] for c in CROP]
     f1    = [c[6] for c in CROP]

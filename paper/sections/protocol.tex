@@ -1,55 +1,34 @@
 \section{Benchmark Protocol}
 \label{sec:protocol}
 
-A query is one annotated crack instance in one photograph. The gallery is
-restricted to \textbf{the query's own wall}: the hard negatives are other cracks
-in the same material under the same light, which is the honest setting and
-markedly harder than a cross-wall gallery. A query's own photograph and its own
-capture session are excluded. This yields $n_Q = 280$ scored query instances on
-test.
-
-Three protocol choices are deliberately unfavourable to the methods being
-measured, including ours. \textbf{Unanswerable queries are retained} --- a query
-whose identity has no gallery counterpart is not deleted, since that is exactly
-the open-set case a maintenance system faces whenever a crack has been repaired
-or is genuinely new; such queries can contribute false alarms and never
-successes. \textbf{Thresholds are calibrated on validation}: we report an
-oracle-thresholded $F_1^{*}$ (best threshold on test, which flatters every
-method) and $F_1^{@v}$, thresholded on the held-out validation walls; where only
-one column is available for a baseline it is the oracle variant, so the
-comparison is biased \emph{towards} the baselines. \textbf{Missing scores are
-charged, not skipped}: a pair a method cannot score counts as a predicted
-negative and ranks last, with the query still present in \emph{every} metric ---
-ranking, open-set, pairwise and assignment alike. We state this precisely
-because it is easy to implement inconsistently, and because only a method with
-partial coverage is affected: dropping unscorable cells instead makes the
-metric conditional on coverage, and coverage is not independent of the label
-here
-(Sec.~\ref{sec:coverage}).
+A query is one annotated crack instance in one photograph; the gallery is the
+query's own wall, so hard negatives share material and lighting; the query's own
+photograph and week are excluded, leaving $n_Q = 280$ scored queries on test.
+Three choices deliberately favour no method, including ours:
+\begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+\item \textbf{Unanswerable queries are retained.} A query whose identity has no
+gallery counterpart can contribute false alarms and never successes --- exactly
+the open-set case a maintenance system faces.
+\item \textbf{Thresholds are calibrated on validation.} Every method reports an
+oracle-thresholded $F_1^{*}$ (generous to all) and a deployable $F_1^{@v}$
+thresholded on held-out walls.
+\item \textbf{Missing scores are charged, not skipped.} A pair a method cannot
+score counts as predicted-negative and ranks last; coverage is not independent
+of the label (Sec.~\ref{sec:coverage}).
+\end{itemize}
 
 \subsection{Metrics}
-We report Rank-1, Rank-5 and mAP for ranking, resolving ties in expectation over
-random tie-breaks rather than by array order, which otherwise rewards methods
-emitting many equal scores. The headline metric is the open-set
-\textbf{detection-and-identification rate at $10\%$ false alarm}
+We report Rank-1, Rank-5 and mAP, pairwise $F_1$, and assignment $F_1$ (a
+one-to-one matching per image pair, the deployed operation). The headline metric
+is the open-set \textbf{detection-and-identification rate at $10\%$ false alarm}
 ($\mathrm{DIR}@\mathrm{FAR}{=}0.1$): a known query is correct only if its
-top-ranked gallery entry is above threshold \emph{and} correct, while an unknown
-query is a false alarm whenever anything clears threshold. We also report
-\textbf{pairwise $F_1$} over all valid pairs independent of ranking, and
-\textbf{assignment $F_1$}, a one-to-one matching per image pair --- the deployed
-operation, since two cracks in today's photograph must not both claim the same
-record.
+top-ranked match is above threshold and correct; an unknown query is a false
+alarm whenever anything clears threshold.
 
-\textbf{Every metric is reported against its chance level}
-(Sec.~\ref{sec:reference}), because two of them are far from zero: pairwise
-$F_1$ has a hard floor at $2p/(1+p) = 0.305$ on this pool, and Rank-5 chance is
-$0.767$. A number is informative only as excess over that floor, and the floor
-moves whenever the pool does --- with the frame gap, and with a method's own
-coverage. We obtain it two ways that agree: in closed form from the prevalence,
-and by scoring $200$ random matrices through the same evaluation code.
-
-Confidence is reported by resampling \textbf{walls}, not queries: queries from
-one wall share its material, lighting, and camera pass and succeed or fail
-together, so a query-level interval is badly over-optimistic. With 11 test walls
-that interval is wide, and we regard its width as the honest statement of what
-19 multi-photo identities support.
+\textbf{Every metric is reported against its chance level}, because two are far
+from zero: pairwise $F_1$ has a structural floor $2p/(1+p) = 0.305$ on this
+pool, and Rank-5 chance is $0.767$; Rank-1 and $\mathrm{DIR}@\mathrm{FAR}$ chance
+are $0.336$ and $0.038$ (closed form, plus $200$ random matrices through the same
+evaluation code). Confidence resamples \textbf{walls}, not queries --- queries
+from one wall succeed or fail together --- and with 11 test walls the interval is
+wide; we report its width as the honest statement.

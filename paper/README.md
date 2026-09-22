@@ -14,10 +14,11 @@ from benchmark output to published table.
 
 | Artefact | Produced by | Used for |
 |---|---|---|
-| `../banchmark_out/result.txt` | `benchmark.py` | Table I, Fig. 1 |
-| `../banchmark_out/pair_outcomes.json` | `viewpoint.py` | Fig. 2, coverage, gate sweep |
+| `../banchmark_out/result.txt` | `benchmark.py` | Table I, Fig. 1, amortised cost |
+| `../banchmark_out/pair_outcomes.json` | `viewpoint.py` | Fig. 2, coverage, gate sweep, clustered logistic |
 | `../banchmark_out/viewpoint.json` | `viewpoint.py` | Fig. 3, viewpoint stats, logistic fit |
 | `../banchmark_out/chance.json` | `chance_baseline.py` | chance levels, the frame-gap sweep, the coverage confound |
+| `../hybrid_eval_out/comparasion_result.txt` | `hybrid_eval.py` | Table (Sec. VI-H, synthetic revisit benchmark) |
 | `../dataset/quality.json` | `image_quality.py` | gate sweep, Fig. 2 ordering |
 | `../dataset/labels/*.json` | `label_points.py` | dataset composition (Sec. IV-A) |
 | `../dataset/labels/_changelog.json` | `prefill_labels.py` | merge provenance, Sec. IV-C |
@@ -29,7 +30,17 @@ from benchmark output to published table.
     python verify_claims.py    # re-derives every quoted statistic
 
 `verify_claims.py` exits non-zero if any number in the paper stops matching the
-artefacts. It currently passes on every quoted statistic.
+artefacts. It currently passes on every quoted statistic. The amortised cost in
+Sec. VI-H (`7817.3`\,s total over `301` test image pairs = `26.0`\,s/pair) is
+re-derived from `result.txt` and asserted by the verifier.
+
+The wall-level bootstrap interval on `DIR@FAR` was deliberately *not* quoted:
+it requires the saved score matrices, which are not committed, so the abstract
+and Sec. VIII state the open-set numbers as point estimates on a 19-identity
+sample rather than inventing an unreproduceable interval. If the GPU rerun is
+ever done, `extract_paper_numbers.py` computes and commits that interval to
+`banchmark_out/dir_ci.json`; until then the paper's honesty comes from the
+hedge, not from a number.
 
 ## The one claim the paper deliberately does NOT make
 
@@ -59,7 +70,7 @@ restructured the partition, and is labelled as such.
 These were measured by this project but need the saved `.npz` score matrices,
 which are not committed (they are large and regenerated per run):
 
-* leave-one-wall-out spread, `CrackShape` R@1 `0.495 +/- 0.329` over 14 folds
+* leave-one-wall-out spread in Rank-1
 * the censoring control, R@1 `0.422 -> 0.27` at 34% coverage
 
 Reproduce with:

@@ -1,232 +1,94 @@
-\section{How Much Appearance Buys}
+\section{The Appearance Ceiling}
 \label{sec:ceiling}
-
-\subsection{Setup}
-We evaluate ten crop-scope matchers under the identical protocol of
-Sec.~\ref{sec:protocol}, on identical inputs, scored by identical code from
-saved score matrices. The population is deliberately broad, spanning five
-families:
-
-\begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
-\item \textbf{Handcrafted keypoints}: SIFT~\cite{lowe2004sift},
-ORB~\cite{rublee2011orb}. Similarity is the inlier count after ratio test and
-RANSAC verification.
-\item \textbf{Learned correspondence}: SuperGlue~\cite{sarlin2020superglue},
-LoFTR~\cite{sun2021loftr}. Similarity is the confidence-weighted count of
-predicted correspondences.
-\item \textbf{General visual embeddings}: ViT-B/16~\cite{dosovitskiy2021vit},
-DeiT-S~\cite{touvron2021deit}, CLIP ViT-B/32~\cite{radford2021clip}, and a
-YOLOv8 detector backbone. Similarity is cosine distance between L2-normalised
-features.
-\item \textbf{A re-identification architecture}: OSNet~\cite{zhou2019osnet},
-trained for instance-level discrimination.
-\item \textbf{A purpose-built crack-shape descriptor} (\textsc{CrackShape}), the
-strongest crop-scope baseline we could construct \emph{knowing the domain}: it
-PCA-aligns crack pixels to remove in-plane rotation, resamples the centreline
-into $48$ bins, normalises perpendicular offsets by crack length to remove
-scale, and takes the magnitude spectrum of the offset profile --- invariant to
-traversal direction --- with scale-free tortuosity, elongation, relative
-thickness, and turning-angle spread appended.
-\end{itemize}
-
-\textsc{CrackShape} matters to the argument: if the difficulty were an artefact
-of generic encoders meeting a specialised structure, a descriptor designed
-around crack geometry should escape it. It does not.
-
-\subsection{Two reference levels, without which the table cannot be read}
-\label{sec:reference}
-
-Every metric here has a chance level, and two of them are high. We report both
-because three of the numbers in an earlier version of this table were at or
-below chance and the omission concealed it.
-
-\smallskip
-\noindent\textbf{Chance.} We score $200$ matrices of Gaussian noise through the
-same evaluation code (\texttt{chance\_baseline.py}). The trap is pairwise
-$F_1$. We report it as the best $F_1$ over a threshold grid, and that
-maximisation includes the degenerate threshold at which \emph{every} pair is
-predicted positive, which scores $2p/(1+p)$ for positive prevalence $p$
-irrespective of the scores. On the test split $p = 0.180$, so \textbf{pairwise
-$F_1$ cannot fall below $0.305$}, and simulation reproduces exactly that
-($0.3049 \pm 0.0001$). Rank-5 chance is $0.767$, which makes that column nearly
-uninformative on a same-wall gallery. Rank-1 chance is $0.336$ and
-$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ chance is $0.038$.
-
-\smallskip
-\noindent\textbf{Coverage-only.} The geometric method scores only the image
-pairs it can register, so we must separate what \emph{alignment} is worth from
-what \emph{matching} is worth. The \textsc{Coverage-only} row answers ``same
-crack'' to every pair whose two photographs registered and never looks at a
-crack at all. It is not a strawman: registration succeeds precisely when the
-two photographs overlap, which is also when the answer is present, so its
-scorable subset retains $100\%$ of positive pairs and only $36.8\%$ of
-negatives. Prevalence rises $0.180 \to 0.373$ and the pairwise-$F_1$ floor with
-it, $0.305 \to 0.544$. Any pairwise $F_1$ the geometric method reports must be
-read against $0.544$, not against $0.305$.
 
 \begin{table*}[t]
 \centering
+%    10 or 12-token rows ... The prefixed comment must stay stable.
+% (see verify_claims.py parse_results_table strictness notes)
 \caption{\textbf{Main result}, test split, $n_Q = 280$ query instances over 11
 walls. All methods see identical inputs and are scored by identical code.
-$F_1^{*}$ is oracle-thresholded on test; $F_1^{@v}$ is thresholded on the
-held-out validation walls and is the deployable number. \emph{scored} is the
-fraction of valid query--gallery pairs receiving a finite score; unscored pairs
-are charged as predicted-negative and the query is still counted
-(Sec.~\ref{sec:coverage}). Cost is wall-clock seconds per query. The two
-reference rows are not competitors but the levels every other row must be read
-against: \textsc{Chance} is $200$ random score matrices, \textsc{Coverage-only}
-answers yes to every registered pair without examining a crack. Best crop-scope
-value per column in \textbf{bold}.}
+$F_1^{*}$ is oracle-thresholded on test; $\Delta F_1^{*}$ is its excess over the
+$0.305$ chance floor ($2p/(1+p)$, Sec.~\ref{sec:protocol}); $F_1^{@v}$ is
+thresholded on the held-out validation walls and is the deployable number.
+\emph{scored} is the fraction of valid query--gallery pairs receiving a finite
+score; unscored pairs are charged as predicted-negative and the query is still
+counted (Sec.~\ref{sec:coverage}). Cost is wall-clock seconds per query. The
+\textsc{Coverage-only} reference row answers yes to every registered pair
+without examining a crack and is the level every other row must be read against;
+chance levels for every column are given in Sec.~\ref{sec:protocol}. Best
+crop-scope value per column in \textbf{bold}.}
 \label{tab:main}
 \small
 \begin{tabular}{llcccccccr}
 \toprule
-Method & Family & R@1 & R@5 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & $F_1^{@v}$ & scored & s/query \\
+Method & Family & R@1 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & $\Delta F_1^{*}$ & $F_1^{@v}$ & scored & s/query \\
 \midrule
 \rowcolor{black!8}
-\multicolumn{10}{l}{\emph{Reference levels}} \\
+\multicolumn{10}{l}{\emph{Reference level}} \\
 \rowcolor{black!8}
-\textsc{Chance} ($200$ runs) & --- & 0.336 & 0.767 & 0.385 & 0.038 & 0.305 & --- & 1.00 & --- \\
-\rowcolor{black!8}
-\textsc{Coverage-only} & geometry & 0.515 & 0.874 & 0.533 & 0.000 & 0.544 & 0.544 & 0.48 & --- \\
+\textsc{Coverage-only} & geometry      & 0.515 & 0.533 & 0.000 & 0.544 & 0.239 & 0.544 & 0.48 & --- \\
 \midrule
 \multicolumn{10}{l}{\emph{Crop scope}} \\
-ORB~\cite{rublee2011orb}            & keypoint   & 0.352 & 0.759 & 0.364 & 0.018 & 0.305 & 0.305 & 1.00 & 0.038 \\
-SIFT~\cite{lowe2004sift}            & keypoint   & 0.432 & 0.829 & 0.417 & 0.036 & 0.313 & 0.305 & 1.00 & 0.086 \\
-SuperGlue~\cite{sarlin2020superglue}& learned    & 0.562 & 0.886 & 0.455 & \best{0.429} & 0.353 & 0.305 & 1.00 & 5.826 \\
-LoFTR~\cite{sun2021loftr}           & learned    & 0.549 & 0.828 & 0.440 & 0.336 & \best{0.359} & \best{0.351} & 1.00 & 8.639 \\
-YOLOv8 backbone                     & embedding  & 0.561 & 0.821 & 0.453 & 0.157 & 0.357 & 0.308 & 1.00 & 0.217 \\
-ViT-B/16~\cite{dosovitskiy2021vit}  & embedding  & \best{0.654} & 0.893 & 0.511 & 0.286 & 0.331 & 0.317 & 1.00 & 0.193 \\
-DeiT-S~\cite{touvron2021deit}       & embedding  & 0.621 & 0.879 & 0.497 & 0.250 & 0.305 & 0.293 & 1.00 & 0.058 \\
-CLIP ViT-B/32~\cite{radford2021clip}& embedding  & 0.604 & 0.850 & 0.471 & 0.143 & 0.307 & 0.306 & 1.00 & 0.050 \\
-OSNet~\cite{zhou2019osnet}          & re-ID      & \best{0.654} & \best{0.907} & \best{0.520} & 0.168 & 0.309 & 0.309 & 1.00 & 0.053 \\
-\textsc{CrackShape} (ours)          & shape      & 0.554 & 0.825 & 0.442 & 0.082 & 0.305 & 0.303 & 1.00 & \best{0.001} \\
-\midrule
-\multicolumn{10}{l}{\emph{Crop $+$ context scope} (Sec.~\ref{sec:controls})} \\
-OSNet $+$ ctx                       & embedding  & 0.775 & 0.957 & 0.595 & 0.404 & 0.354 & 0.337 & 1.00 & 0.052 \\
-OSNet $+$ ctx, \emph{crack erased}  & embedding  & 0.711 & 0.932 & 0.574 & 0.393 & 0.361 & 0.336 & 1.00 & 0.056 \\
-CLIP $+$ ctx                        & embedding  & 0.607 & 0.843 & 0.502 & 0.311 & 0.352 & 0.305 & 1.00 & 0.053 \\
-CLIP $+$ ctx, \emph{crack erased}   & embedding  & 0.600 & 0.814 & 0.502 & 0.286 & 0.346 & 0.305 & 1.00 & 0.053 \\
+ORB~\cite{rublee2011orb}            & keypoint   & 0.352 & 0.364 & 0.018 & 0.305 & 0.000 & 0.305 & 1.00 & \best{0.038} \\
+SIFT~\cite{lowe2004sift}            & keypoint   & 0.432 & 0.417 & 0.036 & 0.313 & 0.008 & 0.305 & 1.00 & 0.086 \\
+SuperGlue~\cite{sarlin2020superglue}& learned    & 0.562 & 0.455 & \best{0.429} & 0.353 & 0.048 & 0.305 & 1.00 & 5.826 \\
+LoFTR~\cite{sun2021loftr}           & learned    & 0.549 & 0.440 & 0.336 & \best{0.359} & \best{0.054} & \best{0.351} & 1.00 & 8.639 \\
+YOLOv8 backbone                     & embedding  & 0.561 & 0.453 & 0.157 & 0.357 & 0.052 & 0.308 & 1.00 & 0.217 \\
+ViT-B/16~\cite{dosovitskiy2021vit}  & embedding  & \best{0.654} & 0.511 & 0.286 & 0.331 & 0.026 & 0.317 & 1.00 & 0.193 \\
+DeiT-S~\cite{touvron2021deit}       & embedding  & 0.621 & 0.497 & 0.250 & 0.305 & 0.000 & 0.293 & 1.00 & 0.058 \\
+CLIP ViT-B/32~\cite{radford2021clip}& embedding  & 0.604 & 0.471 & 0.143 & 0.307 & 0.002 & 0.306 & 1.00 & 0.050 \\
+OSNet~\cite{zhou2019osnet}          & re-ID      & \best{0.654} & \best{0.520} & 0.168 & 0.309 & 0.004 & 0.309 & 1.00 & 0.053 \\
 \midrule
 \rowcolor{black!5}
 \multicolumn{10}{l}{\emph{Full-image scope}} \\
 \rowcolor{black!5}
-\ours{} (ours) & geometry & \best{0.952} & \best{0.992} & \best{0.886} & \best{0.768} & \best{0.656} & 0.582 & 0.48 & 27.92 \\
+\ours{} (ours) & geometry & \best{0.952} & \best{0.886} & \best{0.768} & \best{0.656} & 0.351 & 0.582 & 0.48 & 27.92 \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
+\subsection{Setup}
+Nine crop-scope matchers --- handcrafted keypoints
+(SIFT~\cite{lowe2004sift}, ORB~\cite{rublee2011orb}); learned correspondence
+(SuperGlue~\cite{sarlin2020superglue}, LoFTR~\cite{sun2021loftr}); general
+embeddings (ViT-B/16~\cite{dosovitskiy2021vit}, DeiT-S~\cite{touvron2021deit},
+CLIP ViT-B/32~\cite{radford2021clip}, YOLOv8); a re-identification architecture
+(OSNet~\cite{zhou2019osnet}) --- run under an identical protocol, inputs and
+scoring.
+
 \subsection{Result: appearance buys almost nothing on the decision}
-Table~\ref{tab:main} reports all ten methods against both reference levels.
-
-\noindent\textbf{On the decision metric, no crop method clears chance by more
-than $0.054$.} Read as excess over the $0.305$ floor, the oracle-thresholded
-pairwise $F_1$ of the ten crop-scope methods is: ORB $0.000$, DeiT $0.000$,
-\textsc{CrackShape} $0.000$, CLIP $0.002$, OSNet $0.004$, SIFT $0.008$, ViT
-$0.026$, SuperGlue $0.048$, YOLOv8 $0.052$, LoFTR $0.054$. Three methods --- a
-classical descriptor, a distilled transformer, and a descriptor we designed
-around crack geometry --- achieve \emph{nothing at all}. This spans two decades
-of method development and more than three orders of magnitude in compute, from
-\textsc{CrackShape}'s roughly $1$\,ms per query to LoFTR's $8.6$\,s. We give an
-order-of-magnitude figure rather than a precise multiplier because the fastest
-method's cost is near the timer's own resolution and varied several-fold
-between runs; the qualitative point --- cheap and expensive methods land in the
-same place --- does not depend on the third significant digit.
-
-\noindent\textbf{At a deployable threshold, nine of ten methods are within
-noise of chance and one is not.} $F_1^{*}$ maximises the threshold on the test
-matrix; calibrating on the held-out validation walls instead is the number a
-deployment gets. Excess over the $0.305$ floor for nine of the ten tight-crop
-methods spans only $-0.012$ (DeiT, $0.293$) to $+0.012$ (ViT, $0.317$): ORB,
-SIFT and SuperGlue report the floor to three decimal places,
-\textsc{CrackShape} ($0.303$) falls just below it, and CLIP, YOLOv8 and OSNet
-sit a few thousandths above. A system deployed on any of these nine would not
-be imperfect; on this evidence it would be doing nothing while appearing to
-score $0.31$.
-
-\textbf{LoFTR is the exception, and the only one.} Its calibrated pairwise
-$F_1$ is $0.351$, an excess of $0.046$ --- roughly four times the next-best
-margin (ViT, $0.012$) and the only calibrated result in the table that is not
-plausibly noise around the floor. It is also the most expensive crop-scope
-method by a wide margin ($8.6$\,s per query). We read this as the one place in
-Table~\ref{tab:main} where a crop-scope method shows a real, if modest,
-capability to decide identity rather than merely to rank it --- and as a
-result to qualify rather than to explain away: one exception in ten does not
-change the aggregate picture, but a claim that \emph{no} crop method retains
-anything at a deployable threshold would now overstate it.
-
-\noindent\textbf{Ranking ability does not transfer to decision ability.} On
-Rank-1 the same ten methods separate over a $0.302$ range, from $0.352$ to
-$0.654$ --- $0.021$ to $0.323$ above the Rank-1 chance level of $0.336$. So the
-encoders differ substantially in how well they \emph{order} a gallery while
-differing almost not at all in whether they can \emph{decide} an identity.
-OSNet ties for the best Rank-1 ($0.654$) and sits $0.004$ above chance on
-pairwise $F_1$; SuperGlue ranks fifth on Rank-1 ($0.562$) yet achieves the best
-open-set rate of any crop baseline ($0.429$ against OSNet's $0.168$). Ordering a
-gallery well and maintaining a record are not the same capability.
-
-We deliberately do not report a rank correlation between the two. With three
-methods tied exactly at the pairwise-$F_1$ floor and two more within $0.004$ of
-it, that variable is censored, and a correlation computed across a censoring
-boundary measures the censoring.
-
-\noindent\textbf{Compute buys little, and not where expected.} Cost per query
-spans more than three orders of magnitude. The two most expensive methods, LoFTR and SuperGlue, do
-hold the largest pairwise-$F_1^{*}$ excess ($0.054$ and $0.048$), SuperGlue the
-best open-set rate, and LoFTR the only real margin at a calibrated threshold ---
-so compute is not simply wasted. But the ceiling it buys its way to is still
-$0.054$ above chance oracle-thresholded and $0.046$ calibrated, at
-$5.8$--$8.6$\,s per query against OSNet's $0.053$\,s.
+On the decision a record actually makes --- \emph{same crack or not}, at a
+threshold --- no crop method clears chance by more than $0.054$ (excess over the
+$0.305$ floor at the oracle threshold, Table~\ref{tab:main}: $0.000$--$0.054$,
+two methods exactly at the floor, eight within $0.052$), across two decades of
+methods and two orders of compute ($\approx\!1$\,ms to $8.6$\,s). At a deployable (validation-calibrated)
+threshold eight of the nine span only $-0.012$ to $+0.012$ around chance;
+\textbf{LoFTR is the exception}, $F_1^{@v}=0.351$ ($+0.046$), and the most
+expensive crop method. Ranking does not transfer to deciding: the nine separate
+over a $0.302$ range on Rank-1, yet OSNet ties for best Rank-1 ($0.654$) while
+sitting $0.004$ above chance, and SuperGlue (fifth on Rank-1) has the best crop
+open-set rate ($0.429$). Ordering a gallery well and keeping a record are not
+the same capability. The collapse after validation calibration is consistent
+with threshold instability under a small, wall-clustered sample: methods can
+order candidates differently while their score distributions do not support a
+stable same-crack/not-same-crack boundary on held-out walls. This is an
+interpretation of the observed pattern, not a claim that calibration itself is
+the sole cause.
 
 \subsection{Is it the crack, or the wall behind it?}
 \label{sec:controls}
-The comparison against a full-image method varies two things at once: the
-identity cue and the field of view. We therefore ran two controls, applying
-them to the strongest embedder (OSNet) and to CLIP: a \textbf{crop$+$context}
-condition that widens the crop until the embedder sees surrounding wall, and a
-\textbf{crack-erased} condition that inpaints the crack out of that widened
-crop, leaving only its surroundings.
-
-Both results are informative, and one is uncomfortable.
-
-Context helps a great deal: OSNet rises from Rank-1 $0.654$ to $0.775$ and,
-strikingly, from $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.168$ to $0.404$ ---
-matching SuperGlue at a fraction of its cost. \textbf{But erasing the crack
-costs almost none of it}: Rank-1 $0.711$ and
-$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.393$, with the crack physically removed
-from the image. The crack-erased condition still outranks every tight-crop
-method on both metrics.
-
-The reading is that within a single walk-around the wall texture surrounding a
-crack is itself a strong location fingerprint, and a crop$+$context embedder
-retrieves largely on that rather than on the crack. This is a caution about the
-benchmark --- a context-scope result here is partly a background-matching
-result --- and it is also the clearest evidence for the paper's thesis: what
-identifies a crack is \emph{where it is}, and even a crude implicit encoding of
-location beats every explicit encoding of crack appearance. The geometric
-method makes that cue principled and still nearly doubles the best context
-condition on the open-set metric ($0.768$ against $0.404$), so field of view
-alone does not account for the gap.
-
-Pairwise $F_1$ is unmoved by context: the four controls land at $0.346$--$0.361$
-oracle-thresholded and $0.305$--$0.337$ calibrated, inside the same band as the
-tight crops. Whatever context supplies, it does not supply the decision.
-
-\subsection{Why we read this as a property of the data}
-Three observations support a data-level rather than encoder-level explanation.
-The population spans methods with no shared inductive bias --- sparse keypoints,
-dense attention, ImageNet features, language-image pretraining, a re-ID metric
-objective, hand-designed shape statistics --- and a common limitation across so
-diverse a population sits more parsimoniously in the signal than in six
-independent architectural failures. The domain-specific descriptor achieves
-zero excess over chance. And the crack-erased control shows that where a
-crop-scope method \emph{does} improve, the improvement is not coming from the
-crack.
-
-We state the limits of this inference. Ten methods are a sample, not a proof; a
-model trained on a large corpus of crack instances --- which does not exist ---
-might yet do better; and we have not evaluated a current self-supervised
-backbone such as DINOv2. What the result establishes is that the obvious moves
-have been tried, that they land between $0.000$ and $0.054$ above chance on the
-decision a maintenance system makes, and that this is reason to change the
-formulation rather than the encoder.
+Two controls separate identity cue from field of view: a \emph{crop$+$context}
+condition (wider crop) and a \emph{crack-erased} condition (the crack inpainted
+out of that widened view). Context helps a lot --- OSNet's Rank-1 rises
+$0.654 \to 0.775$, mAP to $0.595$, open-set rate $0.168 \to 0.404$ (CLIP's
+$0.143 \to 0.311$; $F_1^{*}$ $0.309 \to 0.354$) --- \textbf{but erasing the
+crack costs almost none of it}: OSNet retains Rank-1 $0.711$, mAP $0.574$ and
+open-set $0.393$; CLIP retains Rank-1 $0.600$, mAP $0.502$, open-set $0.286$.
+Both erased views still outrank every tight-crop method: the retrieved cue is
+the wall, i.e.\ location. Pairwise $F_1$ is unmoved by context
+($0.346$--$0.361$). We read the aggregate as a property of the data --- methods
+with no shared inductive bias land near the floor, and wherever a crop method
+improves, the
+improvement is not the crack. Nine methods are a sample, not proof; the result
+establishes that the obvious moves buy $0.000$--$0.054$ above chance on the
+decision --- reason to change the formulation, not the encoder.

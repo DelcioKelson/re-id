@@ -14,7 +14,6 @@ DeiT                    crop          280  0.621  0.879  0.497      0.250   0.30
 CLIP                    crop          280  0.604  0.850  0.471      0.143   0.307   0.306   0.367    1.00     14.1
 SuperGlue               crop          280  0.562  0.886  0.455      0.429   0.353   0.305   0.354    1.00   1631.2
 YOLOv8-backbone         crop          280  0.561  0.821  0.453      0.157   0.357   0.308   0.364    1.00     60.7
-CrackShape              crop          280  0.554  0.825  0.442      0.082   0.305   0.303   0.346    1.00      0.3
 LoFTR                   crop          280  0.549  0.828  0.440      0.336   0.359   0.351   0.400    1.00   2418.9
 SIFT                    crop          280  0.432  0.829  0.417      0.036   0.313   0.305   0.324    1.00     24.2
 ORB                     crop          280  0.352  0.759  0.364      0.018   0.305   0.305   0.325    1.00     10.5
@@ -31,14 +30,14 @@ scored = fraction of valid pairs the method returned a finite score for.
          coverage breakdown in results.json for what the missing fraction is made of.
 total_s = prepare + score. Embedding methods do all their work in prepare.
 
-Provenance: the ten crop-scope rows and the four crop(+ctx) controls plus
+Provenance: the nine crop-scope rows and the four crop(+ctx) controls plus
 coverage-only were run together (benchmark.py --ablations --controls); SuperGlue
 and LoFTR were run separately afterward, once, to add pairF1@v -- their earlier
 run had no validation matrix scored, so no calibrated threshold existed. Cost
 (total_s) is wall-clock on one workstation and is not controlled for load
 between separate runs; the compute-span claim in the paper is therefore stated
-qualitatively ("more than three orders of magnitude"), not as a precise
-multiplier, and cites the two measured endpoints (CrackShape, LoFTR) directly.
+qualitatively ("more than two orders of magnitude"), not as a precise
+multiplier, and cites the two measured endpoints (ORB, LoFTR) directly.
 registration+chamfer is the full cascade with ECC enabled (Sec. VI-F); the
 disabled-ECC ablation is a separate reported condition, not a row here.
 

@@ -1,239 +1,112 @@
 \section{Threats to Validity}
 \label{sec:validity}
 
-We state the limits in the body rather than a closing paragraph, because two of
-them bound the central claim.
+We state the limits in the body because they bound the central claims.
 
-\subsection{Scope is controlled, and the control found something}
-The proposed method reads full photographs; the baselines read crops. That
-follows from the design --- homography estimation needs wall-level context a
-crop cannot supply --- but it means a bare Table~\ref{tab:main} would vary
-\emph{two} things at once: identity cue (appearance versus geometry) and input
-scope (crop versus full image).
+\smallskip
+\noindent\textbf{The effective sample is 19 identities.} The test split's $280$
+queries come from $19$ identities visible in two or more photographs across $11$
+walls; queries from one wall share material, illumination and one camera pass, so
+query count is not sample size. We resample walls and report the
+leave-one-wall-out spread in Rank-1. The same resampling discipline applies to
+the open-set headline: $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ is a point
+estimate at one operating point on the same sample, so the abstract compares it
+to baselines as a one-number structure --- the $0.35$ gap --- and claims
+nothing about the precise spread between resampled walls. This
+benchmark supports a large structural claim --- a $0.35$ open-set gap, a
+formulation change that lifts a band nine methods sit inside --- but not
+fine-grained ranking among baselines.
 
-Sec.~\ref{sec:controls} runs the two controls that separate them. Scope does
-not account for the gap: the best crop$+$context condition reaches
-$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.404$ against the geometric method's
-$0.768$. But the crack-erased control returns an uncomfortable result we report
-rather than bury --- inpainting the crack out of a crop$+$context view costs
-only $0.011$ of that $0.404$. Within a single walk-around the surrounding wall
-texture is itself a location fingerprint, so a context-scope number on
-\textsc{CrackID} is substantially a background-matching number. We expect this
-to weaken across genuine revisits, where surrounding texture also changes,
-which is a further reason the cross-visit capture in Sec.~\ref{sec:next}
-matters. The controls were run on OSNet and CLIP only, not on all ten
-baselines.
+\smallskip
+We do not attach a numeric wall-resampled interval to the abstract point
+estimates because the score matrices needed to recompute it are not part of the
+released artefacts; the effective sample and wall-level bimodality should
+therefore be read as a limitation, not as hidden precision.
 
-\subsection{Two metric properties that are easy to get wrong}
-Pairwise $F_1$ has a floor of $2p/(1+p)$ and that floor is a property of the
-\emph{pool}, not of the task: it is $0.305$ on the full test pool and $0.544$ on
-the subset the geometric method can score, because registration coverage is not
-independent of the label --- two photographs register when they overlap, which
-is when the answer is present, so the scorable subset retains $100\%$ of
-positive pairs and $36.8\%$ of negatives. We therefore charge unscorable pairs
-rather than dropping them, and report the \textsc{Coverage-only} control
-(Sec.~\ref{sec:reference}) so that the geometric method's pairwise $F_1$ is
-read against $0.544$ rather than against the crop methods' $0.305$. On that
-reading its pairwise-$F_1$ advantage is modest and its open-set advantage is
-not: \textsc{Coverage-only} scores $0.544$ on pairwise $F_1$ and $0.000$ on
-$\mathrm{DIR}@\mathrm{FAR}$.
+\noindent\textbf{Scope is controlled, and the control found something.} The
+method reads full photographs; the baselines read crops --- dictated by design,
+since homography needs wall context. Two controls
+(Sec.~\ref{sec:controls}) separate identity cue from field of view, and scope
+does not account for the open-set gap ($0.404$ best context against $0.768$).
+But the crack-erased control is uncomfortable: inpainting the crack costs only
+$0.011$ of that $0.404$, so a context-scope number is partly background-matching,
+which we expect to weaken on real revisits. Ranking numbers are additionally
+near-duplicate (the adjacent frame answers all $280$ queries,
+Sec.~\ref{sec:dataset}); the gap sweep shows the trend is flat, with power
+falling to $105$ answerable queries by gap $3$.
 
-We flag the consequence for anyone extending the benchmark: a new method's
-ranking and pairwise-$F_1$ numbers are only comparable to ours at the same
-coverage, whereas $\mathrm{DIR}@\mathrm{FAR}$ is robust to it.
+\smallskip
+\noindent\textbf{Annotation and the geometric baseline share a mechanism.}
+Identities were seeded by propagating one click point between consecutive
+photographs through an ORB homography (Sec.~\ref{sec:annotation}), and the
+geometric baseline's whole mechanism is homography registration --- so the
+ground truth could be biased toward exactly the pairs \ours{} can answer. This
+is distinct from the merge-rate disclosure of Sec.~\ref{sec:annotation}: that
+reports a deliberate design choice, this would be a measurement artefact. On
+this data the entanglement is real but not separable: of the $118$ positive
+(same-crack) query--gallery pairs on test, $116$ ($98.3\%$) involve an identity
+that was itself formed by a merge, and both-sides-unmerged positives number just
+$2$, so a $\mathrm{DIR}@\mathrm{FAR}$ restricted to unmerged identities carries
+no statistical power. Two partial checks mitigate it. First, the mechanism is
+not exactly shared: annotation warped one ORB homography between
+\emph{consecutive} frames, while the baseline registers \emph{every} pair with a
+crack-masked SIFT/MAGSAC/ECC cascade and scores by Chamfer --- a strictly harder
+alignment problem. Second, positives register at the same rate whether or not
+they involve a merged identity ($100\%$ both ways here), so any bias would have
+to enter through negatives and the decision threshold, not through positive
+coverage. This check does not test whether a biased homography registers
+differently from an unbiased one, because both the annotation and baseline
+alignment are related procedures; nor does it create a clean positive
+subsample. We report the structure rather than assert freedom from it; a
+human-audited identification split, with alignment-independent labels, is the
+clean experiment that would settle it.
 
-\subsection{Every ranking number is a near-duplicate result}
-For $100\%$ of answerable test queries the nearest correct answer is the
-adjacent frame (Sec.~\ref{sec:scope}). Table~\ref{tab:main} is reported at
-\texttt{min\_frame\_gap}$=0$ and is therefore near-duplicate retrieval;
-Sec.~\ref{sec:gapsweep} sweeps the gap, but power falls to $105$ answerable
-queries by gap $3$, so the sweep constrains the trend rather than establishing
-a new operating point.
+\smallskip
+\noindent\textbf{Annotations are instrumented, not audited.} The human verdicts
+that would turn the provenance of Sec.~\ref{sec:annotation} into a sampled error
+rate with a confidence interval have not been collected; the $45\%$ merge rate is
+reported, and relative comparison is robust to it since the merge policy hits all
+methods identically. All captures come from one site over four half-days, two
+handsets and two surface families; smooth plaster produces the categorical SIFT
+failure noted in Sec.~\ref{sec:coverage}; cracks are located by a learned
+segmenter whose errors propagate into Chamfer agreement unquantified. What would
+convert the cross-visit claim from inferred to designed --- and the synthetic
+revisits of Sec.~\ref{sec:hybridbench} to measurement --- is a real second
+capture session at marked distances and angles; we have not run one, and every
+multi-visit statement here is a hypothesis, not a result.
+\noindent\textbf{Annotation and the geometric baseline share a mechanism.}
+Identities were seeded by propagating one click point between consecutive
+photographs through an ORB homography (Sec.~\ref{sec:annotation}), and the
+geometric baseline's whole mechanism is homography registration --- so the
+ground truth could be biased toward exactly the pairs \ours{} can answer. This
+is distinct from the merge-rate disclosure of Sec.~\ref{sec:annotation}: that
+reports a deliberate design choice, this would be a measurement artefact. On
+this data the entanglement is real but not separable: of the $118$ positive
+(same-crack) query--gallery pairs on test, $116$ ($98.3\%$) involve an identity
+that was itself formed by a merge, and both-sides-unmerged positives number just
+$2$, so a $\mathrm{DIR}@\mathrm{FAR}$ restricted to unmerged identities carries
+no statistical power. Two partial checks mitigate it. First, the mechanism is
+not exactly shared: annotation warped one ORB homography between
+\emph{consecutive} frames, while the baseline registers \emph{every} pair with a
+crack-masked SIFT/MAGSAC/ECC cascade and scores by Chamfer --- a strictly harder
+alignment problem. Second, positives register at the same rate whether or not
+they involve a merged identity ($100\%$ both ways here), so any bias would have
+to enter through negatives and the decision threshold, not through positive
+coverage. We report the structure rather than assert freedom from it; a
+human-audited identification split is the clean experiment that would settle it.
 
-\subsection{The effective sample is 19 identities}
-The test split's $280$ query instances come from $19$ identities visible in two
-or more photographs, over $11$ walls. Query count is not sample size: queries
-from one wall share material, illumination, and one camera pass. Hence we
-resample walls and report the leave-one-wall-out spread ($\pm 0.33$ Rank-1 for
-\textsc{CrackShape}).
-
-This benchmark can therefore support a large structural claim --- a $0.35$ gap
-in $\mathrm{DIR}@\mathrm{FAR}$, a formulation that leaves a band ten methods sit
-inside --- but not fine-grained ranking among baselines. Differences of a few
-points between two crop methods in Table~\ref{tab:main} should be read as
-uninformative.
-
-\subsection{The annotation audit is instrumented but not completed}
-The human verdicts that would turn the provenance of Sec.~\ref{sec:annotation}
-into a sampled error rate with a confidence interval have not been collected,
-and no second annotator has labelled a subset. Until both exist, every mAP figure
-here --- ours and the baselines' alike --- is conditional on the merge policy
-being sound. Relative comparison is more robust than absolute level, since the
-merge affects all methods identically, and the appearance ceiling is a
-comparison among methods rather than an absolute claim.
-
-\subsection{Segmentation quality is not reported}
-Crack masks come from a learned segmenter and are treated as given. Mask errors
-propagate into instance extraction and hence Chamfer agreement, and we do not
-quantify that path: hand-drawn reference masks do not exist for this data. The
-released code contains a sensitivity sweep over minimum-area and closing
-parameters, checkable once reference masks are drawn.
-
-\subsection{Site, surface, and device scope}
-All captures come from a single site over four half-days, two handsets, and two
-surface families. We claim a benchmark and a baseline for these conditions, not
-a general solution. The baseline assumes a near-planar surface with texture that
-is not the crack, and should degrade on curved or featureless surfaces, and
-where the surrounding texture itself changes between visits.
-
-\subsection{The measurement that would change the most}
-\label{sec:next}
-One thing would convert the central claim from inferred to designed: a second
-capture session, weeks later, at marked distances and angles. It would make the
-protocol cross-visit rather than viewpoint-only, supply exact rather than
-estimated viewpoint ground truth, and test the condition under which we expect
-geometry to widen its advantage --- appearance drift with position preserved.
-That data does not exist yet, and until it does, every sentence in this
-subsection is a hypothesis, not a result.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figs/illustrative_evolution.pdf}
-\caption{\textbf{What the missing measurement would need to see, not a
-measurement.} Four panels of a single \textsc{CrackID} test photograph
-(\texttt{wall01\_s1\_0002}). The first three were digitally shortened in GIMP
-by cloning wall texture over the lower portion of the crack through a
-feathered mask (Sec.~\ref{sec:next} in \texttt{paper/make\_illustrative\_fig.py}
-gives the exact, reproducible procedure); the fourth is the original file. All
-four are one photograph edited, not four visits to a wall --- there is no
-independent ground truth here, no second camera pass, and nothing computed on
-them enters Table~\ref{tab:main} or any check in
-\texttt{verify\_claims.py}. We include it only because a growth trend is
-otherwise hard to picture from prose.}
-\label{fig:evolution}
-\end{figure}
-
-Fig.~\ref{fig:evolution} makes that hypothesis concrete rather than measuring
-it: if the same crack is re-photographed after it has grown, does the
-identity survive? Reading the panels as a growth sequence (left to right) is
-deliberate --- cracks lengthen, they do not shorten --- but nothing about how
-this figure was produced constitutes evidence either way. The edit changes
-exactly one thing, crack length, and holds everything a matcher could key on
-constant: same camera, same lighting, same wall, same JPEG noise. A number
-computed by running this figure through \texttt{benchmark.py} would therefore
-not measure robustness to evolution; it would measure whether a method can
-match a photograph against a clone of itself with part of the annotation
-erased, and the identity label would already be known to be correct by
-construction. We do not enter these images in the benchmark, and would flag as
-suspect any version of this paper that reports them as a retrieval result.
-
-\paragraph{Qualitative diagnostic, not benchmark evidence.}
-We nevertheless use the 17 separately disclosed GIMP edits in
-\texttt{illustrative\_synthetic/} as a mechanism check, isolated from the
-dataset, splits, threshold calibration, and every table in this paper. For
-each source/edit pair, we derive a shortened-mask proxy by truncating the
-source component at the manifest's disclosed end of the feathered taper; this
-is \emph{not} a segmentation result on the edited JPEG.
-
-The scorer we run against OSNet-with-context answers a question a crop
-embedding cannot: \emph{what fraction of the structural features of skeleton
-A is explained by skeleton B?} Each mask is skeletonised and its centreline
-normalised for translation, scale, and rotation, and the reply is a percentage
-assembled from four matched feature families --- endpoint correspondence,
-branch/junction correspondence, curvature/shape agreement, and topology and
-width (degree histogram, tortuosity, segment-length quartiles, median width),
-weighted roughly $(0.20,0.25,0.40,0.15)$ and confined to $[0,1]$. Learned
-correspondence (LoFTR) may add up to $15\%$ corroborating evidence, but only
-matches landing inside a dilated neighbourhood of \emph{both} skeletons and
-surviving a RANSAC consistency check count, so the estimate cannot borrow
-wall-background agreement the way a context crop can
-(Sec.~\ref{sec:controls}); the pure structural readout is reported alongside.
-
-That percentage is not a separate opinion from the embedding. We place both
-scores on a common $[0,1]$ scale to state this precisely: the structural score
-is already a fraction, and we map the OSNet-with-ctx cosine in $[-1,1]$ with
-the affine stretch $(1+\cos)/2$, a monotone map that leaves ordering and rank
-correlations unchanged. Across the 17 edits the reserves become comparable:
-medians $0.860$ (structural) and $0.968$ (OSNet); means $0.816$ and $0.944$
-($r=0.872$), and LoFTR shifts the structural mean by only $0.3$\,pts. The two
-do not agree on absolute level --- the embedding sits near the top of the
-scale on near-clones while the structural score reserves more headroom ---
-but they do agree on ordering, which is the claim the correlation makes.
-Where they part is decomposability. Branch/junction
-agreement is the most robust family (median $100\%$) --- shortening removes a
-terminal arm, so the junction structure of the retained part survives ---
-while topology and width is the family the edit damages most on average
-(median $76.3\%$), and endpoint agreement is preserved in most edits yet
-exactly $0$ where the truncated tip \emph{was} the endpoint (wall04, wall17).
-Each of the three strongest structural losses therefore traces to a nameable
-break rather than a uniform slide: wall04 ($0.364$; OSNet $0.823$) loses an
-endpoint and its topology together, wall17 ($0.400$; $0.826$) loses an
-endpoint, and wall12 ($0.494$; $0.908$) loses a junction. This is the
-diagnostic a ranked list of cosine similarities cannot give an end-user.
-
-LoFTR supplies at least four skeleton-adjacent correspondences with a RANSAC
-inlier in $9/17$ edits; its absence in the remaining edits is treated as
-missing corroboration, not negative evidence. These scores describe
-consistency under an artificial, near-clone edit only. They do not establish
-robustness to growth, camera, illumination, or time, and are not comparable to
-the benchmark retrieval metrics.
-
-\paragraph{Controlled discrimination: structural edit plus genuine viewpoint.}
-The near-clone diagnostic has two limitations: every pair is positive (neither
-method can be wrong), and the gallery is absent (there are no hard negatives).
-A combined experiment corrects both. For each source photograph,
-\texttt{edited\_viewpoint\_eval.py} creates a synthetic query by (i)~shortening
-the crack mask along its principal axis by a chosen fraction $k$ (skeletonise,
-project onto the PCA axis, remove the bottom $k$ of the projection range,
-dilate the remaining skeleton back to a mask), (ii)~inpainting the removed
-crack region with wall texture so the image is photometrically plausible, and
-(iii)~warping the edited image and mask by a known affine viewpoint transform.
-The query is scored against the real gallery of same-wall photographs using the
-standard \texttt{reid\_eval} protocol, so Rank-1, mAP, $\mathrm{DIR}@\mathrm{FAR}$,
-and pairwise $F_1$ are computed in identical units for both methods. The gallery
-contains hard negatives (other cracks on the same wall under the same material
-and illumination), and $\mathrm{DIR}@\mathrm{FAR}$ penalises false alarms on
-unanswerable queries. Sweeping the edit fraction $k \in \{0, 0.25, 0.50, 0.75\}$
-traces each method's discrimination degradation as the structural loss
-increases, and we read the curve at two named operating points: the
-no-viewpoint bin ($k$ only, isolating the structural change from geometry) and
-the maximum-viewpoint bin of the sweep ($k$ plus the strongest synthesized
-deformation), so the structural-edit effect and the structural+geometry effect
-are separately observable. Because the edit is parametric and the viewpoint
-transform is exact, the resulting degradation curve is reproducible and directly
-comparable between methods --- unlike the near-clone diagnostic, which measures
-closure rather than discrimination. This experiment is not a benchmark entry: it
-uses synthetic queries derived from real photographs, not independent revisits,
-and its numbers enter no table in this paper. Its purpose is to test whether the
-two competing predictions (Sec.~\ref{sec:next}) --- appearance fragility versus
-geometric stability under structural change --- diverge when the comparison is
-in the same retrieval units with real negatives present.
-
-Because the discrimination protocol is generic, the 17 GIMP near-clones join it
-as real queries: their masks are reconstructed from the disclosed manifest, they
-carry the source component's label points, and each is scored once at its
-disclosed edit fraction ($1-\text{split\_frac\_kept} \approx 0.55$) with no
-viewpoint change, under the identical \texttt{reid\_eval} protocol as the
-parametric bins. They therefore land on the same degradation curve at the
-no-viewpoint operating point, giving the hand-made GIMP edit a measured
-position next to the parametric edits of similar fraction (\texttt{rows}
-labelled illustrative in the JSON); being near-clones of a real photograph, they
-are exactly as informative as the parametric rows and exactly as non-benchmark.
-This is deliberate: the figure in \texttt{illustrative\_synthetic/} remains a
-mechanism check for the mechanism's own sake, while the discrimination table
-gives it a quantitative, hard-negative context.
-
-What Fig.~\ref{fig:evolution} is useful for is stating the two competing
-predictions precisely enough that the real experiment could adjudicate them.
-An appearance embedding is trained to be invariant to exactly the kind of
-local change the crack itself undergoes as it grows, which argues for
-fragility --- but it is also reading the crop-plus-context wall texture
-(Sec.~\ref{sec:controls}) that a genuine revisit would perturb far more than
-this edit does, which argues the opposite. The geometric baseline's position
-estimate should be stable under crack growth by construction, since growth
-happens \emph{after} the wall-texture alignment it depends on --- provided
-registration coverage itself does not degrade over the longer, weather-exposed
-gap a real revisit spans, which is a separate open question this figure says
-nothing about. Both predictions are plausible from the mechanism description
-alone; neither is supported by anything in this subsection until the second
-capture session exists to test them.
+the effective sample and wall-level bimodality should therefore be read as a limitation, not as hidden
+precision. We report the structure rather than assert freedom from it; a human-audited identification split, with
+alignment-independent labels, is the clean experiment that would settle it.
+\smallskip
+\noindent\textbf{Annotations are instrumented, not audited.} The human verdicts
+that would turn the provenance of Sec.~\ref{sec:annotation} into a sampled error
+rate with a confidence interval have not been collected; the $45\%$ merge rate is
+reported, and relative comparison is robust to it since the merge policy hits all
+methods identically. All captures come from one site over four half-days, two
+handsets and two surface families; cracks are located by a learned segmenter
+whose errors propagate into Chamfer agreement unquantified. What would convert
+the cross-visit claim from inferred to designed --- and the synthetic revisits of
+Sec.~\ref{sec:hybridbench} to measurement --- is a real second capture session at
+marked distances and angles; we have not run one, and every multi-visit statement
+here is a hypothesis, not a result.

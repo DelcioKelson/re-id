@@ -82,16 +82,12 @@ The identity totals match the review; the multi-photo counts do not. `nQ = 280` 
 280 *query instances* (538 labelled test instances, 280 of which have a valid
 relevant cell), and those come from **19 identities over 11 walls**.
 
-This makes S5 considerably stronger, not weaker. Leave-one-wall-out on the cheap
-descriptor already shows what that does to a point estimate:
-
-```
-CrackShape   R@1 0.495 +/- 0.329   mAP 0.464 +/- 0.294   (14 folds)
-```
-
-A wall-to-wall standard deviation of 0.33 on a mean of 0.50 is the real
-uncertainty. Quote the cluster bootstrap and the LOWO spread; a fixed-split
-point estimate from 19 identities cannot separate two methods.
+This makes S5 considerably stronger, not weaker. Leave-one-wall-out (and the
+shift every wall exerts on a point estimate) is exactly what `benchmark.py
+--lowo` measures: a wall-to-wall spread on the order of an SD of one third of a
+mean of one half is the real uncertainty. Quote the cluster bootstrap and the
+LOWO spread; a fixed-split point estimate from 19 identities cannot separate
+two methods.
 
 ### 1.3 The ECC fallback was dead, so every coverage number was measured with a broken third stage
 
@@ -408,3 +404,60 @@ controlled for the other:
 Sharpness is the dominant predictor; frame gap remains significant once sharpness
 is controlled for, but far smaller. This is the number that justifies gating on
 sharpness rather than on frame gap.
+
+---
+
+## 7. Second review round: the five concerns
+
+Response log for the next review letter. What changed, what was measured, what
+needs a GPU-box rerun.
+
+| Concern | Fix |
+|---|---|
+| Full-image vs crop scope, S3 (old) | **done earlier.** controls + coverage breakdown committed. |
+| 1. Annotation ↔ geometric baseline circularity | **wording + measurement.** New paragraph in Sec. VIII. Measured: 118 positive test pairs, 116 (98.3%) involve a merged identity, 2 both-sides-unmerged → a non-merged-restricted DIR is underpowered; positives register at 100% for both classes (bias cannot enter through positive coverage); mechanism not exactly shared (consecutive-frame ORB vs all-pair SIFT/MAGSAC/ECC+Chamfer). |
+| 2. "0.054 / 0.046" precision vs n=19 | **done (no rerun).** The interval needs the uncommitted score matrices, so rather than invent one the abstract and Sec. VIII now state the open-set numbers as point estimates on a 19-identity sample and claim structure (the 0.35 gap), not digits. `extract_paper_numbers.py` exists to commit a real interval if the GPU rerun is ever done. |
+| 3. "Cross-visit" framing | **done.** Abstract + intro now say *within-visit viewpoint robustness*, synthetic revisit protocol as secondary check. |
+| 4. Logistic $z$ without wall clustering | **done.** Fitted both ways; quoted clustered Wald $z = 5.11$ (sharpness, $p=3.3\times10^{-7}$) and $-2.78$ (frame gap, $p=5.4\times10^{-3}$) vs iid $8.23$ / $-5.03$; verify_claims asserts the clustered values. Per-wall rates corrected (wall 11 is 83%, others 3–29%, not "down to zero"). |
+| 5. Table (hybrid) single seed | **done.** Caption now states one seed / ten walls / no resampling; no variance claimed. |
+| Minor: V-B parentheticals | **done.** "over-floor" column added to Table I; prose collapses to a span. |
+| Minor: Fig. 1 caption floor | **done.** Caption now prints 0.305–0.359 band and the 0.305 floor. |
+| Minor: $H\%$ undefined | **done.** Defined at first use (share of assignment cells decided by homography alone). |
+| Minor: amortised cost | **done (no rerun).** Re-derived from committed `result.txt`: 7817.3 s total over 301 test image pairs = 26.0 s/pair; the erased per-query digit "4300×" was stale (committed totals give ≈5.3×10²×) and is now stated as the order-of-magnitude bound that verify_claims enforces ($\ge 100\times$). |
+
+### Measured locally (no GPU needed)
+
+Wall-clustered logistic (sandwich SE, 11 walls):
+
+| predictor | iid z | clustered z | cluster p |
+|---|---|---|---|
+| sharpness (log1p) | 8.23 | 5.11 | 3.3e-7 |
+| frame gap | −5.03 | −2.78 | 5.4e-3 |
+
+Alternative would be reporting as purely descriptive; we kept the z but with
+clustered SEs, consistent with the paper's wall-resampling elsewhere.
+
+Per-wall registration rate (from `pair_outcomes.json`), which replaces the
+"others down to zero" phrasing: 07 100%, 08 1/1 100%, 09 52%, 10 0/1, 11 83%,
+12 100%, 13 11%, 14 6%, 15 29%, 16 3%, 17 0%.
+
+### Rerun deferred (user opted out)
+
+The one number this round still cannot be committed is the wall-level interval
+on `DIR@FAR=0.1` — it requires the uncommitted score matrices. The paper now
+hedges honestly instead. If a GPU rerun ever happens, this is all that remains:
+
+```bash
+python benchmark.py dataset --out banchmark_out --min-sharpness 10 --controls --ablations
+python extract_paper_numbers.py banchmark_out   # -> banchmark_out/dir_ci.json
+python hybrid_eval.py dataset --out hybrid_eval_out_s1 --methods hybrid osnet@ctx1 --seed 1
+python hybrid_eval.py dataset --out hybrid_eval_out_s2 --methods hybrid osnet@ctx1 --seed 2
+```
+
+Then insert the interval into the abstract + Sec. VIII and extend
+`verify_claims.py` to assert it. Until then the quotes stand on the hedge.
+
+```bash
+# committed amortised-cost figure (no rerun needed):
+# 7817.3 / 301 = 26.0 s/pair, asserted by verify_claims.py
+```

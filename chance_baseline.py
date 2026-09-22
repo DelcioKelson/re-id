@@ -17,10 +17,9 @@ computed. The specific trap is pairwise F1.
 includes the degenerate threshold at which every pair is predicted
 positive, which scores 2p/(1+p) for positive prevalence p REGARDLESS of
 the scores. On the CrackID test split p = 0.180, so pairwise F1 cannot go
-below 0.305 -- and the ten benchmarked crop-scope methods span
+below 0.305 -- and the nine benchmarked crop-scope methods span
 [0.305, 0.359]. The "0.054-wide band across five method families" is a
-band pressed against a floor, and three methods (ORB, DeiT, CrackShape)
-sit exactly on it.
+band pressed against a floor, and two methods (ORB, DeiT) sit exactly on it.
 
 Read as excess over chance the same table says something sharper and
 better supported: crop appearance buys between 0.000 and 0.054 on the

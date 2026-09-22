@@ -61,7 +61,7 @@ substantially **alignment coverage**, while its DIR@FAR margin is entirely
 | `benchmark.py` | dataset loading, scorer construction, the run driver |
 | `reid_eval.py` | the protocol: validity masks, CMC/mAP, open-set curve, pairwise and assignment F1, chance levels |
 | `crack_registration_reid.py` | the geometric method: masked registration, Chamfer agreement, Hungarian matching |
-| `crack_reid_baselines.py` | SIFT, ORB, SuperGlue, LoFTR, ViT, DeiT, CLIP, YOLO, OSNet, CrackShape, and the interpretable Skeleton matcher |
+| `crack_reid_baselines.py` | SIFT, ORB, SuperGlue, LoFTR, ViT, DeiT, CLIP, YOLO, OSNet, and the interpretable Skeleton matcher |
 | `hybrid_reid.py` | the hybrid method: homography-first alignment with an intact-structure skeleton fallback, ranking + verdicts |
 | `hybrid_eval.py` | two designed "revisit" datasets (damage evolution; appearance-only change) scored against the real same-wall gallery |
 | `chance_baseline.py` | chance levels, the frame-gap structure, the coverage confound |

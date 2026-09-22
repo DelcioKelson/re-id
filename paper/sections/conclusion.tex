@@ -1,45 +1,25 @@
 \section{Conclusion}
 
-Maintenance systems that keep a record per physical defect must re-identify that
-defect when it is photographed again. For wall cracks there was no dataset on
-which to test whether that is possible, so we built one: \textsc{CrackID}, 140
-photographs over 17 walls with 212 crack identities, released with its
-annotation provenance stated rather than assumed --- $45\%$ of identities were
-formed by an automatic merge, and we report that rate rather than presenting the
-labels as ground truth by construction.
-
-The benchmark's main finding is negative and, we think, structural. On the
-decision a maintenance record actually requires --- \emph{same crack or not}, at
-a threshold --- ten matchers across five families, two decades of method
-development and more than three orders of magnitude in compute buy between
-$0.000$ and $0.054$
-above chance. Three of them, including a descriptor built around crack geometry,
-buy nothing. Calibrate the threshold honestly, on held-out walls rather than on
-the test matrix, and nine of the ten span only $-0.012$ to $+0.012$ around
-chance; only LoFTR, the most expensive, holds a real margin ($0.046$). Ordering
-a gallery well and deciding an identity are not the same capability, and only
-the second maintains a record.
-
-Two controls say where the difficulty is not. Giving an embedder the wall around
-the crack helps a great deal --- and \emph{erasing the crack} from that view
-costs almost none of it. What such a method retrieves on is location. The
-geometric reference baseline makes that cue explicit: a homography from
-non-crack wall texture, crack masks projected into a common frame, and Chamfer
-agreement under global assignment reach $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of
-$0.768$ against $0.429$ for the best crop method, while answering only $48\%$ of
-pairs.
-
-We are precise about what that partial coverage buys, because it buys
-differently by metric. A control that exploits the method's registration
-coverage without ever examining a crack already scores pairwise $F_1$ of $0.544$
-and mAP above the best crop method --- so much of the ranking margin is
-alignment, not matching. On the open-set rate that same control scores
-$\mathbf{0.000}$. The advantage there has a specific and unshared source: an
-aligned pair supports a \emph{licensed negative} --- project the recorded crack,
-look, observe it is not there --- where a crop embedding can only report low
-similarity. We expect that to matter for any defect marking a rigid, textured
-surface.
-
-Two bounds remain, and both are addressable: a second capture session weeks
-later turns \textsc{CrackID} from a viewpoint benchmark into a cross-visit one,
-and the annotation audit is instrumented and awaits its verdicts.
+We built the dataset that makes crack re-identification testable ---
+\textsc{CrackID}, 140 photographs over 17 walls with 212 identities, its
+annotation provenance ($45\%$ merged) stated rather than assumed --- and the
+benchmark's main finding is negative and structural: on the decision a record
+requires, nine matchers across four families and two orders of compute buy
+between $0.000$ and $0.054$ over chance, and only LoFTR survives a
+validation-calibrated threshold. Ordering a gallery and deciding an identity are
+not the same capability. The difficulty is not crack appearance: a geometric
+reference baseline that registers on wall texture with cracks masked out and
+Chamfer-matches projected masks reaches $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of
+$0.768$ against $0.404$ for the best context method while answering $48\%$ of
+pairs --- and a control exploiting that alignment coverage without examining a
+crack scores $\mathbf{0.000}$. The open-set advantage has a specific, unshared
+source: an aligned pair supports a \emph{licensed negative}, positive evidence
+of absence, where a crop embedding can only report low similarity. Two bounds
+remain addressable --- a real second capture session turns the benchmark from
+viewpoint to cross-visit, and the annotation audit awaits its verdicts. The
+$48\%$ coverage is also a deployment gap in its own right, not merely a scoring
+issue: smooth-plaster walls can be categorically unanswerable. Finally, the
+synthetic revisit protocol reverses the headline ranking and open-set result in
+favour of OSNet$+$context, while the geometric pipeline retains only a narrow
+assignment-$F_1$ advantage; the present paper therefore establishes a promising
+within-visit geometric reference, not a solved multi-visit maintenance system.
