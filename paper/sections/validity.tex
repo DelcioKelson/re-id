@@ -12,17 +12,14 @@ leave-one-wall-out spread in Rank-1. The same resampling discipline applies to
 the open-set headline: $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ is a point
 estimate at one operating point on the same sample, so the abstract compares it
 to baselines as a one-number structure --- the $0.35$ gap --- and claims
-nothing about the precise spread between resampled walls. This
-benchmark supports a large structural claim --- a $0.35$ open-set gap, a
-formulation change that lifts a band nine methods sit inside --- but not
-fine-grained ranking among baselines.
-
-\smallskip
-We do not attach a numeric wall-resampled interval to the abstract point
-estimates because the score matrices needed to recompute it are not part of the
-released artefacts; the effective sample and wall-level bimodality should
+nothing about the precise spread between resampled walls. This benchmark supports
+a structural claim about the formulation, but not fine-grained ranking among
+baselines. We do not attach a numeric wall-resampled interval to the abstract
+point estimates because the score matrices needed to recompute it are not part
+of the released artefacts; the effective sample and wall-level bimodality should
 therefore be read as a limitation, not as hidden precision.
 
+\smallskip
 \noindent\textbf{Scope is controlled, and the control found something.} The
 method reads full photographs; the baselines read crops --- dictated by design,
 since homography needs wall context. Two controls
@@ -36,30 +33,25 @@ Sec.~\ref{sec:dataset}); the gap sweep shows the trend is flat, with power
 falling to $105$ answerable queries by gap $3$.
 
 \smallskip
-\noindent\textbf{Annotation and the geometric baseline share a mechanism.}
+\noindent\textbf{The annotation and baseline are circularly coupled.}
 Identities were seeded by propagating one click point between consecutive
 photographs through an ORB homography (Sec.~\ref{sec:annotation}), and the
-geometric baseline's whole mechanism is homography registration --- so the
-ground truth could be biased toward exactly the pairs \ours{} can answer. This
-is distinct from the merge-rate disclosure of Sec.~\ref{sec:annotation}: that
-reports a deliberate design choice, this would be a measurement artefact. On
-this data the entanglement is real but not separable: of the $118$ positive
-(same-crack) query--gallery pairs on test, $116$ ($98.3\%$) involve an identity
-that was itself formed by a merge, and both-sides-unmerged positives number just
-$2$, so a $\mathrm{DIR}@\mathrm{FAR}$ restricted to unmerged identities carries
-no statistical power. Two partial checks mitigate it. First, the mechanism is
-not exactly shared: annotation warped one ORB homography between
-\emph{consecutive} frames, while the baseline registers \emph{every} pair with a
-crack-masked SIFT/MAGSAC/ECC cascade and scores by Chamfer --- a strictly harder
-alignment problem. Second, positives register at the same rate whether or not
-they involve a merged identity ($100\%$ both ways here), so any bias would have
-to enter through negatives and the decision threshold, not through positive
-coverage. This check does not test whether a biased homography registers
-differently from an unbiased one, because both the annotation and baseline
-alignment are related procedures; nor does it create a clean positive
-subsample. We report the structure rather than assert freedom from it; a
-human-audited identification split, with alignment-independent labels, is the
-clean experiment that would settle it.
+geometric baseline's whole mechanism is homography registration. Of the $118$
+positive (same-crack) query--gallery pairs on test, $116$ ($98.3\%$) involve an
+identity formed by a merge; both-sides-unmerged positives number just $2$.
+Thus the clean subgroup needed to test whether geometry helps independently of
+annotation provenance does not exist at useful power. The two reported checks
+are limited: the procedures are not identical, and merged versus unmerged
+positives register at the same observed rate ($100\%$ both ways), but the latter
+cannot test whether a biased homography would register differently from an
+unbiased one, because both alignments are related procedures. Nor did we run a
+sensitivity analysis quantifying how much false-positive mass or registration
+selection would be required to manufacture the $0.35$ open-set gap; the saved
+score matrices needed for that analysis are not released. Accordingly, the
+geometric advantage remains unresolved with respect to circularity, rather than
+being demonstrated independent of it. The decisive follow-up is a small,
+manually verified identity subset labelled without homography propagation,
+reported even if underpowered, together with a bias-sensitivity curve.
 
 \smallskip
 \noindent\textbf{Annotations are instrumented, not audited.} The human verdicts
@@ -70,43 +62,7 @@ methods identically. All captures come from one site over four half-days, two
 handsets and two surface families; smooth plaster produces the categorical SIFT
 failure noted in Sec.~\ref{sec:coverage}; cracks are located by a learned
 segmenter whose errors propagate into Chamfer agreement unquantified. What would
-convert the cross-visit claim from inferred to designed --- and the synthetic
-revisits of Sec.~\ref{sec:hybridbench} to measurement --- is a real second
-capture session at marked distances and angles; we have not run one, and every
-multi-visit statement here is a hypothesis, not a result.
-\noindent\textbf{Annotation and the geometric baseline share a mechanism.}
-Identities were seeded by propagating one click point between consecutive
-photographs through an ORB homography (Sec.~\ref{sec:annotation}), and the
-geometric baseline's whole mechanism is homography registration --- so the
-ground truth could be biased toward exactly the pairs \ours{} can answer. This
-is distinct from the merge-rate disclosure of Sec.~\ref{sec:annotation}: that
-reports a deliberate design choice, this would be a measurement artefact. On
-this data the entanglement is real but not separable: of the $118$ positive
-(same-crack) query--gallery pairs on test, $116$ ($98.3\%$) involve an identity
-that was itself formed by a merge, and both-sides-unmerged positives number just
-$2$, so a $\mathrm{DIR}@\mathrm{FAR}$ restricted to unmerged identities carries
-no statistical power. Two partial checks mitigate it. First, the mechanism is
-not exactly shared: annotation warped one ORB homography between
-\emph{consecutive} frames, while the baseline registers \emph{every} pair with a
-crack-masked SIFT/MAGSAC/ECC cascade and scores by Chamfer --- a strictly harder
-alignment problem. Second, positives register at the same rate whether or not
-they involve a merged identity ($100\%$ both ways here), so any bias would have
-to enter through negatives and the decision threshold, not through positive
-coverage. We report the structure rather than assert freedom from it; a
-human-audited identification split is the clean experiment that would settle it.
-
-the effective sample and wall-level bimodality should therefore be read as a limitation, not as hidden
-precision. We report the structure rather than assert freedom from it; a human-audited identification split, with
-alignment-independent labels, is the clean experiment that would settle it.
-\smallskip
-\noindent\textbf{Annotations are instrumented, not audited.} The human verdicts
-that would turn the provenance of Sec.~\ref{sec:annotation} into a sampled error
-rate with a confidence interval have not been collected; the $45\%$ merge rate is
-reported, and relative comparison is robust to it since the merge policy hits all
-methods identically. All captures come from one site over four half-days, two
-handsets and two surface families; cracks are located by a learned segmenter
-whose errors propagate into Chamfer agreement unquantified. What would convert
-the cross-visit claim from inferred to designed --- and the synthetic revisits of
-Sec.~\ref{sec:hybridbench} to measurement --- is a real second capture session at
-marked distances and angles; we have not run one, and every multi-visit statement
-here is a hypothesis, not a result.
+convert the within-visit benchmark into a cross-visit measurement is a real
+second capture session at marked distances and angles; we have not run one.
+The synthetic revisit protocol is therefore a controlled check, not a substitute
+for multi-visit data, and the paper does not claim cross-visit performance.

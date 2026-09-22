@@ -1,8 +1,9 @@
 \section{Introduction}
 
 Automated building-maintenance systems convert photographs into tracked defect
-records: a re-photographed defect must be \emph{re-identified} --- matched to its
-record, or given a new one. Wall cracks are a common and difficult case, because
+records: a re-photographed defect must eventually be \emph{re-identified} --- matched to its
+record, or given a new one. This paper first studies within-visit re-identification
+under viewpoint change. Wall cracks are a common and difficult case, because
 the same crack is re-photographed from different distances, angles and lighting,
 and (Sec.~\ref{sec:dataset}) grows.
 
@@ -14,7 +15,7 @@ labels, because the task they serve needs none. We know of no benchmark for crac
 vehicle re-ID~\cite{zhou2019osnet,qian2024reidtrends}, assumes a crack has
 stable, locally distinctive appearance, and whether it does has never been
 measured. We introduce \textsc{CrackID} --- 140 photographs, 17 walls, 212 crack
-identities --- to make that measurement (Fig.~\ref{fig:ceiling}). Capture is one
+identities --- to make that re-identification measurement (Fig.~\ref{fig:ceiling}). Capture is one
 continuous walk-around per wall, so what is measured is \emph{within-visit}
 viewpoint and scale correspondence --- an upper bound on multi-visit
 performance; we add a synthetic revisit protocol as a venue-controlled
@@ -45,6 +46,8 @@ pairs; a \textsc{Coverage-only} control scores $0.000$ on the same metric, so th
 open-set gap is matching, not alignment coverage. This is a conditional result,
 not a deployment-ready system: two test walls have zero registration success,
 and the annotation and baseline both use homography-based alignment.
+The resulting geometric advantage is therefore a hypothesis about this benchmark,
+not an independently established identity effect.
 
 \smallskip
 \noindent\textbf{The revisit check reverses the ranking story.} The real data are
