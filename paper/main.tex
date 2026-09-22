@@ -39,9 +39,9 @@ a synthetic multi-visit protocol (warp plus grown or corrupted appearance) is
 reported as a secondary check, and re-identification across real sessions is a
 hypothesis here, not a result. Benchmarking nine matchers across four families, we
 find that on the decision a system actually makes --- \emph{same crack or not},
-at a threshold --- none exceeds chance by more than $0.054$ pairwise $F_1$,
-two achieve nothing, and at a validation-calibrated threshold eight of the nine span only
-$-0.012$ to $+0.012$ around chance while LoFTR holds a margin of $0.046$.
+at a threshold --- none exceeds chance by more than $0.054$ pairwise $F_1$.
+Ranking separates the methods, but the deployable thresholded decision remains
+near the floor for almost all crop methods.
 These are point estimates on an effective sample of $19$ identities over $11$
 walls; the wall-level intervals are wide (Sec.~\ref{sec:validity}), so the
 claim is the structure --- a band at the floor with one exception --- not the
@@ -54,7 +54,10 @@ wall texture with cracks masked \emph{out}, Chamfer-match projected crack masks
 under global assignment --- reaches $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of
 $0.768$ against $0.429$ for the best crop method and $0.000$ for a control that
 exploits its coverage without examining a crack, so the open-set gap is
-attributable to matching, not partial coverage; like the $F_1$ figures these are
+attributable to matching, not partial coverage. Coverage-only assigns a constant
+score to every registered image pair and ranks unregistered pairs last; its
+nontrivial Rank-1 therefore comes from registration overlap, not crack evidence.
+Like the $F_1$ figures these are
 point estimates on the same $19$-identity sample, and the claim is the $0.35$
 gap as a structure, not a precise spread (Sec.~\ref{sec:validity}).
 This is not yet deployment evidence: the geometric system answers only $48\%$

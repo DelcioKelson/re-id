@@ -26,9 +26,12 @@ top-ranked match is above threshold and correct; an unknown query is a false
 alarm whenever anything clears threshold.
 
 \textbf{Every metric is reported against its chance level}, because two are far
-from zero: pairwise $F_1$ has a structural floor $2p/(1+p) = 0.305$ on this
+from zero: pairwise $F_1$ has a best-constant-predictor floor
+$2p/(1+p) = 0.305$ on this
 pool, and Rank-5 chance is $0.767$; Rank-1 and $\mathrm{DIR}@\mathrm{FAR}$ chance
 are $0.336$ and $0.038$ (closed form, plus $200$ random matrices through the same
-evaluation code). Confidence resamples \textbf{walls}, not queries --- queries
+evaluation code). This is a prevalence-induced floor, not a coin-flip chance
+rate, and it changes when the evaluated pair pool changes. Confidence resamples
+\textbf{walls}, not queries --- queries
 from one wall succeed or fail together --- and with 11 test walls the interval is
 wide; we report its width as the honest statement.

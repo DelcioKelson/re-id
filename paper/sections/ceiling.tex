@@ -8,7 +8,8 @@
 \caption{\textbf{Main result}, test split, $n_Q = 280$ query instances over 11
 walls. All methods see identical inputs and are scored by identical code.
 $F_1^{*}$ is oracle-thresholded on test; $\Delta F_1^{*}$ is its excess over the
-$0.305$ chance floor ($2p/(1+p)$, Sec.~\ref{sec:protocol}); $F_1^{@v}$ is
+$0.305$ best-constant-predictor floor ($2p/(1+p)$, not coin-flip chance;
+Sec.~\ref{sec:protocol}); $F_1^{@v}$ is
 thresholded on the held-out validation walls and is the deployable number.
 \emph{scored} is the fraction of valid query--gallery pairs receiving a finite
 score; unscored pairs are charged as predicted-negative and the query is still
