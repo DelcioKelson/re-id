@@ -2,97 +2,99 @@
 \label{sec:results}
 
 \subsection{Main comparison and the open-set gap}
-Relocating identity into the wall raises every metric: Rank-1 $0.654 \to 0.952$,
-mAP $0.520 \to 0.886$, and as excess over the \textsc{Coverage-only} reference
-the ranking gains are $+0.437$/$+0.353$, while pairwise $F_1^{*} = 0.656$ is
-$+0.112$ over $0.544$, not the $+0.351$ a comparison against the crop floor would
-suggest. The \textbf{open-set result is the one number coverage does not
-explain}: $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ reaches $0.768$ against $0.429$ for
-the best crop method (SuperGlue), $0.404$ for the best context control, $0.038$
-for chance, and exactly $\mathbf{0.000}$ for \textsc{Coverage-only}. Crop methods
-cannot decline --- they return a similarity to the nearest neighbour, which on
-self-similar hairline cracks is often high --- while an aligned pair supports the
-\emph{licensed negative}: the query projects into the gallery frame, where its
-region is visible and empty. Compute does not explain the gap: SuperGlue's
-$0.429$ costs $5.8$\,s/query, OSNet's $0.168$ costs $0.053$\,s.
+Relocating identity into the wall raises every metric: Rank-1 $0.654$ to
+$0.952$, mAP $0.520$ to $0.886$, and as excess over the \textsc{Coverage-only}
+reference the ranking gains are $+0.437$/$+0.353$, while pairwise $F_1^{*} =
+0.656$ is $+0.112$ over $0.544$, not the $+0.351$ a comparison against the
+crop floor would suggest. The \textbf{open-set result is the one number
+coverage does not explain}: $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ reaches $0.768$
+against $0.429$ for the best crop method (SuperGlue), $0.404$ for the best
+context control, $0.038$ for chance, and exactly $\mathbf{0.000}$ for
+\textsc{Coverage-only}. Crop methods cannot decline: they return a
+similarity to the nearest neighbour, which on self-similar hairline cracks
+is often high, while an aligned pair supports the \emph{licensed negative}:
+the query projects into the gallery frame, where its region is visible and
+empty. Compute does not explain the gap: SuperGlue's $0.429$ costs
+$5.8$\,s/query, OSNet's $0.168$ costs $0.053$\,s.
 
 \subsection{Partial coverage, gap structure, and failures}
 \label{sec:coverage}
 Every crop method scores $100\%$ of valid pairs, the geometric method $48\%$;
-unscorable pairs are charged as predicted negatives. For \textbf{ranking} that is
-a penalty: censoring a complete matrix drops Rank-1 $0.422 \to 0.27$ at $34\%$
-coverage. For \textbf{pairwise $F_1$} it is a subsidy: the scorable subset
-retains $100\%$ of positives and $36.8\%$ of negatives, so prevalence rises
-$0.180 \to 0.373$ and the floor with it, $0.305 \to 0.544$ ---
-\textsc{Coverage-only} scores $0.544$ pairwise, mAP $0.533$, Rank-1 $0.515$, above
-OSNet, by answering every registered pair without examining a crack. Its signal
-is registration overlap: it assigns one constant score to registered image
-pairs and $-\infty$ to unregistered pairs, so candidate images are ranked even
-though crack pixels are never inspected. Much of the ranking and pairwise-$F_1$
-margin is therefore \emph{which pairs align}; the
+unscorable pairs are charged as predicted negatives. For \textbf{ranking}
+that is a penalty: censoring a complete matrix drops Rank-1 $0.422$ to
+$0.27$ at $34\%$ coverage. For \textbf{pairwise $F_1$} it is a subsidy: the
+scorable subset retains $100\%$ of positives and $36.8\%$ of negatives, so
+prevalence rises $0.180$ to $0.373$ and the floor with it, $0.305$ to
+$0.544$. \textsc{Coverage-only} scores $0.544$ pairwise, mAP $0.533$, Rank-1
+$0.515$, above OSNet, by answering every registered pair without examining a
+crack. Its signal is registration overlap: it assigns one constant score to
+registered image pairs and $-\infty$ to unregistered pairs, so candidate
+images are ranked even though crack pixels are never inspected. Much of the
+ranking and pairwise-$F_1$ margin is therefore \emph{which pairs align}; the
 open-set metric is the exception and the result we lead with.
 
-Excluding the adjacent frame, then the two and three nearest, leaves Rank-1 flat
-(OSNet $0.654 \to 0.648$) with excess over chance stable in $0.24$--$0.32$: the
-near-duplicate structure is real but not what produces the numbers. It is also
-important for interpretation: the adjacent frame answers all $280$ queries,
-whereas the gap-3 sweep leaves only $105$ answerable queries, so the headline
-ranking measures short-baseline correspondence rather than broad temporal
-re-identification. Registration
-success is strongly wall-dependent ($97/301$ pairs, $32.2\%$: walls 07/08/12
-$100\%$, wall 09 $52\%$, wall 11 $83\%$, walls 13--16 between $3\%$ and $29\%$,
-walls 10/17 at $0\%$). A logistic fit over all $301$ pairs makes the mechanism
-plain: sharpness dominates (median $133.8$ registered vs $7.2$ failed;
+Excluding the adjacent frame, then the two and three nearest, leaves Rank-1
+flat (OSNet $0.654$ to $0.648$) with excess over chance stable in $0.24$ to
+$0.32$: the near-duplicate structure is real but not what produces the
+numbers. It is also important for interpretation: the adjacent frame answers
+all $280$ queries, whereas the gap-3 sweep leaves only $105$ answerable
+queries, so the headline ranking measures short-baseline correspondence
+rather than broad temporal re-identification. Registration success is
+strongly wall-dependent ($97/301$ pairs, $32.2\%$: walls 07/08/12 $100\%$,
+wall 09 $52\%$, wall 11 $83\%$, walls 13-16 between $3\%$ and $29\%$, walls
+10/17 at $0\%$). A logistic fit over all $301$ pairs makes the mechanism
+plain: sharpness dominates (median $133.8$ registered vs $7.2$ failed,
 wall-clustered Wald $z = 5.1$, $p = 3\times10^{-7}$), frame gap far less
-($z = -2.8$, $p = 0.005$). The independent-pairs $z$s ($8.2$, $-5.0$) overstate
-the contrast because failure is categorical by wall, so we resample walls, not
-queries --- and the leave-one-wall-out spread in Rank-1 is large, so no fine
-ranking among baselines is claimed. One admission gate (variance-of-Laplacian
-$\geq 10$) applied identically rejects $21$ of $74$ test captures and nearly
-doubles registration, $32.2\% \to 56.1\%$.
+($z = -2.8$, $p = 0.005$). The independent-pairs $z$s ($8.2$, $-5.0$)
+overstate the contrast because failure is categorical by wall, so we
+resample walls, not queries, and the leave-one-wall-out spread in Rank-1 is
+large, so no fine ranking among baselines is claimed. One admission gate
+(variance-of-Laplacian $\geq 10$) applied identically rejects $21$ of $74$
+test captures and nearly doubles registration, $32.2\%$ to $56.1\%$.
 
 \subsection{Ablations and cost}
 \label{sec:chamferablation}
 \textbf{Chamfer distance versus coverage.} The scale-free coverage score
 motivated in Sec.~\ref{sec:method} is not a free improvement: it drops mAP
-$0.886 \to 0.646$ and Rank-1 $0.952 \to 0.849$, the largest movement any change
-produces; $\mathrm{DIR}$ and $F_1^{@v}$ barely move --- coverage gives a threshold
-decision, not a ranking. \textbf{Masking.} Disabling crack exclusion leaves
-ranking and pairwise agreement practically unchanged (to three decimals) but
-raises $\mathrm{DIR}@\mathrm{FAR}$ $0.768 \to 0.825$: masking is not what buys
-the reported accuracy. This is expected when the test set contains no deliberate
-case where crack pixels create a spurious registration: masking buys evidence
-independence, not observed accuracy on this collection, and should be treated as
-a safeguard awaiting a harder stress test. \textbf{ECC.} \label{sec:ecc} Disabling
-ECC (repaired after a pipeline bug silently left it inert) gives Rank-1 $0.920$,
-mAP $0.862$, coverage $0.50$ against $0.952$, $0.886$, $0.48$; assignment $F_1$
-rises $0.769 \to 0.784$ when enabled; open-set is unchanged.
+$0.886$ to $0.646$ and Rank-1 $0.952$ to $0.849$, the largest movement any
+change produces; $\mathrm{DIR}$ and $F_1^{@v}$ barely move, so coverage gives
+a threshold decision, not a ranking. \textbf{Masking.} Disabling crack
+exclusion leaves ranking and pairwise agreement practically unchanged (to
+three decimals) but raises $\mathrm{DIR}@\mathrm{FAR}$ $0.768$ to $0.825$:
+masking is not what buys the reported accuracy. This is expected when the
+test set contains no deliberate case where crack pixels create a spurious
+registration: masking buys evidence independence, not observed accuracy on
+this collection, and should be treated as a safeguard awaiting a harder
+stress test. \textbf{ECC.} \label{sec:ecc} Disabling ECC (repaired after a
+pipeline bug silently left it inert) gives Rank-1 $0.920$, mAP $0.862$,
+coverage $0.50$ against $0.952$, $0.886$, $0.48$; assignment $F_1$ rises
+$0.769$ to $0.784$ when enabled; open-set is unchanged.
 
 \textbf{Cost.} The abstract's more-than-two-orders-of-magnitude comparison at
 $27.9$\,s/query is a query-level charging convention, not a fundamental
-pair-level compute gap. At $27.9$\,s/query the baseline charges more than two orders of
-magnitude above OSNet, but that per-query figure is a charging convention, not
-an intrinsic one: registration is per image \emph{pair} --- one homography
-serves every crack on a wall --- and amortised over the $301$ test image pairs
-the same pass runs $\approx 26$\,s/pair ($7817$\,s total), after which any
-later crack query on the pair pays only the Chamfer pass, not the homography.
-That pair-level cost is within an order of magnitude of LoFTR ($8.3$\,s), a
-crop method with none of the open-set benefit.
+pair-level compute gap. At $27.9$\,s/query the baseline charges more than
+two orders of magnitude above OSNet, but that per-query figure is a charging
+convention, not an intrinsic one: registration is per image \emph{pair}, one
+homography serves every crack on a wall, and amortised over the $301$ test
+image pairs the same pass runs about $26$\,s/pair ($7817$\,s total), after
+which any later crack query on the pair pays only the Chamfer pass, not the
+homography. That pair-level cost is within an order of magnitude of LoFTR
+($8.3$\,s), a crop method with none of the open-set benefit.
 
 \subsection{A synthetic revisit protocol}
 \label{sec:hybridbench}
-The maintenance setting these records serve is a \emph{revisited} crack, so we
-add a second protocol isolating controlled change. Ten source photographs across
-five of the walls (walls 01, 02, 04, 05, 09; one seed, $0$) are each synthesized
-into a set of queries under an identical warp ($1.08\times$ scale, $6^{\circ}$
-rotation, $4^{\circ}$ tilt): dataset A additionally grows every crack tip (damage
-evolution), dataset B corrupts appearance while leaving structure untouched
-(blur $\sigma{=}1.6$, noise $\sigma{=}14$, brightness/contrast shift); each
-synthetic query is ranked against the wall's real instances only. Unlike
-Table~I's \ours{} system, the synthetic-protocol \emph{Hybrid} folds a
-structural skeleton comparison into the geometric baseline as a fallback plus
-per-pair blend, scored by the same code as
-OSNet$+$ctx (Table~\ref{tab:hybrid}).
+The maintenance setting these records serve is a \emph{revisited} crack, so
+we add a second protocol isolating controlled change. Ten source photographs
+across five of the walls (walls 01, 02, 04, 05, 09; one seed, $0$) are each
+synthesized into a set of queries under an identical warp ($1.08\times$
+scale, $6^{\circ}$ rotation, $4^{\circ}$ tilt): dataset A additionally grows
+every crack tip (damage evolution), dataset B corrupts appearance while
+leaving structure untouched (blur $\sigma{=}1.6$, noise $\sigma{=}14$,
+brightness/contrast shift); each synthetic query is ranked against the
+wall's real instances only. Unlike Table~I's \ours{} system, the
+synthetic-protocol \emph{Hybrid} folds a structural skeleton comparison into
+the geometric baseline as a fallback plus per-pair blend, scored by the same
+code as OSNet$+$ctx (Table~\ref{tab:hybrid}).
 
 \begin{table}[t]
 \centering
@@ -110,23 +112,25 @@ B (appearance)  & OSNet$+$ctx & 82 & \textbf{0.671} & \textbf{0.570} & \textbf{0
 \end{tabular}%
 }
 \caption{Hybrid versus the strongest appearance baseline on the synthetic
-revisit protocol (Sec.~\ref{sec:hybridbench}); pairwise and assignment $F_1$ at
-the validation-calibrated threshold. One seed ($0$), ten source photographs
-across five walls, no resampling --- rows carry no uncertainty and are an
-accuracy checkpoint, not a stability claim (Sec.~\ref{sec:hybridbench}).}
+revisit protocol (Sec.~\ref{sec:hybridbench}); pairwise and assignment $F_1$
+at the validation-calibrated threshold. One seed ($0$), ten source
+photographs across five walls, no resampling; rows carry no uncertainty and
+are an accuracy checkpoint, not a stability claim
+(Sec.~\ref{sec:hybridbench}).}
 \label{tab:hybrid}
 \end{table}
 
 The geometric side does not transfer its main-benchmark advantage here:
-OSNet$+$ctx separates the synthetic queries at R@1 $0.826/0.671$, the hybrid at
-$0.275/0.274$, with open-set rates $0.739/0.663$ against $0.343/0.342$. But the
-split is metric-dependent and opposite the ranking gap: on identity agreement the
-hybrid holds its own --- assignment $F_1^{a} = 0.646/0.640$ beats OSNet's
-$0.631/0.609$, and pairwise $F_1^{@v} = 0.569/0.574$ trails
-$0.601/0.594$ by far less than the ranking margin. Both rate $1.00$ scored, and per cell none was
-decided by the pure-homography branch alone ($H\% = 0.0$ --- the share of
-assignment cells whose verdict came straight from the homography, with no blend
-or skeleton fallback): the geometric pipeline answers
-\emph{which crack is which} on pairs appearance also resolves, but loses the
-global ranking of a hundred-plus same-wall candidates at one threshold. These
-rows are a checkpoint, not a claim: one seed, one wall subset.
+OSNet$+$ctx separates the synthetic queries at R@1 $0.826/0.671$, the hybrid
+at $0.275/0.274$, with open-set rates $0.739/0.663$ against $0.343/0.342$.
+But the split is metric-dependent and opposite the ranking gap: on identity
+agreement the hybrid holds its own, with assignment $F_1^{a} = 0.646/0.640$
+beating OSNet's $0.631/0.609$, and pairwise $F_1^{@v} = 0.569/0.574$
+trailing $0.601/0.594$ by far less than the ranking margin. Both rate
+$1.00$ scored, and per cell none was decided by the pure-homography branch
+alone ($H\% = 0.0$, the share of assignment cells whose verdict came
+straight from the homography, with no blend or skeleton fallback): the
+geometric pipeline answers \emph{which crack is which} on pairs appearance
+also resolves, but loses the global ranking of a hundred-plus same-wall
+candidates at one threshold. These rows are a checkpoint, not a claim: one
+seed, one wall subset.

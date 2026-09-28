@@ -1,35 +1,38 @@
 \section{Related Work}
 
 Crack analysis is overwhelmingly detection and
-segmentation~\cite{hasan2025review,perez2024assessment}; its datasets annotate
-cracks within single images and the large consolidations
-merging~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k} inherit that scope,
-and multi-view pipelines~\cite{mallios2023multiview} aggregate within one
-inspection without instance correspondence. Structural-health monitoring does
-compare cracks across time with machinery close to
+segmentation~\cite{hasan2025review,perez2024assessment}; its datasets
+annotate cracks within single images and the large consolidations
+merging~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k} inherit that
+scope, and multi-view pipelines~\cite{mallios2023multiview} aggregate within
+one inspection without instance correspondence. Structural-health monitoring
+does compare cracks across time with machinery close to
 ours~\cite{parente2022monitoring,harb2025multitemporal,sun2025perspective,nec2019guide},
 but identity is always \emph{given by construction} (fixed camera, marked
-location, operator at a viewpoint): the subject is one known crack, the question
-width or extent, and no dataset supports method comparison on the association
-decision itself. Those systems therefore solve measurement after correspondence
-has already been supplied; they do not decide whether a newly observed crack is
-the same physical defect as a gallery crack under an open-set protocol. Our
-benchmark targets that missing association decision, while its real capture
-scope remains within one walk-around rather than a true longitudinal study.
+location, operator at a viewpoint): the subject is one known crack, the
+question width or extent, and no dataset supports method comparison on the
+association decision itself. Those systems therefore solve measurement
+after correspondence has already been supplied; they do not decide whether
+a newly observed crack is the same physical defect as a gallery crack under
+an open-set protocol. Our benchmark targets that missing association
+decision, while its real capture scope remains within one walk-around
+rather than a true longitudinal study.
 
 Object re-identification~\cite{qian2024reidtrends} with open-set
-identification~\cite{liao2014openset} is the formal setting we adopt; keypoint
-matching~\cite{lowe2004sift,rublee2011orb}, learned correspondence
-(SuperGlue~\cite{sarlin2020superglue}, LoFTR~\cite{sun2021loftr}), and region
-embeddings~\cite{dosovitskiy2021vit,touvron2021deit,radford2021clip,zhou2019osnet,oquab2024dinov2}
-apply directly to crack crops and our benchmark measures all of them.
-Vehicle-damage assessment already re-identifies damage with OSNet in curated
-settings~\cite{maiano2023antifraud}; our results suggest the crop scope is
-itself the limiting choice. The move our baseline makes --- align two captures,
-then reason about what is present in one and absent in the other --- is change
+identification~\cite{liao2014openset} is the formal setting we adopt;
+keypoint matching~\cite{lowe2004sift,rublee2011orb}, learned correspondence
+(SuperGlue~\cite{sarlin2020superglue}, LoFTR~\cite{sun2021loftr}), and
+region embeddings~\cite{dosovitskiy2021vit,touvron2021deit,radford2021clip,zhou2019osnet,oquab2024dinov2}
+apply directly to crack crops, and our benchmark measures all of them.
+Vehicle-damage assessment already re-identifies damage with OSNet in
+curated settings~\cite{maiano2023antifraud}; our results suggest the crop
+scope is itself the limiting choice. The move our baseline makes, aligning
+two captures and then reasoning about what is present in one and absent in
+the other, is change
 detection~\cite{sakurada2015changedetection,alcantarilla2018street}; planar
-registration is classical~\cite{hartley2004mvg,fischler1987ransac,barath2019magsac}
-with photometric alignment (ECC~\cite{evangelidis2008ecc}) as the fallback. Our
+registration is
+classical~\cite{hartley2004mvg,fischler1987ransac,barath2019magsac} with
+photometric alignment (ECC~\cite{evangelidis2008ecc}) as the fallback. Our
 contribution is not a new estimator but the observation that the alignment
 target and the matching target should be \emph{disjoint}: the homography is
 driven by the wall precisely because the crack is what we seek to identify.

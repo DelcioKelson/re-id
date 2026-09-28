@@ -3,37 +3,39 @@
 
 \subsection{Capture and composition}
 We photographed 17 exterior walls at one site over four half-days with two
-consumer handsets, yielding 140 photographs at $4080\times3072$. The walls span
-two surface families that behave very differently under keypoint matching:
-stippled render (densely textured) and smooth painted plaster, where the crack is
-frequently the only structure in frame. Walls split disjointly into 6 validation
-walls (66 photographs, 66 identities) and 11 test walls (74 photographs, 146
-identities). Statistical power is governed by identities visible in two or more
-photographs --- only these form a query with an answer: 18 in validation, 19 in
-test. Each wall was captured in one continuous walk-around (consecutive frames a
-median of $3$\,s apart), so the dataset measures \textbf{viewpoint and scale
-correspondence} within one visit --- an upper bound on multi-visit performance,
-not yet a measurement of it.
+consumer handsets, yielding 140 photographs at $4080\times3072$. The walls
+span two surface families that behave very differently under keypoint
+matching: stippled render (densely textured) and smooth painted plaster,
+where the crack is frequently the only structure in frame. Walls split
+disjointly into 6 validation walls (66 photographs, 66 identities) and 11
+test walls (74 photographs, 146 identities). Statistical power is governed
+by identities visible in two or more photographs, since only these form a
+query with an answer: 18 in validation, 19 in test. Each wall was captured
+in one continuous walk-around (consecutive frames a median of $3$\,s apart),
+so the dataset measures \textbf{viewpoint and scale correspondence} within
+one visit, an upper bound on multi-visit performance, not yet a measurement
+of it.
 
 \smallskip
 \noindent\textbf{The adjacent frame is always an answer.} For $100\%$ of the
-$280$ answerable test queries the nearest correct gallery entry is the adjacent
-frame. Ranking numbers are therefore near-duplicate retrieval;
-Sec.~\ref{sec:results} sweeps the exclusion gap to show the structure is not what
-produces the result.
+$280$ answerable test queries the nearest correct gallery entry is the
+adjacent frame. Ranking numbers are therefore near-duplicate retrieval;
+Sec.~\ref{sec:results} sweeps the exclusion gap to show the structure is not
+what produces the result.
 
 \subsection{Annotation, and why it needs auditing}
 \label{sec:annotation}
-One click point per crack is propagated across consecutive photographs through an
-ORB homography and one-to-one assignment; identities whose components appear to
-be fragments of one physical crack are then merged. The merge is where risk
-concentrates: a wrongly joined merge converts a hard negative into a free
-positive and inflates \emph{every} method's mAP together, so it cannot be caught
-by comparing methods. We therefore report its extent rather than assume its
-correctness: \textbf{$95/212$ identities ($45\%$) were formed by a merge} (48\%
-on test), bridging a median maximum gap of $228$\,px; the adjusted Rand index
-against the pre-merge labelling is $0.080$ --- the merge restructured the
-partition rather than refining it. We release the instrumentation for an audited
-error rate (per-identity provenance, a stratified sample with contact sheets,
-Wilson scoring) rather than the audit itself; the verdicts are not yet filled in,
-so we claim no sampled error rate.
+One click point per crack is propagated across consecutive photographs
+through an ORB homography and one-to-one assignment; identities whose
+components appear to be fragments of one physical crack are then merged. The
+merge is where risk concentrates: a wrongly joined merge converts a hard
+negative into a free positive and inflates \emph{every} method's mAP
+together, so it cannot be caught by comparing methods. We therefore report
+its extent rather than assume its correctness: \textbf{$95/212$ identities
+($45\%$) were formed by a merge} (48\% on test), bridging a median maximum
+gap of $228$\,px; the adjusted Rand index against the pre-merge labelling is
+$0.080$, meaning the merge restructured the partition rather than refining
+it. We release the instrumentation for an audited error rate (per-identity
+provenance, a stratified sample with contact sheets, Wilson scoring) rather
+than the audit itself; the verdicts are not yet filled in, so we claim no
+sampled error rate.

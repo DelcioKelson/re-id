@@ -49,47 +49,48 @@ OSNet~\cite{zhou2019osnet}          & re-ID      & \best{0.654} & \best{0.520} &
 \end{table*}
 
 \subsection{Setup}
-Nine crop-scope matchers --- handcrafted keypoints
-(SIFT~\cite{lowe2004sift}, ORB~\cite{rublee2011orb}); learned correspondence
-(SuperGlue~\cite{sarlin2020superglue}, LoFTR~\cite{sun2021loftr}); general
+Nine crop-scope matchers run under an identical protocol, identical inputs,
+and identical scoring: handcrafted keypoints (SIFT~\cite{lowe2004sift},
+ORB~\cite{rublee2011orb}), learned correspondence
+(SuperGlue~\cite{sarlin2020superglue}, LoFTR~\cite{sun2021loftr}), general
 embeddings (ViT-B/16~\cite{dosovitskiy2021vit}, DeiT-S~\cite{touvron2021deit},
-CLIP ViT-B/32~\cite{radford2021clip}, YOLOv8); a re-identification architecture
-(OSNet~\cite{zhou2019osnet}) --- run under an identical protocol, inputs and
-scoring.
+CLIP ViT-B/32~\cite{radford2021clip}, YOLOv8), and a re-identification
+architecture (OSNet~\cite{zhou2019osnet}).
 
 \subsection{Result: appearance buys almost nothing on the decision}
-On the decision a record actually makes --- \emph{same crack or not}, at a
-threshold --- no crop method clears chance by more than $0.054$ (excess over the
-$0.305$ floor at the oracle threshold, Table~\ref{tab:main}: $0.000$--$0.054$,
-two methods exactly at the floor, eight within $0.052$), across two decades of
-methods and two orders of compute ($\approx\!1$\,ms to $8.6$\,s). At a deployable (validation-calibrated)
-threshold eight of the nine span only $-0.012$ to $+0.012$ around chance;
-\textbf{LoFTR is the exception}, $F_1^{@v}=0.351$ ($+0.046$), and the most
-expensive crop method. Ranking does not transfer to deciding: the nine separate
-over a $0.302$ range on Rank-1, yet OSNet ties for best Rank-1 ($0.654$) while
-sitting $0.004$ above chance, and SuperGlue (fifth on Rank-1) has the best crop
-open-set rate ($0.429$). Ordering a gallery well and keeping a record are not
-the same capability. The collapse after validation calibration is consistent
-with threshold instability under a small, wall-clustered sample: methods can
-order candidates differently while their score distributions do not support a
+On the decision a record actually makes, same crack or not, at a threshold,
+no crop method clears chance by more than $0.054$ (excess over the $0.305$
+floor at the oracle threshold, Table~\ref{tab:main}: $0.000$ to $0.054$, two
+methods exactly at the floor, eight within $0.052$), across two decades of
+methods and two orders of compute (roughly $1$\,ms to $8.6$\,s). At a
+deployable (validation-calibrated) threshold eight of the nine span only
+$-0.012$ to $+0.012$ around chance; \textbf{LoFTR is the exception},
+$F_1^{@v}=0.351$ ($+0.046$), and the most expensive crop method. Ranking does
+not transfer to deciding: the nine separate over a $0.302$ range on Rank-1,
+yet OSNet ties for best Rank-1 ($0.654$) while sitting $0.004$ above chance,
+and SuperGlue (fifth on Rank-1) has the best crop open-set rate ($0.429$).
+Ordering a gallery well and keeping a record are not the same capability. The
+collapse after validation calibration is consistent with threshold
+instability under a small, wall-clustered sample: methods can order
+candidates differently while their score distributions do not support a
 stable same-crack/not-same-crack boundary on held-out walls. This is an
-interpretation of the observed pattern, not a claim that calibration itself is
-the sole cause.
+interpretation of the observed pattern, not a claim that calibration itself
+is the sole cause.
 
 \subsection{Is it the crack, or the wall behind it?}
 \label{sec:controls}
 Two controls separate identity cue from field of view: a \emph{crop$+$context}
-condition (wider crop) and a \emph{crack-erased} condition (the crack inpainted
-out of that widened view). Context helps a lot --- OSNet's Rank-1 rises
-$0.654 \to 0.775$, mAP to $0.595$, open-set rate $0.168 \to 0.404$ (CLIP's
-$0.143 \to 0.311$; $F_1^{*}$ $0.309 \to 0.354$) --- \textbf{but erasing the
-crack costs almost none of it}: OSNet retains Rank-1 $0.711$, mAP $0.574$ and
-open-set $0.393$; CLIP retains Rank-1 $0.600$, mAP $0.502$, open-set $0.286$.
-Both erased views still outrank every tight-crop method: the retrieved cue is
-the wall, i.e.\ location. Pairwise $F_1$ is unmoved by context
-($0.346$--$0.361$). We read the aggregate as a property of the data --- methods
-with no shared inductive bias land near the floor, and wherever a crop method
-improves, the
-improvement is not the crack. Nine methods are a sample, not proof; the result
-establishes that the obvious moves buy $0.000$--$0.054$ above chance on the
-decision --- reason to change the formulation, not the encoder.
+condition (wider crop) and a \emph{crack-erased} condition (the crack
+inpainted out of that widened view). Context helps a lot: OSNet's Rank-1
+rises from $0.654$ to $0.775$, mAP to $0.595$, open-set rate from $0.168$ to
+$0.404$ (CLIP's from $0.143$ to $0.311$; $F_1^{*}$ from $0.309$ to $0.354$),
+\textbf{but erasing the crack costs almost none of it}: OSNet retains Rank-1
+$0.711$, mAP $0.574$ and open-set $0.393$; CLIP retains Rank-1 $0.600$, mAP
+$0.502$, open-set $0.286$. Both erased views still outrank every tight-crop
+method: the retrieved cue is the wall, that is, location. Pairwise $F_1$ is
+unmoved by context ($0.346$ to $0.361$). We read the aggregate as a property
+of the data: methods with no shared inductive bias land near the floor, and
+wherever a crop method improves, the improvement is not the crack. Nine
+methods are a sample, not proof; the result establishes that the obvious
+moves buy $0.000$ to $0.054$ above chance on the decision, reason to change
+the formulation, not the encoder.
