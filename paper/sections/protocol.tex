@@ -4,15 +4,15 @@
 A query is one annotated crack instance in one photograph; the gallery is the
 query's own wall, so hard negatives share material and lighting; the query's
 own photograph and week are excluded, leaving $n_Q = 280$ scored queries on
-test. Three choices deliberately favour no method, including ours:
+test. Three choices deliberately favor no method, including ours:
 \begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
-\item \textbf{Unanswerable queries are retained.} A query whose identity has
+\item \textbf{Unanswerable queries are retained. } A query whose identity has
 no gallery counterpart can contribute false alarms and never successes, which
 is exactly the open-set case a maintenance system faces.
 \item \textbf{Thresholds are calibrated on validation.} Every method reports
 an oracle-thresholded $F_1^{*}$ (generous to all) and a deployable $F_1^{@v}$
 thresholded on held-out walls.
-\item \textbf{Missing scores are charged, not skipped.} A pair a method
+\item \textbf{Missing scores are charged, not skipped. } A pair a method
 cannot score counts as predicted-negative and ranks last; coverage is not
 independent of the label (Sec.~\ref{sec:coverage}).
 \end{itemize}
@@ -23,7 +23,7 @@ one-to-one matching per image pair, the deployed operation). The headline
 metric is the open-set \textbf{detection-and-identification rate at $10\%$
 false alarm} ($\mathrm{DIR}@\mathrm{FAR}{=}0.1$): a known query is correct
 only if its top-ranked match is above threshold and correct; an unknown
-query is a false alarm whenever anything clears threshold.
+query is a false alarm whenever anything clears the threshold.
 
 \textbf{Every metric is reported against its chance level}, because two are
 far from zero: pairwise $F_1$ has a best-constant-predictor floor

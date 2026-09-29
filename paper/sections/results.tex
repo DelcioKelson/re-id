@@ -20,7 +20,7 @@ $5.8$\,s/query, OSNet's $0.168$ costs $0.053$\,s.
 \subsection{Partial coverage, gap structure, and failures}
 \label{sec:coverage}
 Every crop method scores $100\%$ of valid pairs, the geometric method $48\%$;
-unscorable pairs are charged as predicted negatives. For \textbf{ranking}
+Unscorable pairs are charged as predicted negatives. For \textbf{ranking}
 that is a penalty: censoring a complete matrix drops Rank-1 $0.422$ to
 $0.27$ at $34\%$ coverage. For \textbf{pairwise $F_1$} it is a subsidy: the
 scorable subset retains $100\%$ of positives and $36.8\%$ of negatives, so
@@ -75,7 +75,7 @@ $27.9$\,s/query is a query-level charging convention, not a fundamental
 pair-level compute gap. At $27.9$\,s/query the baseline charges more than
 two orders of magnitude above OSNet, but that per-query figure is a charging
 convention, not an intrinsic one: registration is per image \emph{pair}, one
-homography serves every crack on a wall, and amortised over the $301$ test
+homography serves every crack on a wall, and amortized over the $301$ test
 image pairs the same pass runs about $26$\,s/pair ($7817$\,s total), after
 which any later crack query on the pair pays only the Chamfer pass, not the
 homography. That pair-level cost is within an order of magnitude of LoFTR
@@ -123,8 +123,8 @@ are an accuracy checkpoint, not a stability claim
 The geometric side does not transfer its main-benchmark advantage here:
 OSNet$+$ctx separates the synthetic queries at R@1 $0.826/0.671$, the hybrid
 at $0.275/0.274$, with open-set rates $0.739/0.663$ against $0.343/0.342$.
-But the split is metric-dependent and opposite the ranking gap: on identity
-agreement the hybrid holds its own, with assignment $F_1^{a} = 0.646/0.640$
+But the split is metric-dependent, and opposite the ranking gap: on identity
+agreement, the hybrid holds its own, with assignment $F_1^{a} = 0.646/0.640$
 beating OSNet's $0.631/0.609$, and pairwise $F_1^{@v} = 0.569/0.574$
 trailing $0.601/0.594$ by far less than the ranking margin. Both rate
 $1.00$ scored, and per cell none was decided by the pure-homography branch

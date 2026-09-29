@@ -12,7 +12,7 @@ $0.305$ best-constant-predictor floor ($2p/(1+p)$, not coin-flip chance;
 Sec.~\ref{sec:protocol}); $F_1^{@v}$ is
 thresholded on the held-out validation walls and is the deployable number.
 \emph{scored} is the fraction of valid query--gallery pairs receiving a finite
-score; unscored pairs are charged as predicted-negative and the query is still
+score; unscored pairs are charged as predicted-negative, and the query is still
 counted (Sec.~\ref{sec:coverage}). Cost is wall-clock seconds per query. The
 \textsc{Coverage-only} reference row answers yes to every registered pair
 without examining a crack and is the level every other row must be read against;
@@ -63,13 +63,13 @@ no crop method clears chance by more than $0.054$ (excess over the $0.305$
 floor at the oracle threshold, Table~\ref{tab:main}: $0.000$ to $0.054$, two
 methods exactly at the floor, eight within $0.052$), across two decades of
 methods and two orders of compute (roughly $1$\,ms to $8.6$\,s). At a
-deployable (validation-calibrated) threshold eight of the nine span only
+deployable (validation-calibrated) threshold, eight of the nine span only
 $-0.012$ to $+0.012$ around chance; \textbf{LoFTR is the exception},
 $F_1^{@v}=0.351$ ($+0.046$), and the most expensive crop method. Ranking does
 not transfer to deciding: the nine separate over a $0.302$ range on Rank-1,
 yet OSNet ties for best Rank-1 ($0.654$) while sitting $0.004$ above chance,
 and SuperGlue (fifth on Rank-1) has the best crop open-set rate ($0.429$).
-Ordering a gallery well and keeping a record are not the same capability. The
+Ordering a gallery well and keeping a record are different capabilities. The
 collapse after validation calibration is consistent with threshold
 instability under a small, wall-clustered sample: methods can order
 candidates differently while their score distributions do not support a
