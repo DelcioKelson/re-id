@@ -25,9 +25,11 @@ that is a penalty: censoring a complete matrix drops Rank-1 $0.422$ to
 $0.27$ at $34\%$ coverage. For \textbf{pairwise $F_1$} it is a subsidy: the
 scorable subset retains $100\%$ of positives and $36.8\%$ of negatives, so
 prevalence rises $0.180$ to $0.373$ and the floor with it, $0.305$ to
-$0.544$. \textsc{Coverage-only} scores $0.544$ pairwise, mAP $0.533$, Rank-1
-$0.515$, above OSNet, by answering every registered pair without examining a
-crack. Its signal is registration overlap: it assigns one constant score to
+$0.544$. \textsc{Coverage-only} scores $0.544$ pairwise $F_1$ and mAP
+$0.533$, both above OSNet ($0.309$ and $0.520$), and Rank-1 $0.515$, above ORB
+and SIFT but below the embedding and learned crop methods, by answering every
+registered pair without examining a crack. Its signal is registration overlap:
+it assigns one constant score to
 registered image pairs and $-\infty$ to unregistered pairs, so candidate
 images are ranked even though crack pixels are never inspected. Much of the
 ranking and pairwise-$F_1$ margin is therefore \emph{which pairs align}; the
@@ -42,7 +44,12 @@ queries, so the headline ranking measures short-baseline correspondence
 rather than broad temporal re-identification. Registration success is
 strongly wall-dependent ($97/301$ pairs, $32.2\%$: walls 07/08/12 $100\%$,
 wall 09 $52\%$, wall 11 $83\%$, walls 13-16 between $3\%$ and $29\%$, walls
-10/17 at $0\%$). A logistic fit over all $301$ pairs makes the mechanism
+10/17 at $0\%$). The pairs that register are the densely annotated ones, so
+the $96$ registered pairs that carry a scored query--gallery pair hold $48\%$
+of the $31\,822$ valid ones --- $160$ valid cells per image pair against
+$104$ for a failed pair --- from a third of the available pairs ($46$ of the
+$301$ same-wall pairs yield no valid pair at all). A logistic fit over all
+$301$ pairs makes the mechanism
 plain: sharpness dominates (median $133.8$ registered vs $7.2$ failed,
 wall-clustered Wald $z = 5.1$, $p = 3\times10^{-7}$), frame gap far less
 ($z = -2.8$, $p = 0.005$). The independent-pairs $z$s ($8.2$, $-5.0$)
@@ -70,11 +77,10 @@ pipeline bug silently left it inert) gives Rank-1 $0.920$, mAP $0.862$,
 coverage $0.50$ against $0.952$, $0.886$, $0.48$; assignment $F_1$ rises
 $0.769$ to $0.784$ when enabled; open-set is unchanged.
 
-\textbf{Cost.} The abstract's more-than-two-orders-of-magnitude comparison at
-$27.9$\,s/query is a query-level charging convention, not a fundamental
-pair-level compute gap. At $27.9$\,s/query the baseline charges more than
-two orders of magnitude above OSNet, but that per-query figure is a charging
-convention, not an intrinsic one: registration is per image \emph{pair}, one
+\textbf{Cost.} At $27.9$\,s/query the baseline
+is more than two orders of magnitude above OSNet, but that per-query figure is
+a charging convention, not an intrinsic one: registration is per image
+\emph{pair}, one
 homography serves every crack on a wall, and amortized over the $301$ test
 image pairs the same pass runs about $26$\,s/pair ($7817$\,s total), after
 which any later crack query on the pair pays only the Chamfer pass, not the
@@ -91,7 +97,7 @@ scale, $6^{\circ}$ rotation, $4^{\circ}$ tilt): dataset A additionally grows
 every crack tip (damage evolution), dataset B corrupts appearance while
 leaving structure untouched (blur $\sigma{=}1.6$, noise $\sigma{=}14$,
 brightness/contrast shift); each synthetic query is ranked against the
-wall's real instances only. Unlike Table~I's \ours{} system, the
+wall's real instances only. Unlike the Table~\ref{tab:main} \ours{} system, the
 synthetic-protocol \emph{Hybrid} folds a structural skeleton comparison into
 the geometric baseline as a fallback plus per-pair blend, scored by the same
 code as OSNet$+$ctx (Table~\ref{tab:hybrid}).

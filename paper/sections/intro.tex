@@ -19,18 +19,19 @@ walls, 212 crack identities, to make that re-identification measurement
 (Fig.~\ref{fig:ceiling}). Capture is one continuous walk-around per wall, so
 what is measured is \emph{within-visit} viewpoint and scale correspondence,
 an upper bound on multi-visit performance; we add a synthetic revisit
-protocol as a venue-controlled secondary check (Sec.~\ref{sec:hybridbench}).
-That check uses a distinct \emph{Hybrid} pipeline: it extends the Table~I
-\ours{} registration baseline with a skeleton-comparison fallback and
-per-pair blending, so its reversal does not directly contradict Table~I.
+protocol as a controlled secondary check (Sec.~\ref{sec:hybridbench}).
+That check uses a distinct \emph{Hybrid} pipeline: it extends the
+Table~\ref{tab:main} \ours{} registration baseline with a
+skeleton-comparison fallback and per-pair blending, so its reversal does not
+directly contradict Table~\ref{tab:main}.
 
 \smallskip
 \noindent\textbf{Appearance buys almost nothing on the decision.} On ranking
-the nine matchers separate as expected (Rank-1 $0.352$ to $0.654$ against
+the ten matchers separate as expected (Rank-1 $0.352$ to $0.654$ against
 $0.336$ chance); on pairwise $F_1$, the \emph{same-crack-or-not} decision a
-record makes at a threshold, all nine land between $0.000$ and $0.054$ above
-the $0.305$ floor, two (ORB, DeiT) at exactly zero, and at a
-validation-calibrated threshold eight of the nine span only $-0.012$ to
+record makes at a threshold, all ten land between $0.000$ and $0.054$ above
+the $0.305$ floor, three (ORB, DeiT, DINOv2) at exactly zero, and at a
+validation-calibrated threshold nine of the ten span only $-0.012$ to
 $+0.012$ around chance while LoFTR holds a real margin of $0.046$.
 
 \smallskip
@@ -66,25 +67,26 @@ solves real multi-visit re-identification.
 \noindent\textbf{Contributions:} (i)~\textsc{CrackID} with an explicit
 annotation-quality report, $45\%$ of identities were formed by an automatic
 merge, reported rather than assumed (Sec.~\ref{sec:annotation});
-(ii)~a nine-method benchmark against stated chance levels, with
+(ii)~a ten-method benchmark against stated chance levels, with
 crop$+$context and crack-erased controls (Sec.~\ref{sec:ceiling});
 (iii)~a synthetic revisit protocol isolating appearance change from damage
 evolution, the only multi-visit evidence this paper has
 (Sec.~\ref{sec:hybridbench});
 (iv)~a geometric reference baseline and a protocol for this task's failure
-modes: coverage-aware metrics, unanswerable queries, an admission gate,
-wall-resampled confidence (Sec.~\ref{sec:method}, \ref{sec:protocol},
-\ref{sec:results}).
+modes: coverage-aware metrics, unanswerable queries, and an admission gate
+(Sec.~\ref{sec:method}, \ref{sec:protocol}, \ref{sec:results}).
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/ceiling.pdf}
-\caption{\textbf{The appearance ceiling.} Pairwise $F_1$ for nine crop-scope
+\caption{\textbf{The appearance ceiling.} Pairwise $F_1$ for ten crop-scope
 matchers spanning four method families on \textsc{CrackID} test. Every method
 falls inside the band $0.305$ to $0.359$, width $0.054$, pressed against the
 $0.305$ chance floor ($2p/(1+p)$ for this pool), irrespective of family, era,
-or compute budget. The geometric reference baseline (red) leaves the band.
-Ranking metrics separate the same methods over a $0.30$ range; the decision
-metric does not.}
+or compute budget. The geometric reference baseline (red) leaves the band,
+but it answers only $48\%$ of pairs, for which the best-constant floor is
+$0.544$ (the \textsc{Coverage-only} level), not $0.305$: its bar is drawn
+against the dashed line. Ranking metrics separate the same methods over a
+$0.30$ range; the decision metric does not.}
 \label{fig:ceiling}
 \end{figure}

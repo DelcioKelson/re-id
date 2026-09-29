@@ -4,7 +4,13 @@
 A query is one annotated crack instance in one photograph; the gallery is the
 query's own wall, so hard negatives share material and lighting; the query's
 own photograph and week are excluded, leaving $n_Q = 280$ scored queries on
-test. Three choices deliberately favor no method, including ours:
+test. A \emph{query--gallery pair} is a query matched against one gallery
+instance of the same wall, and an \emph{image pair} is two photographs of one
+wall. Table~\ref{tab:units} gives these units per split. Registration (Sec.~\ref{sec:method}) is charged per image pair, but only
+the pairs containing at least one scored crack are actually registered, which
+on test is $255$ of the $301$; the remaining pairs are those whose photographs
+carry no crack instance the segmenter passes its size filter.
+Three choices deliberately favor no method, including ours:
 \begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
 \item \textbf{Unanswerable queries are retained. } A query whose identity has
 no gallery counterpart can contribute false alarms and never successes, which
@@ -16,6 +22,30 @@ thresholded on held-out walls.
 cannot score counts as predicted-negative and ranks last; coverage is not
 independent of the label (Sec.~\ref{sec:coverage}).
 \end{itemize}
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Counting units for every metric.} Per split: walls,
+photographs and identities; identities in two or more photographs (the only
+ones that can form a query with an answer); answerable queries (ranking
+pool); positive and valid query--gallery pairs (pairwise-$F_1$ pool, test
+prevalence $0.180$); and same-wall image pairs (registration pool,
+Sec.~\ref{sec:coverage}).}
+\label{tab:units}
+\begin{tabular}{lrr}
+\toprule
+ & Validation & Test \\
+\midrule
+Walls / photographs / identities & 6 / 66 / 66 & 11 / 74 / 146 \\
+Identities in $\geq 2$ photographs & 18 & 19 \\
+Answerable queries & 439 & 280 \\
+Positive query--gallery pairs & 26\,012 & 5\,722 \\
+Valid query--gallery pairs & 89\,118 & 31\,822 \\
+Same-wall image pairs & 394 & 301 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Metrics}
 We report Rank-1, Rank-5 and mAP, pairwise $F_1$, and assignment $F_1$ (a
@@ -33,5 +63,5 @@ $200$ random matrices through the same evaluation code). This is a
 prevalence-induced floor, not a coin-flip chance rate, and it changes when
 the evaluated pair pool changes. Confidence resamples \textbf{walls}, not
 queries, since queries from one wall succeed or fail together, and with 11
-test walls the interval is wide; we report its width as the honest
-statement.
+test walls any such interval would be wide; Sec.~\ref{sec:validity} states why
+we report none.

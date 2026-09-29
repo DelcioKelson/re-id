@@ -42,23 +42,26 @@ Y.~Qian, J.~Barthelemy, E.~Karuppiah \emph{et~al.}, ``Identifying
   re-identification challenges: Past, current and future trends,'' \emph{SN
   Computer Science}, vol.~5, p. 937, 2024.
 
-\bibitem{hasan2025review}
-M.~J. Hasan, C.~K. Nguyen, Y.~L. Boo, H.~Jahani, and K.-L. Ong, ``Vehicle
-  damage detection using artificial intelligence: A systematic literature
-  review,'' \emph{WIREs Data Mining and Knowledge Discovery}, vol.~15, p.
-  e70027, 2025.
+\bibitem{zou2012cracktree}
+Q.~Zou, Y.~Cao, Q.~Li, Q.~Mao, and S.~Wang, ``{CrackTree}: Automatic crack
+  detection from pavement images,'' \emph{Pattern Recognition Letters},
+  vol.~33, no.~3, pp. 227--238, 2012.
 
-\bibitem{perez2024assessment}
-S.~A. P{\'e}rez-Zarate, D.~Corzo-Garc{\'i}a, J.~L. Pro-Mart{\'i}n
-  \emph{et~al.}, ``Automated car damage assessment using computer vision:
-  Insurance company use case,'' \emph{Applied Sciences}, vol.~14, no.~20, p.
-  9560, 2024.
+\bibitem{liu2019deepcrack}
+Y.~Liu, J.~Yao, X.~Lu, R.~Xie, and L.~Li, ``{DeepCrack}: A deep hierarchical
+  feature learning architecture for crack segmentation,''
+  \emph{Neurocomputing}, vol. 338, pp. 139--153, 2019.
 
-\bibitem{mallios2023multiview}
-D.~Mallios, L.~Xiaofei, N.~McLaughlin, J.~M. Del~Rincon, C.~Galbraith, and
-  R.~Garland, ``Vehicle damage severity estimation for insurance operations
-  using in-the-wild mobile images,'' \emph{IEEE Access}, vol.~11, pp.
-  78\,644--78\,655, 2023.
+\bibitem{eisenbach2017gaps}
+M.~Eisenbach, R.~Stricker, D.~Seichter, K.~Amende, K.~Debes, M.~Sesselmann,
+  D.~Ebersbach, U.~Stoeckert, and H.-M. Gross, ``How to get pavement distress
+  detection ready for deep learning? a systematic approach,'' in \emph{Int.
+  Joint Conf. Neural Networks (IJCNN)}, 2017, pp. 2039--2047.
+
+\bibitem{benz2025crackstructures}
+C.~Benz and V.~Rodehorst, ``{CrackStructures} and {CrackEnsembles}: The power
+  of multi-view for 2.5d crack detection,'' in \emph{Proceedings of the Winter
+  Conference on Applications of Computer Vision (WACV)}, 2025, pp. 5990--5999.
 
 \bibitem{parente2022monitoring}
 L.~Parente, E.~Falvo, C.~Castagnetti, F.~Grassi, F.~Mancini, P.~Rossi, and
@@ -132,6 +135,24 @@ L.~Maiano, A.~Montuschi, M.~Caserio \emph{et~al.}, ``A deep-learning-based
   antifraud system for car-insurance claims,'' \emph{Expert Systems with
   Applications}, vol. 231, p. 120644, 2023.
 
+\bibitem{hasan2025review}
+M.~J. Hasan, C.~K. Nguyen, Y.~L. Boo, H.~Jahani, and K.-L. Ong, ``Vehicle
+  damage detection using artificial intelligence: A systematic literature
+  review,'' \emph{WIREs Data Mining and Knowledge Discovery}, vol.~15, p.
+  e70027, 2025.
+
+\bibitem{perez2024assessment}
+S.~A. P{\'e}rez-Zarate, D.~Corzo-Garc{\'i}a, J.~L. Pro-Mart{\'i}n
+  \emph{et~al.}, ``Automated car damage assessment using computer vision:
+  Insurance company use case,'' \emph{Applied Sciences}, vol.~14, no.~20, p.
+  9560, 2024.
+
+\bibitem{mallios2023multiview}
+D.~Mallios, L.~Xiaofei, N.~McLaughlin, J.~M. Del~Rincon, C.~Galbraith, and
+  R.~Garland, ``Vehicle damage severity estimation for insurance operations
+  using in-the-wild mobile images,'' \emph{IEEE Access}, vol.~11, pp.
+  78\,644--78\,655, 2023.
+
 \bibitem{sakurada2015changedetection}
 K.~Sakurada and T.~Okatani, ``Change detection from a street image pair using
   {CNN} features and superpixel segmentation,'' in \emph{British Machine Vision
@@ -162,5 +183,9 @@ D.~Barath, J.~Matas, and J.~Noskova, ``{MAGSAC}: Marginalizing sample
 G.~D. Evangelidis and E.~Z. Psarakis, ``Parametric image alignment using
   enhanced correlation coefficient maximization,'' \emph{IEEE Trans. Pattern
   Analysis and Machine Intelligence}, vol.~30, no.~10, pp. 1858--1865, 2008.
+
+\bibitem{jocher2023ultralytics}
+G.~Jocher, A.~Chaurasia, and J.~Qiu, ``{Ultralytics YOLOv8},''
+  \url{https://github.com/ultralytics/ultralytics}, 2023.
 
 \end{thebibliography}

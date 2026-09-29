@@ -1,4 +1,4 @@
-# Paper: *CrackID: A Benchmark for Crack Re-Identification*
+# Paper: *CrackID: A Within-Visit Benchmark for Crack Re-Identification*
 
 LaTeX source for the IEEE conference submission built from this repository.
 
@@ -8,9 +8,12 @@ LaTeX source for the IEEE conference submission built from this repository.
 
 Every figure and table is regenerated from committed artefacts. Table I is a
 direct copy of `../banchmark_out/result.txt`, and `verify_claims.py` now
-*parses that file* and asserts each quoted row against it -- previously the ten
-rows were hardcoded in the verifier, so the one link never checked was the one
-from benchmark output to published table.
+*parses that file* and asserts each quoted row against it -- previously the
+ten rows were hardcoded in the verifier, so the one link never checked was
+the one from benchmark output to published table. The counting-units table
+(`tab:units`) and the positive-pair/merge counts have no artefact of their own
+-- they are properties of the validity mask -- so the verifier re-derives them
+from `../dataset` through `benchmark.valid_mask` rather than trusting a CSV.
 
 | Artefact | Produced by | Used for |
 |---|---|---|

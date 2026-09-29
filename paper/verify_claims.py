@@ -85,6 +85,7 @@ CROP = dict(
     ViT=(0.654, 0.511, 0.286, 0.331, 0.317, 0.193),
     DeiT=(0.621, 0.497, 0.250, 0.305, 0.293, 0.058),
     CLIP=(0.604, 0.471, 0.143, 0.307, 0.306, 0.050),
+    DINOv2=(0.607, 0.484, 0.307, 0.305, 0.297, 0.011),
     OSNet=(0.654, 0.520, 0.168, 0.309, 0.309, 0.053),
 )
 
@@ -104,6 +105,12 @@ v = np.array(list(CROP.values()))
 r1, dirf, f1s, f1v, sec = v[:, 0], v[:, 2], v[:, 3], v[:, 4], v[:, 5]
 check("pairF1* min", f1s.min(), 0.305); check("pairF1* max", f1s.max(), 0.359)
 check("R@1 span", r1.max() - r1.min(), 0.302)
+# The per-query figures the paper prints in the cost column and in the
+# "0.011 to 8.6 s/query" span of Sec. V. DINOv2 is the cheap end: it is the
+# only one of the ten under 0.04 s/query, which is why the span widened from
+# 0.038 when it was added.
+check("cheapest crop s/query", sec.min(), 0.011, tol=5e-4)
+check("dearest crop s/query", sec.max(), 8.639, tol=5e-3)
 # Cost span is asserted as a BOUND, not a precise multiplier -- see the CROP
 # comment above for why a specific digit here would be false precision.
 check_bound = lambda label, got, lo: (
@@ -184,17 +191,17 @@ check("analytic pairF1 floor 2p/(1+p)", CH["analytic_pair_f1_floor"], 0.3048, to
 # The "at a deployable threshold" claim, stated as a RANGE rather than a
 # fixed-threshold inclusion count: "nine of ten span [-0.012, +0.012]" is
 # exact (their min and max ARE those two numbers to 3dp); "nine of ten are
-# within +/-0.012" is a threshold check that one of those nine (ViT, whose
-# own excess rounds to 0.012) can fail on floating-point technicality alone.
+# within +/-0.012" is a threshold check that one of those nine (ViT, whose own
+# excess rounds to 0.012) can fail on floating-point technicality alone.
 names = list(CROP)
 excess_v = f1v - CH["analytic_pair_f1_floor"]
 is_loftr = np.array([n == "LoFTR" for n in names])
 check("max calibrated excess over chance (LoFTR)", excess_v[is_loftr][0], 0.046, tol=2e-3)
 rest = excess_v[~is_loftr]
-check("range of the other nine: low (DeiT)", rest.min(), -0.012, tol=1e-3)
-check("range of the other nine: high (ViT)", rest.max(), 0.012, tol=1e-3)
+check("range of the other ten: low (DeiT)", rest.min(), -0.012, tol=1e-3)
+check("range of the other ten: high (ViT)", rest.max(), 0.012, tol=1e-3)
 check("methods below chance at calibrated threshold",
-      int(np.sum(excess_v < -1e-3)), 1, tol=0)
+      int(np.sum(excess_v < -1e-3)), 2, tol=0)
 check("simulated pairF1 chance", CH["chance"]["pair_f1"]["mean"], 0.3049, tol=2e-3)
 check("  ... its sd (a floor, not an average)",
       CH["chance"]["pair_f1"]["sd"], 0.0001, tol=1e-3)
@@ -208,7 +215,7 @@ floor = CH["analytic_pair_f1_floor"]
 excess = {k: CROP[k][3] - floor for k in CROP}
 check("max crop excess over chance (LoFTR)", max(excess.values()), 0.054, tol=2e-3)
 check("min crop excess over chance", min(excess.values()), 0.000, tol=2e-3)
-check("methods at exactly chance", sum(1 for e in excess.values() if e < 1e-3), 2, tol=0)
+check("methods at exactly chance", sum(1 for e in excess.values() if e < 1e-3), 3, tol=0)
 # ORB is BELOW chance on three metrics; the paper says so.
 check("ORB R@5 below chance", CROP["ORB"][0] * 0 + 0.759 - CH["chance"]["rank5"]["mean"],
       -0.008, tol=0.012)
@@ -259,8 +266,93 @@ for name, walls, ids_, multi, ph in [("val", sp['val'], 66, 18, 66),
 check("labelled points", npts, 1051, tol=0)
 check("photographs", len(files), 140, tol=0)
 
+print("\n[2b] Counting units (protocol table)")
+# The units table distinguishes four things the prose used to blur: queries,
+# positive query-gallery pairs, valid query-gallery pairs, and same-wall image
+# pairs. Only the protocol's own validity mask produces the middle two, so they
+# are re-derived from the dataset -- which is the point of the table.
+# The image-pair row is a per-split count over the SPLIT'S PHOTOGRAPHS (the
+# registration pool), not the number of pairs the mask happens to keep: the two
+# differ (301 vs 255 on test) and conflating them is the error this table was
+# added to stop, so both are checked below.
+sys.path.insert(0, ROOT)
+from benchmark import Dataset, valid_mask  # noqa: E402
+
+_data = Dataset(J('dataset'))
+_units, _cells = {}, {}
+for _name, _walls in (("val", sp['val']), ("test", sp['test'])):
+    _q, _g = _data.query_gallery(set(_walls))
+    _V = valid_mask(_q, _g)
+    _qid = np.array([r.identity or "" for r in _q])
+    _gid = np.array([r.identity or "" for r in _g])
+    _R = (_qid[:, None] == _gid[None, :]) & (_qid[:, None] != "")
+    _by = defaultdict(int)
+    for _i, _j in zip(*np.nonzero(_V)):
+        _by[frozenset((_q[_i].image_id, _g[_j].image_id))] += 1
+    _cells[_name] = (_V, _by)
+    _units[_name] = dict(answerable=int((_R & _V).any(axis=1).sum()),
+                         positives=int((_R & _V).sum()),
+                         valid=int(_V.sum()),
+                         same_wall_pairs=sum(len(wph[w]) * (len(wph[w]) - 1) // 2
+                                             for w in _walls),
+                         scored_pairs=len(_by))
+for _name, _want in (("val", (439, 26012, 89118, 394, 341)),
+                    ("test", (280, 5722, 31822, 301, 255))):
+    for _key, _w in zip(("answerable", "positives", "valid",
+                         "same_wall_pairs", "scored_pairs"), _want):
+        check(f"{_name} {_key}", _units[_name][_key], _w, tol=0)
+
+# Sec. V-B attributes part of the post-calibration collapse to prevalence
+# shift. Both prevalence numbers and both floors are re-derived here, because
+# the argument is a reader-visible one: it is legible straight off Table I, and
+# a reviewer will check the arithmetic without running anything.
+for _name, _prev, _fl in (("val", 0.292, 0.452), ("test", 0.180, 0.305)):
+    _p = _units[_name]["positives"] / _units[_name]["valid"]
+    check(f"{_name} pair prevalence", _p, _prev, tol=5e-4)
+    check(f"{_name} pairwise-F1 floor 2p/(1+p)", 2 * _p / (1 + _p), _fl, tol=1e-3)
+
+print("\n[2c] The corrected positive-pair claim (Sec. VI-A)")
+# The paper used to say "118 positive pairs" and attribute the near-total
+# ceiling to merges. 118 is not any unit the protocol produces. The real figure
+# is 5,722 positive query-gallery pairs, and the merge claim must be made about
+# THAT population, in both the cell unit the paper quotes and the identity-pair
+# unit the argument is really about.
+_cV, _cby = _cells['test']
+_cq, _cg = _data.query_gallery(set(sp['test']))
+_cqid = np.array([r.identity or "" for r in _cq])
+_cgid = np.array([r.identity or "" for r in _cg])
+_pos = ((_cqid[:, None] == _cgid[None, :]) & (_cqid[:, None] != "")) & _cV
+_cl = json.load(open(J('dataset/labels/_changelog.json')))
+_merged = {}
+for _w, _info in _cl.items():
+    for _i, _meta in _info.get('identities', {}).items():
+        _merged[_i] = len(_meta.get('absorbed_prefill_ids', [])) > 1
+_mq = np.array([[_merged.get(x, False) for x in _cgid] for _ in range(len(_cq))])
+_mg = np.array([[_merged.get(x, False) for x in _cqid] for _ in range(len(_cg))]).T
+_any_merged = (_mq | _mg) & _pos
+_both_un = (~_mq & ~_mg) & _pos
+_idpairs = {(_cqid[i], _cgid[j]) for i, j in zip(*np.nonzero(_pos))}
+check("positive query-gallery pairs (test)", int(_pos.sum()), 5722, tol=0)
+check("  ... involving a merged identity (cells)", int(_any_merged.sum()), 5718, tol=0)
+check("  ... as a fraction", int(_any_merged.sum()) / int(_pos.sum()), 0.999, tol=5e-4)
+check("  ... both sides unmerged (cells)", int(_both_un.sum()), 4, tol=0)
+check("distinct positive identity pairs", len(_idpairs), 19, tol=0)
+check("  ... spanning how many identities (unmerged only)",
+      len({x for p in {( _cqid[i], _cgid[j]) for i, j in zip(*np.nonzero(_both_un))}
+           for x in p}), 2, tol=0)
+# ... and the registration-rate check that follows from it, in image-pair units
+_regU = {frozenset(k.split('|')): bool(v)
+         for k, v in json.load(open(J('banchmark_out/pair_outcomes.json')))['registered'].items()}
+for _lbl, _mask, _n in (("merged", _any_merged, 83), ("unmerged", _both_un, 1)):
+    _imgs = {frozenset((_cq[i].image_id, _cg[j].image_id))
+             for i, j in zip(*np.nonzero(_mask))}
+    check(f"image pairs holding a {_lbl} positive", len(_imgs), _n, tol=0)
+    check(f"  ... that registered", sum(_regU.get(p, False) for p in _imgs), _n, tol=0)
+
+
 print("\n[3] Registration coverage and the gate (Sec. VI-D, VI-G)")
 po = json.load(open(J('banchmark_out/pair_outcomes.json')))['registered']
+
 sharp = json.load(open(J('dataset/quality.json')))['sharpness']
 check("test image pairs", len(po), 301, tol=0)
 check("registered pairs", sum(po.values()), 97, tol=0)
@@ -275,6 +367,19 @@ for gate, kept, walls2, rate in [(10, 53, 10, 0.561), (25, 40, 7, 0.683)]:
     check(f"gate>={gate}: walls pairable", sum(1 for c in bw.values() if c >= 2), walls2, tol=0)
     check(f"gate>={gate}: registration rate", sum(1 for k in prs if po[k]) / len(prs), rate)
 check("captures rejected at gate 10", 74 - 53, 21, tol=0)
+# Registration is 32% of the same-wall image PAIRS but covers a much larger
+# share of the valid query-gallery pairs those images generate: a registered
+# pair tends to hold more annotated instances per photograph than a failed one.
+# The paper quotes both, plus the per-pair density, because quoting any one of
+# them alone misleads -- and the direction matters: the validity mask is not
+# symmetric, so these are counted on unordered image pairs.
+_in_reg = sum(_c for _p, _c in _cby.items() if _regU.get(_p, False))
+_regd = [_c for _p, _c in _cby.items() if _regU.get(_p, False)]
+_faild = [_c for _p, _c in _cby.items() if _p in _regU and not _regU[_p]]
+check("valid pairs inside registered image pairs", _in_reg, 15328, tol=0)
+check("  ... as a fraction of all valid pairs", _in_reg / int(_cV.sum()), 0.482, tol=5e-3)
+check("valid cells per registered image pair", float(np.mean(_regd)), 160, tol=0.5)
+check("valid cells per failed image pair", float(np.mean(_faild)), 104, tol=0.5)
 
 print("\n[4] Viewpoint covariate (Sec. VI-E, Fig. 3)")
 vp = json.load(open(J('banchmark_out/viewpoint.json')))['pairs']

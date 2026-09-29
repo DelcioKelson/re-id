@@ -28,56 +28,29 @@ Nuno da Costa, Ricardo Rodrigues, and Duarte Fernandes }
 \maketitle
 
 \begin{abstract}
-Automated maintenance systems turn photographs into tracked defect records: a
-crack re-photographed on a later visit must be matched to its existing record
-or filed as new. Crack \emph{detection} is mature, but we are aware of no
-dataset or benchmark for crack \emph{re-identification}. The obvious
-approach, cropping the region and matching embeddings, imports an assumption
-from person and vehicle re-ID that may not hold here: that a crack has a
-stable, locally distinctive appearance.
-
-We introduce \textsc{CrackID}: 140 photographs of 17 walls covering 212 crack
-identities, released with an explicit annotation-quality report and stated
-chance levels for every metric. Each wall was captured in one continuous
-walk-around, so the benchmark measures \emph{within-visit} viewpoint
-robustness. A synthetic multi-visit protocol (warping plus grown or corrupted
-appearance) serves only as a secondary check, and cross-session
-re-identification is a hypothesis, not a result, in this paper.
-
-Benchmarking nine matchers across four families, we find that on the decision
-a deployed system actually has to make (same crack or not, at a fixed
-threshold) none beats chance by more than $0.054$ pairwise $F_1$. Ranking
-metrics do separate the methods, but the thresholded decision that matters for
-deployment sits near the floor for almost every crop-based method. These are
-point estimates over an effective sample of $19$ identities across $11$
-walls; wall-level intervals are wide (Sec.~\ref{sec:validity}), so the claim
-we make is about the pattern, a cluster at the floor with one exception, not
-the individual digits.
-
-Two controls help localize the difficulty. Giving an embedder the surrounding
-wall context raises its open-set rate from $0.168$ to $0.404$, but
-\emph{erasing the crack itself} from that same view recovers almost all of
-the gain ($0.393$): such a method is retrieving on location, not on crack
-appearance. A geometric reference baseline, which registers on wall texture
-with cracks masked \emph{out}, then Chamfer-matches the projected crack masks
-under global assignment, reaches $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of
-$0.768$, against $0.429$ for the best crop method and $0.000$ for a control
-that exploits registration coverage alone without examining any crack. The
-open-set gap is therefore attributable to matching, not to partial coverage:
-coverage-only assigns a constant score to every registered pair and ranks
-unregistered pairs last, so its nontrivial Rank-1 reflects registration
-overlap rather than crack evidence. As with the $F_1$ results, these are
-point estimates on the same $19$-identity sample, and the claim is the $0.35$
-gap as a structural finding, not a precise interval (Sec.~\ref{sec:validity}).
-
-This is not deployment evidence yet. The geometric system answers only $48\%$
-of pairs, fails outright on two smooth-plaster walls, and its apparent
-within-visit advantage is entangled with the homography-based provenance of
-our own annotations, a circularity that our two partial checks constrain but
-do not remove. On the synthetic revisit check, our only multi-visit evidence,
-OSNet$+$context instead wins on both ranking and open-set performance, so the
-geometric method's advantage here should not be read as a demonstrated
-solution for cross-visit re-identification.
+Maintenance systems turn photographs into tracked defect records:
+a crack re-photographed later must be matched to its record or filed as new.
+Crack \emph{detection} is mature, but no benchmark for crack
+\emph{re-identification} is known to us. We introduce \textsc{CrackID}: 140 photographs of
+17 walls with 212 crack identities, captured in one continuous walk-around per
+wall, so it measures within-visit viewpoint and scale robustness, not
+cross-visit re-identification. Every metric is reported against its chance
+level, with an annotation-quality report ($45\%$ of identities from an
+automatic merge). We benchmark ten crop-based matchers from four families.
+Ranking metrics separate them (Rank-1 $0.352$--$0.654$; chance $0.336$), but
+on the thresholded same-crack decision none exceeds the $0.305$ pairwise-$F_1$
+floor by more than $0.054$. Two controls localize the difficulty: adding wall
+context raises OSNet's open-set rate from $0.168$ to $0.404$, yet inpainting
+the crack out of that view retains $0.393$: context methods retrieve on
+location, not crack appearance. A geometric reference baseline that registers
+on wall texture with cracks masked, then Chamfer-matches projected crack
+masks, reaches $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ against $0.429$
+for the best crop method; a coverage-only control scores $0.000$. It
+answers only $48\%$ of pairs, fails on two smooth-plaster walls, and
+is entangled with the homography-based provenance of our annotations; on a
+synthetic revisit check, OSNet$+$context outperforms it in ranking and
+open-set rate. All results are point estimates on $19$ identities across $11$
+walls; we claim the pattern, not the digits.
 \end{abstract}
 
 \begin{IEEEkeywords}

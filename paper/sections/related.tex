@@ -1,11 +1,13 @@
 \section{Related Work}
 
 Crack analysis is overwhelmingly focused on detection and
-segmentation~\cite{hasan2025review,perez2024assessment}; its datasets
-annotate cracks within single images and the large consolidations
+segmentation~\cite{zou2012cracktree,liu2019deepcrack,eisenbach2017gaps}; its
+datasets annotate cracks within single images and the large consolidations
 merging~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k} inherit that
-scope, and multi-view pipelines~\cite{mallios2023multiview} aggregate within
-one inspection without instance correspondence. Structural-health monitoring
+scope, and multi-view crack pipelines
+fuse several photographs of one inspection into a surface or a
+segmentation~\cite{benz2025crackstructures} without solving instance
+correspondence between them. Structural-health monitoring
 does compare cracks across time with machinery close to
 ours~\cite{parente2022monitoring,harb2025multitemporal,sun2025perspective,nec2019guide},
 but identity is always \emph{given by construction} (fixed camera, marked
@@ -24,8 +26,11 @@ keypoint matching~\cite{lowe2004sift,rublee2011orb}, learned correspondence
 (SuperGlue~\cite{sarlin2020superglue}, LoFTR~\cite{sun2021loftr}), and
 region embeddings~\cite{dosovitskiy2021vit,touvron2021deit,radford2021clip,zhou2019osnet,oquab2024dinov2}
 apply directly to crack crops, and our benchmark measures all of them.
-Vehicle-damage assessment already re-identifies damage with OSNet in
-curated settings~\cite{maiano2023antifraud}; our results suggest the crop
+Vehicle-damage assessment already re-identifies damage across claims in
+curated settings~\cite{maiano2023antifraud}, a task our open-set protocol
+mirrors; the rest of that literature treats damage detection and severity
+rating rather than association~\cite{hasan2025review,perez2024assessment,mallios2023multiview}.
+Our results suggest the crop
 scope is itself the limiting choice. The move our baseline makes, aligning
 two captures and then reasoning about what is present in one and absent in
 the other, is change

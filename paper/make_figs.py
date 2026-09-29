@@ -31,27 +31,83 @@ ACC   = "#b2453c"    # proposed method
 BLUE  = "#33608c"
 
 # ---------------------------------------------------------------- table data
-# transcribed from banchmark_out/result.txt (see paper/results.tex)
-CROP = [   # name, family, R@1, R@5, mAP, DIR@FAR.1, pairF1, assF1, total_s
-    ("ORB",       "keypoint",  0.352, 0.759, 0.364, 0.018, 0.305, 0.325,   15.6),
-    ("SIFT",      "keypoint",  0.432, 0.829, 0.417, 0.036, 0.313, 0.324,   33.3),
-    ("SuperGlue", "learned",   0.555, 0.893, 0.453, 0.414, 0.353, 0.352, 1594.0),
-    ("LoFTR",     "learned",   0.549, 0.824, 0.441, 0.336, 0.359, 0.401, 2331.1),
-    ("YOLOv8",    "embedding", 0.561, 0.821, 0.453, 0.157, 0.356, 0.364,    4.6),
-    ("ViT-B/16",  "embedding", 0.654, 0.893, 0.511, 0.286, 0.331, 0.392,  238.4),
-    ("DeiT-S",    "embedding", 0.621, 0.879, 0.497, 0.250, 0.305, 0.381,   72.6),
-    ("CLIP",      "embedding", 0.604, 0.850, 0.471, 0.143, 0.307, 0.367,   63.9),
-    ("OSNet",     "re-ID",     0.654, 0.907, 0.520, 0.168, 0.309, 0.388,    1.8),
-]
-REG = ("Registration+Chamfer", 0.952, 0.992, 0.886, 0.768, 0.656, 0.784, 7817.3)
+# PARSED from banchmark_out/result.txt, the same file Table I is copied from.
+# This list used to be transcribed by hand and had drifted from the benchmark
+# output it was supposed to plot (ORB's cost, SuperGlue's Rank-1 and DIR all
+# differed), which is the same class of error the paper's own verifier exists
+# to catch. One source, one parser: make_figs.py and verify_claims.py both read
+# the file the table is copied from.
+RESULT_TXT = os.path.join(ROOT, "banchmark_out/result.txt")
+
+# result.txt method name -> (figure label, family)
+_DISPLAY = {
+    "ORB": ("ORB", "keypoint"),
+    "SIFT": ("SIFT", "keypoint"),
+    "SuperGlue": ("SuperGlue", "learned"),
+    "LoFTR": ("LoFTR", "learned"),
+    "YOLOv8-backbone": ("YOLOv8", "embedding"),
+    "ViT": ("ViT-B/16", "embedding"),
+    "DeiT": ("DeiT-S", "embedding"),
+    "CLIP": ("CLIP", "embedding"),
+    "DINOv2": ("DINOv2", "embedding"),
+    "OSNet": ("OSNet", "re-ID"),
+}
+_FAMILY_ORDER = {"keypoint": 0, "learned": 1, "embedding": 2, "re-ID": 3}
+
+
+def parse_results(path):
+    """method -> {column: value} from a result.txt / results_table.txt."""
+    rows, header = {}, None
+    for line in open(path):
+        parts = line.split()
+        if not parts:
+            continue
+        if parts[0] == "method":
+            header = parts
+            continue
+        if header is None or parts[0].startswith("-"):
+            continue
+        try:
+            nums = [float(x) for x in parts[2:]]
+        except ValueError:
+            continue
+        if len(nums) != len(header) - 2:
+            raise SystemExit(f"result.txt row {parts[0]!r} has {len(nums)} numeric "
+                             f"fields, header expects {len(header) - 2}")
+        rows[parts[0]] = dict(zip(header[2:], nums))
+    return rows
+
+
+RESULTS = parse_results(RESULT_TXT)
+
+
+def _load():
+    crop = []
+    for key, (label, fam) in _DISPLAY.items():
+        r = RESULTS[key]
+        crop.append((label, fam, r["R@1"], r["R@5"], r["mAP"],
+                     r["DIR@FAR.1"], r["pairF1*"], r["assF1"], r["total_s"]))
+    crop.sort(key=lambda c: _FAMILY_ORDER[c[1]])
+    reg = RESULTS["registration+chamfer"]
+    return crop, ("Registration+Chamfer", reg["R@1"], reg["R@5"], reg["mAP"],
+                  reg["DIR@FAR.1"], reg["pairF1*"], reg["assF1"], reg["total_s"])
+
+
+CROP, REG = _load()
 NQ = 280
+# The geometric baseline answers only 48% of pairs, and on that scorable
+# subset the best-constant predictor is 0.544 (2p/(1+p) at the subset's
+# prevalence 0.373), not the 0.305 the crop rows sit on. Drawing its bar
+# against 0.305 alone is the misreading the caption has to warn about.
+COVERAGE_ONLY_F1 = RESULTS["coverage-only"]["pairF1*"]
 
 FAMCOL = {"keypoint": "#7c7c7c", "learned": "#4f7a9e", "embedding": "#6b8f5e",
           "re-ID": "#a3803e"}
 
 
 def fig_ceiling():
-    """Fig 1 (teaser): pairwise F1 is flat across nine matchers; geometry breaks out."""
+    """Fig 1 (teaser): pairwise F1 is flat across the crop matchers; geometry
+    breaks out, but against a different floor, so both floors are drawn."""
     fig, ax = plt.subplots(figsize=(3.45, 1.62))
     names = [c[0] for c in CROP]
     f1    = [c[6] for c in CROP]
@@ -61,9 +117,19 @@ def fig_ceiling():
 
     lo, hi = min(f1), max(f1)
     ax.axhspan(lo, hi, color=GREY, alpha=0.20, zorder=0, lw=0)
+    # Sits just above the band, not at hi+0.075: the second floor line at
+    # 0.544 and its label need the space above it, and two annotations that
+    # collide are worse than one that is tight to what it annotates.
     ax.annotate(f"appearance band\n{lo:.3f}–{hi:.3f}  (width {hi-lo:.3f})",
-                xy=(len(names) / 2.0, hi), xytext=(len(names) / 2.0, hi + 0.075),
+                xy=(len(names) / 2.0, hi), xytext=(len(names) / 2.0, hi + 0.022),
                 ha="center", va="bottom", fontsize=6.6, color="#5a5a5a")
+
+    # The floor the geometric bar must be read against: it answers 48% of
+    # pairs, on which the best-constant predictor is 0.544, not 0.305.
+    ax.axhline(COVERAGE_ONLY_F1, color=ACC, ls=(0, (3, 2)), lw=0.8, zorder=2)
+    ax.text(len(names) + 0.25, COVERAGE_ONLY_F1 + 0.022,
+            f"floor on its 48% scorable subset: {COVERAGE_ONLY_F1:.3f}",
+            fontsize=6.0, color=ACC, ha="right", va="bottom")
 
     for k, i in enumerate(order):
         ax.bar(k, f1[i], color=FAMCOL[fam[i]], width=0.66, zorder=3, lw=0)
@@ -71,13 +137,13 @@ def fig_ceiling():
     ax.text(len(names) + 0.6, REG[5] + 0.012, f"{REG[5]:.3f}", ha="center",
             va="bottom", fontsize=7, color=ACC, fontweight="bold")
 
-    labels = [names[i] for i in order] + ["Ours"]
+    labels = [names[i] for i in order] + ["Geometric ref."]
     ax.set_xticks(list(range(len(names))) + [len(names) + 0.6])
     ax.set_xticklabels(labels, rotation=42, ha="right")
     ax.get_xticklabels()[-1].set_color(ACC)
     ax.get_xticklabels()[-1].set_fontweight("bold")
     ax.set_ylabel("pairwise F1")
-    ax.set_ylim(0, 0.78)
+    ax.set_ylim(0, 0.80)
     ax.grid(axis="y", color="#e2e2e2", lw=0.5, zorder=0)
     ax.set_axisbelow(True)
 
@@ -99,7 +165,7 @@ def fig_tradeoff():
                     xytext=(0, 6), ha="center", fontsize=6.2, color="#4a4a4a")
     ax.scatter(REG[7] / NQ, REG[4], s=64, marker="*", color=ACC, zorder=4,
                edgecolor="white", lw=0.6)
-    ax.annotate("Registration+Chamfer\n(ours)", (REG[7] / NQ, REG[4]),
+    ax.annotate("Registration+Chamfer\n(reference)", (REG[7] / NQ, REG[4]),
                 textcoords="offset points", xytext=(-6, -2), ha="right",
                 fontsize=6.6, color=ACC, fontweight="bold")
     ax.set_xscale("log")
