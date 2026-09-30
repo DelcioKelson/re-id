@@ -44,6 +44,46 @@ per wall and the pairwise agreement rate beside it.
     python label_audit.py dataset --sample 30 --seed 0
     python label_audit.py dataset --score dataset/labels/_audit_0.json
     python label_audit.py dataset --agree dataset/labels dataset/labels_b
+    python label_audit.py dataset --unresolved
+
+--unresolved NEEDS NO ANNOTATOR, AND IS THE BIGGER NUMBER
+--------------------------------------------------------
+--sample estimates a label error rate from 30 identities and needs a human
+to fill in verdicts. --unresolved needs nobody: it runs the benchmark's own
+resolution rule and reports what the ground truth actually reaches.
+
+Two figures come out, and they must not be confused.
+
+The click count is large (over half the points) and mostly harmless. The
+label files place several points on one crack per photo, and
+Dataset._resolve_identity consumes one click per connected component, so a
+photo with 44 clicks on 3 cracks is not 41 errors. Some are literal
+duplicates of another point in the same file. Only this one is ground truth
+leaving the experiment:
+
+    COMPONENTS DROPPED FROM EVALUATION  67/1051 (6.4%)
+
+A component whose nearest click is further than point_tolerance gets
+identity=None, and benchmark.py drops identity=None refs from the query set.
+Those cracks are then in no denominator: no method is penalised for missing
+them, and they cannot be found either.
+
+The contested count is the one that threatens the RESULTS rather than the
+completeness:
+
+    contested         437/1051 (41.6% of all components)
+    labels erased     445
+
+_resolve_identity returns on the FIRST point inside a component, so when a
+component carries clicks from two identities the second label is discarded
+with no trace in any output file. Either the merge joined two distinct
+cracks -- a hard negative turned into a free positive, inflating mAP for
+every method at once -- or the segmentation fused two cracks into one
+component, in which case the labels are right and the mask is wrong. The
+two need opposite fixes and the benchmark cannot separate them, so
+--unresolved renders one sheet per contested component with the kept label
+drawn as a cross and the erased one as a hollow circle, and writes both
+lists to dataset/labels/_unresolved.json for verdicts.
 
 --agree ALSO MEASURES THE MERGE ITSELF
 --------------------------------------
@@ -253,19 +293,25 @@ VERDICTS = ("correct", "over-merged", "split", "wrong-point")
 def score_audit(path: str) -> str:
     """Error rate over the filled-in audit file, with a Wilson interval."""
     with open(path) as f:
-        items = json.load(f)["items"]
+        doc = json.load(f)
+    items = doc["items"]
+    # the file names its own verdict vocabulary, so --score works for the
+    # identity sample and the unresolved/contested files alike
+    allowed = doc.get("verdicts", list(VERDICTS))
+    ok_verdict = "correct" if "correct" in allowed else allowed[0]
+    noun = doc.get("noun", "identities")
     done = [i for i in items if i.get("verdict")]
     bad_kinds = defaultdict(int)
     for i in done:
-        if i["verdict"] != "correct":
+        if i["verdict"] != ok_verdict:
             bad_kinds[i["verdict"]] += 1
     n, k = len(done), sum(bad_kinds.values())
 
     L = ["", "LABEL AUDIT",
-         f"  reviewed        {n}/{len(items)} sampled identities"]
+         f"  reviewed        {n}/{len(items)} sampled {noun}"]
     if not n:
         L.append("  nothing scored yet: fill the `verdict` field "
-                 f"({'/'.join(VERDICTS)}) in {path}")
+                 f"({'/'.join(allowed)}) in {path}")
         return "\n".join(L)
     p = k / n
     z = 1.96
@@ -278,7 +324,7 @@ def score_audit(path: str) -> str:
         L.append(f"    {kind:<14}{c}")
     merged = [i for i in done if i.get("merged")]
     if merged:
-        mk = sum(1 for i in merged if i["verdict"] != "correct")
+        mk = sum(1 for i in merged if i["verdict"] != ok_verdict)
         L.append(f"  of the {len(merged)} MERGED identities reviewed, {mk} were wrong "
                  f"({mk / len(merged):.0%})")
     L += ["", "  Quote the interval, not the point estimate, and say how many identities were",
@@ -288,7 +334,444 @@ def score_audit(path: str) -> str:
 
 
 # ===========================================================================
-# 4. Inter-annotator agreement
+# 3b. Points that resolve to no component
+# ===========================================================================
+
+UNRESOLVED_VERDICTS = ("mask-missed-crack", "point-misplaced", "not-a-crack")
+
+
+def _resolve_components(data, image_id: str,
+                        points: list[dict]) -> list[dict]:
+    """Per component: which point won, and which points fall inside it.
+
+    A copy of Dataset._resolve_identity that keeps the bookkeeping the
+    original discards. Two questions need it and neither can be answered from
+    the identity string alone: which point the component took, and which
+    points it covers. A second point of the SAME identity inside the same
+    component is redundant, not wrong -- counting it as a defect inflated the
+    unresolved total to 68%, which is a bug in the audit, not in the labels.
+    """
+    out = []
+    for inst in data.instances(image_id, apply_mask=False):
+        x0, y0, w, h = inst.bbox
+        crop = inst.mask_crop
+        inside, best_i, best_d = [], None, data.point_tolerance + 1
+        for i, p in enumerate(points):
+            px, py = p["xy"]
+            lx, ly = px - x0, py - y0
+            if 0 <= lx < crop.shape[1] and 0 <= ly < crop.shape[0] \
+                    and crop[ly, lx] > 0:
+                inside.append(i)
+            cx, cy = x0 + w / 2, y0 + h / 2
+            d = float(np.hypot(px - cx, py - cy))
+            if d < best_d:
+                best_i, best_d = i, d
+        if inside:
+            win = inside[0]                     # exact path: first point inside
+        elif best_i is not None and best_d <= data.point_tolerance:
+            win = best_i                         # near-miss: nearest to bbox centre
+        else:
+            win = None
+        out.append({
+            "instance_id": f"{image_id}_c{len(out):02d}",
+            "bbox": [int(x0), int(y0), int(w), int(h)],
+            "winner": win,
+            "inside": inside,
+            "identity": points[win]["identity"] if win is not None else None,
+            "area": int((crop > 0).sum()),
+        })
+    return out
+
+
+def _mask_distance(mask: np.ndarray, x: int, y: int, radius: int) -> float:
+    """Distance in px from (x, y) to the nearest mask pixel, capped at radius."""
+    h, w = mask.shape[:2]
+    if not (0 <= y < h and 0 <= x < w):
+        return float(radius + 1)
+    if mask[y, x] > 0:
+        return 0.0
+    y0, y1 = max(0, y - radius), min(h, y + radius + 1)
+    x0, x1 = max(0, x - radius), min(w, x + radius + 1)
+    sub = (mask[y0:y1, x0:x1] > 0)
+    if not sub.any():
+        return float(radius + 1)
+    ys, xs = np.nonzero(sub)
+    return float(np.min(np.hypot(ys - (y - y0), xs - (x - x0))))
+
+
+def unresolved_points(root: str, min_area: int = 200, close_px: int = 5,
+                      point_tolerance: int = 25) -> tuple[list[dict], dict]:
+    """Every ground-truth point that no component claims, with the reason.
+
+    benchmark.py drops a component whose nearest point is further than
+    point_tolerance, and drops the resulting identity=None ref from the query
+    set. So an unresolvable point is not a cosmetic defect: the crack it
+    names is absent from the evaluation, and a method is never penalised for
+    missing it. The number below is the size of that hole in the benchmark.
+    """
+    from benchmark import Dataset
+
+    data = Dataset(root, min_area=min_area, close_px=close_px,
+                   point_tolerance=point_tolerance)
+    rows = _manifest(root)
+    by_id = {r["image_id"]: r for r in rows}
+    items: list[dict] = []
+    n_pts = n_orphan = 0
+    n_comp = n_unlabelled = 0
+    n_dup = 0
+    orphan_photos: set[str] = set()
+
+    for image_id, photo in sorted(data.photos.items()):
+        path = os.path.join(root, "labels", f"{image_id}.json")
+        if not os.path.exists(path):
+            continue
+        with open(path) as f:
+            points = json.load(f).get("points", [])
+        if not points:
+            continue
+        n_pts += len(points)
+        seen = defaultdict(int)
+        for p in points:
+            seen[(p["identity"], tuple(p["xy"]))] += 1
+        n_dup += sum(c - 1 for c in seen.values())
+        comps = _resolve_components(data, image_id, points)
+        mask = data.mask(image_id)
+
+        effective: set[int] = set()
+        n_comp += len(comps)
+        n_unlabelled += sum(1 for c in comps if c["winner"] is None)
+        for c in comps:
+            if c["winner"] is None:
+                continue
+            effective.add(c["winner"])
+            for i in c["inside"]:              # same identity, same crack: fine
+                if points[i]["identity"] == c["identity"]:
+                    effective.add(i)
+        n_orphan += len(points) - len(effective)
+        if len(effective) < len(points):
+            orphan_photos.add(image_id)
+
+        for i, p in enumerate(points):
+            if i in effective:
+                continue
+            x, y = p["xy"]
+            d = _mask_distance(mask, x, y, radius=point_tolerance * 3)
+            if d == 0.0:
+                reason = "on-mask-but-unclaimed"
+            elif d > point_tolerance:
+                reason = "no-mask-within-tolerance"
+            else:
+                reason = "near-mask-but-unclaimed"
+            items.append({
+                "image_id": image_id,
+                "wall": by_id.get(image_id, {}).get("wall_id", image_id[:6]),
+                "identity": p["identity"],
+                "xy": [x, y],
+                "provisional": bool(p.get("provisional")),
+                "dist_to_mask_px": round(d, 1),
+                "mask_px": int((mask > 0).sum()),
+                "n_components": len(comps),
+                "reason": reason,
+                "verdict": "",
+                "note": "",
+            })
+
+    stats = {
+        "points_total": n_pts,
+        "points_unresolved": n_orphan,
+        "photos_total": len(data.photos),
+        "photos_affected": len(orphan_photos),
+        "components_total": n_comp,
+        "components_unlabelled": n_unlabelled,
+        "duplicate_points": n_dup,
+    }
+    return items, stats
+
+
+def render_unresolved(root: str, items: list[dict], out_dir: str,
+                      tile: int = 360, cols: int = 5) -> None:
+    """One tile per unresolvable point: a zoom on the click, mask overlaid.
+
+    The mask is drawn in red so the audit question is answerable at a glance:
+    is there a crack under the crosshair that the segmentation missed (fix the
+    mask), or is the crosshair on bare wall (fix the label)?
+    """
+    import cv2
+
+    os.makedirs(out_dir, exist_ok=True)
+    by_photo: dict[str, list[dict]] = defaultdict(list)
+    for it in items:
+        by_photo[it["image_id"]].append(it)
+
+    manifest = {r["image_id"]: os.path.join(root, r["path"]) for r in _manifest(root)}
+    n_sheets = 0
+    for image_id in sorted(by_photo):
+        img = cv2.imread(manifest[image_id], cv2.IMREAD_COLOR)
+        if img is None:
+            continue
+        mask = cv2.imread(os.path.join(root, "masks", f"{image_id}.png"),
+                          cv2.IMREAD_GRAYSCALE)
+        if mask is None or mask.shape[:2] != img.shape[:2]:
+            mask = np.zeros(img.shape[:2], np.uint8)
+        overlay = img.copy()
+        red = np.array([0, 0, 255], np.float32)
+        m3 = (mask > 127)
+        overlay[m3] = (0.55 * img[m3] + 0.45 * red).astype(np.uint8)
+
+        tiles = []
+        for it in sorted(by_photo[image_id], key=lambda i: i["dist_to_mask_px"]):
+            x, y = it["xy"]
+            half = tile // 2
+            x0, x1 = max(0, x - half), min(img.shape[1], x + half)
+            y0, y1 = max(0, y - half), min(img.shape[0], y + half)
+            t = overlay[y0:y1, x0:x1].copy()
+            if t.shape[0] < tile or t.shape[1] < tile:
+                t = cv2.copyMakeBorder(t, 0, max(0, tile - t.shape[0]),
+                                       0, max(0, tile - t.shape[1]),
+                                       cv2.BORDER_CONSTANT, value=(20, 20, 20))
+            cx, cy = x - x0, y - y0
+            cv2.line(t, (cx - 26, cy), (cx + 26, cy), (0, 255, 255), 2)
+            cv2.line(t, (cx, cy - 26), (cx, cy + 26), (0, 255, 255), 2)
+            cv2.circle(t, (cx, cy), 13, (0, 0, 255), 2)
+            cv2.putText(t, f"{it['dist_to_mask_px']:.0f}px", (6, 24),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+            cv2.putText(t, it["identity"][-8:], (6, tile - 12),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            tiles.append(t)
+
+        for start in range(0, len(tiles), cols):
+            row = tiles[start:start + cols]
+            while len(row) < cols:
+                row.append(np.full((tile, tile, 3), 20, np.uint8))
+            sheet = np.hstack(row)
+            banner = np.full((34, sheet.shape[1], 3), 32, np.uint8)
+            cv2.putText(banner, f"{image_id}  {len(by_photo[image_id])} unresolved"
+                        f"  (sheet {start // cols + 1})", (8, 24),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (235, 235, 235), 2)
+            out = np.vstack([banner, sheet])
+            cv2.imwrite(os.path.join(out_dir, f"{image_id}_{start // cols:02d}.jpg"),
+                        out, [cv2.IMWRITE_JPEG_QUALITY, 90])
+            n_sheets += 1
+    print(f"  {n_sheets} sheets -> {out_dir}/")
+
+
+def contested_components(root: str, min_area: int = 200, close_px: int = 5,
+                          point_tolerance: int = 25) -> tuple[list[dict], dict]:
+    """Components carrying clicks from more than one identity.
+
+    This is the over-merge signature, and unlike the sampled identity audit
+    it is exact and needs no annotator. Dataset._resolve_identity takes the
+    FIRST point that lands inside a component and returns, discarding the
+    rest. So on a component holding clicks from two identities, one label
+    wins and the other is erased with no trace in any output file. Two very
+    different faults produce that signature and the benchmark cannot tell
+    them apart:
+
+      a) the merge joined two distinct cracks, so one component carries both
+         their labels -- a hard negative has become a free positive, which
+         inflates mAP for every method at once;
+      b) the segmentation fused two cracks into one component, so two
+         correctly distinct labels collide on a mask artefact -- here the
+         LABELS are right and the mask is wrong.
+
+    (a) and (b) need opposite fixes, so the number is a routing measurement,
+    not a verdict. It says where to look, and how much of the benchmark the
+    answer rests on.
+    """
+    from benchmark import Dataset
+
+    data = Dataset(root, min_area=min_area, close_px=close_px,
+                   point_tolerance=point_tolerance)
+    items: list[dict] = []
+    n_comp = 0
+    by_wall: dict[str, int] = defaultdict(int)
+    for image_id in sorted(data.photos):
+        path = os.path.join(root, "labels", f"{image_id}.json")
+        if not os.path.exists(path):
+            continue
+        with open(path) as f:
+            points = json.load(f).get("points", [])
+        for c in _resolve_components(data, image_id, points):
+            n_comp += 1
+            ids = sorted({points[i]["identity"] for i in c["inside"]})
+            if len(ids) < 2:
+                continue
+            by_wall[image_id[:6]] += 1
+            items.append({
+                "image_id": image_id,
+                "wall": image_id[:6],
+                "instance_id": c["instance_id"],
+                "bbox": c["bbox"],
+                "n_identities": len(ids),
+                "identities": ids,
+                "winner": c["identity"],
+                "erased": [i for i in ids if i != c["identity"]],
+                "area_px": c["area"],
+                "verdict": "",
+                "note": "",
+            })
+    return items, {"components": n_comp, "contested": len(items),
+                   "erased_labels": sum(i["n_identities"] - 1 for i in items),
+                   "by_wall": dict(sorted(by_wall.items(), key=lambda kv: -kv[1]))}
+
+
+CONTESTED_VERDICTS = ("over-merged", "mask-fused", "correct")
+
+
+def format_unresolved(stats: dict, items: list[dict],
+                      contested: dict | None = None,
+                      contested_items: list[dict] | None = None) -> str:
+    n, tot = stats["points_unresolved"], stats["points_total"]
+    nc, nu = stats.get("components_total", 0), stats.get("components_unlabelled", 0)
+    L = ["", "=" * 84,
+         "POINTS THAT RESOLVE TO NO COMPONENT",
+         "=" * 84,
+         f"  unclaimed clicks  {n}/{tot} points ({n / max(1, tot):.1%})",
+         f"  photos affected   {stats['photos_affected']}/{stats['photos_total']}",
+         f"  COMPONENTS DROPPED FROM EVALUATION  {nu}/{nc} ({nu / max(1, nc):.1%})"]
+    by_reason = defaultdict(int)
+    for it in items:
+        by_reason[it["reason"]] += 1
+    for reason, c in sorted(by_reason.items(), key=lambda kv: -kv[1]):
+        L.append(f"    {reason:<28}{c}")
+    thin = sum(1 for i in items if i["mask_px"] < 200)
+    dup = stats.get("duplicate_points", 0)
+    L += ["",
+          "  READ THE TWO NUMBERS SEPARATELY. The click count is mostly redundancy: the label",
+          "  files place several points on one crack per photo, and one click per component is",
+          f"  all the benchmark consumes. {dup} of the unclaimed clicks are exact duplicates of",
+          "  another point in the same file, which is pure noise in the label JSON. Only the",
+          "  COMPONENT line is ground truth that leaves the experiment: those components get",
+          "  identity=None, are dropped from the query set (benchmark.py:311), and are in no",
+          "  denominator -- so no method is penalised for missing them.",
+          "",
+          "  no-mask-within-tolerance is the segmentation's fault: no crack is drawn anywhere",
+          f"  near the click. {thin} of these clicks sit in photos whose whole mask is under",
+          "  200 px. Verdicts: " + " / ".join(UNRESOLVED_VERDICTS) + "."]
+
+    if contested is not None:
+        c, ci = contested["contested"], contested_items or []
+        L += ["", "=" * 84,
+              "COMPONENTS CARRYING MORE THAN ONE IDENTITY -- the over-merge signature",
+              "=" * 84,
+              f"  contested         {c}/{contested['components']} "
+              f"({c / max(1, contested['components']):.1%} of all components)",
+              f"  labels erased     {contested['erased_labels']}  "
+              "(the loser's click leaves no trace in any output file)"]
+        by_n = defaultdict(int)
+        for it in ci:
+            by_n[it["n_identities"]] += 1
+        L.append("    identities per contested component: "
+                 + ", ".join(f"{k}->{v}" for k, v in sorted(by_n.items())))
+        L.append("    worst walls: "
+                 + ", ".join(f"{w} {n}" for w, n in
+                             list(contested["by_wall"].items())[:8]))
+        L += ["",
+              "  _resolve_identity returns on the FIRST point inside a component, so a second",
+              "  identity on the same component is discarded silently. Two faults look identical",
+              "  here and need opposite fixes:",
+              "    over-merged  the merge joined two DISTINCT cracks -- a hard negative became a",
+              "                free positive, inflating mAP for every method at once;",
+              "    mask-fused   the segmentation fused two cracks into one component -- the",
+              "                labels are right and the mask is wrong.",
+              "  This is exact and needs no annotator, so unlike --sample it is not an estimate.",
+              "  Verdict each one: " + " / ".join(CONTESTED_VERDICTS) + "."]
+    return "\n".join(L)
+
+
+def render_contested(root: str, items: list[dict], out_dir: str,
+                     tile: int = 420, cols: int = 4) -> None:
+    """One tile per contested component: every identity's click, in its own colour.
+
+    This is the sheet that answers over-merged vs mask-fused. Two clicks of
+    different colours on one connected blob means the question is real; the
+    colour tells you which label the benchmark kept, and the loser is drawn
+    hollow so the erased label is the one you judge.
+    """
+    import cv2
+
+    os.makedirs(out_dir, exist_ok=True)
+    palette = [(0, 255, 255), (255, 160, 0), (0, 255, 0), (200, 0, 255)]
+    by_wall: dict[str, list[dict]] = defaultdict(list)
+    for it in items:
+        by_wall[it["wall"]].append(it)
+
+    paths = {r["image_id"]: os.path.join(root, r["path"]) for r in _manifest(root)}
+    n_sheets = 0
+    for wall in sorted(by_wall):
+        img_cache: dict[str, np.ndarray] = {}
+        mask_cache: dict[str, np.ndarray] = {}
+        tiles = []
+        for it in by_wall[wall]:
+            iid = it["image_id"]
+            if iid not in img_cache:
+                img = cv2.imread(paths[iid], cv2.IMREAD_COLOR)
+                if img is None:
+                    continue
+                img_cache[iid] = img
+                m = cv2.imread(os.path.join(root, "masks", f"{iid}.png"),
+                               cv2.IMREAD_GRAYSCALE)
+                mask_cache[iid] = (m if m is not None
+                                   and m.shape[:2] == img.shape[:2]
+                                   else np.zeros(img.shape[:2], np.uint8))
+            img, mask = img_cache[iid], mask_cache[iid]
+            with open(os.path.join(root, "labels", f"{iid}.json")) as f:
+                points = json.load(f)["points"]
+
+            bx, by, bw, bh = it["bbox"]
+            half = max(tile // 2, max(bw, bh) // 2 + 40)
+            cx, cy = bx + bw // 2, by + bh // 2
+            x0 = max(0, min(cx - half, img.shape[1] - tile))
+            y0 = max(0, min(cy - half, img.shape[0] - tile))
+            x1, y1 = min(img.shape[1], x0 + tile), min(img.shape[0], y0 + tile)
+            x0, y0 = max(0, x1 - tile), max(0, y1 - tile)
+            t = img[y0:y1, x0:x1].copy()
+            comp = (mask[y0:y1, x0:x1] > 0) & (
+                (np.arange(y0, y1)[:, None] >= by)
+                & (np.arange(y0, y1)[:, None] < by + bh)
+                & (np.arange(x0, x1)[None, :] >= bx)
+                & (np.arange(x0, x1)[None, :] < bx + bw))
+            contours, _ = cv2.findContours(comp.astype(np.uint8),
+                                           cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(t, contours, -1, (0, 0, 255), 2)
+
+            for k, ident in enumerate(it["identities"]):
+                col = palette[k % len(palette)]
+                for p in points:
+                    if p["identity"] != ident:
+                        continue
+                    px, py = p["xy"][0] - x0, p["xy"][1] - y0
+                    if not (0 <= px < t.shape[1] and 0 <= py < t.shape[0]):
+                        continue
+                    if ident == it["winner"]:       # kept: filled
+                        cv2.drawMarker(t, (px, py), col, cv2.MARKER_CROSS, 26, 3)
+                    else:                          # erased by the benchmark: hollow
+                        cv2.circle(t, (px, py), 11, col, 2)
+                cv2.putText(t, str(k + 1), (t.shape[1] - 26, 26),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, col, 2)
+            cv2.putText(t, it["instance_id"][-8:], (6, t.shape[0] - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2)
+            tiles.append(t)
+
+        for start in range(0, len(tiles), cols):
+            row = tiles[start:start + cols]
+            while len(row) < cols:
+                row.append(np.full((tile, tile, 3), 20, np.uint8))
+            sheet = np.hstack(row)
+            banner = np.full((56, sheet.shape[1], 3), 32, np.uint8)
+            cv2.putText(banner, f"{wall}  contested components {len(by_wall[wall])}"
+                        f"  sheet {start // cols + 1}", (8, 24),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (235, 235, 235), 2)
+            cv2.putText(banner, "cross = label the benchmark kept   "
+                        "circle = label it discarded   red = component",
+                        (8, 48), cv2.FONT_HERSHEY_SIMPLEX, 0.55,
+                        (170, 200, 235), 1)
+            cv2.imwrite(os.path.join(out_dir, f"{wall}_{start // cols:02d}.jpg"),
+                        np.vstack([banner, sheet]), [cv2.IMWRITE_JPEG_QUALITY, 90])
+            n_sheets += 1
+    print(f"  {n_sheets} contested sheets -> {out_dir}/")
+
+
 # ===========================================================================
 
 def _partition(labels: dict[str, list[dict]], walls: set[str] | None = None
@@ -329,6 +812,10 @@ def _adjusted_rand(a: list[str], b: list[str]) -> float:
     mx = (sum_i + sum_j) / 2
     return float((sum_ij - exp) / (mx - exp)) if mx != exp else float("nan")
 
+
+# ===========================================================================
+# 4. Inter-annotator agreement
+# ===========================================================================
 
 def agreement(root: str, dir_a: str, dir_b: str, tol: float = 60.0) -> str:
     """Agreement between two annotators over the walls both labelled.
@@ -404,6 +891,11 @@ if __name__ == "__main__":
                     help="report the error rate from a filled-in audit file")
     ap.add_argument("--agree", nargs=2, metavar=("DIR_A", "DIR_B"),
                     help="inter-annotator agreement between two label directories")
+    ap.add_argument("--unresolved", action="store_true",
+                    help="audit points that no component claims, and render zoom sheets")
+    ap.add_argument("--min-area", type=int, default=200)
+    ap.add_argument("--close-px", type=int, default=5)
+    ap.add_argument("--point-tolerance", type=int, default=25)
     args = ap.parse_args()
 
     did = False
@@ -413,13 +905,37 @@ if __name__ == "__main__":
         print(format_merge_report(merge_report(args.root), triage))
         did = True
 
+    if args.unresolved:
+        items, stats = unresolved_points(args.root, min_area=args.min_area,
+                                        close_px=args.close_px,
+                                        point_tolerance=args.point_tolerance)
+        cont, cont_stats = contested_components(
+            args.root, min_area=args.min_area, close_px=args.close_px,
+            point_tolerance=args.point_tolerance)
+        print(format_unresolved(stats, items, cont_stats, cont))
+        out = os.path.join(args.root, "labels", "_unresolved.json")
+        with open(out, "w") as f:
+            json.dump({"point_tolerance": args.point_tolerance,
+                       "stats": stats, "contested_stats": cont_stats,
+                       "verdicts": list(UNRESOLVED_VERDICTS), "noun": "clicks",
+                       "contested_verdicts": list(CONTESTED_VERDICTS),
+                       "contested_noun": "components",
+                       "items": items, "contested": cont}, f, indent=1)
+        print(f"\n  -> {out}")
+        render_unresolved(args.root, items,
+                          os.path.join(args.root, "labels", "_unresolved_sheets"))
+        render_contested(args.root, cont,
+                         os.path.join(args.root, "labels", "_contested_sheets"))
+        did = True
+
     if args.sample:
         picked = sample_identities(args.root, n=args.sample, seed=args.seed,
                                    split=args.split)
         out = os.path.join(args.root, "labels", f"_audit_{args.seed}.json")
         with open(out, "w") as f:
             json.dump({"seed": args.seed, "split": args.split,
-                       "verdicts": list(VERDICTS), "items": picked}, f, indent=1)
+                       "verdicts": list(VERDICTS), "noun": "identities",
+                       "items": picked}, f, indent=1)
         print(f"\nsampled {len(picked)} identities "
               f"({sum(1 for p in picked if p['merged'])} merged) -> {out}")
         render_sample(args.root, picked,

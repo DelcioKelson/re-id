@@ -40,16 +40,25 @@ not looked at.
 --------------------------------------------------------------------------
 CONTROLS
 --------------------------------------------------------------------------
+Every action has a button in the toolbar under the image, so the mouse
+alone is enough. The keys below are shortcuts for the same actions and only
+reach the window while it has keyboard focus -- if a key does nothing,
+click a button instead.
+
   left click      place a point for the CURRENT identity
   right click     delete the nearest point (within 40 px on screen)
   [  /  ]         current crack number down / up
-  0-9             set crack number directly
+  0-9             set crack number directly (note: 0 means crack01)
   n  /  p         next / previous photo   (saves first)
   m               toggle the segmentation mask overlay
+  g               toggle click snapping
   a               accept all provisional (prefilled) points in this photo
   c               clear all points in this photo
   s               save now
   q  /  Esc       save and quit
+
+Crack numbers above 9 are reachable only with `]` (or "crack +"); there is
+no digit key for them.
 
 The point must land INSIDE the crack for the exact resolution path in
 benchmark.py; press `m` to show the mask and click on a red pixel. If
@@ -105,6 +114,9 @@ def load_rows(root: str) -> list[dict]:
 
 
 class Labeller:
+    BTN_H = 34
+    BTN_GAP = 6
+
     def __init__(self, root: str, rows: list[dict], max_side: int = 1100,
                  min_area: int = 200, close_px: int = 5, snap: bool = True):
         self.root = root
@@ -117,9 +129,14 @@ class Labeller:
         self.crack_no = 1
         self.show_mask = False
         self.dirty = False
+        self.quit = False
         self.points: list[dict] = []
         self.scale = 1.0
         self.disp: np.ndarray | None = None
+        self.top_h = 0
+        self.bot_h = 0
+        self.btn_rects: dict[str, tuple[int, int, int, int]] = {}
+        self.hover: str | None = None
         self._load()
 
     # ---- io ----
@@ -212,13 +229,14 @@ class Labeller:
                f"   photos labelled: {n_lab}/{len(self.rows)}"
                f"{f'   {n_prov} unreviewed' if n_prov else ''}"
                f"{'   *unsaved' if self.dirty else ''}",
-               "click=add(snaps)  rclick=del  [/] 0-9=crack no  n/p=photo  m=mask  "
-               "g=snap  a=accept  c=clear  q=quit"]
-        pad = np.full((22 * len(bar) + 8, out.shape[1], 3), 32, np.uint8)
+               "keys need this window focused -- click the toolbar below if a "
+               "key does nothing"]
+        self.top_h = 22 * len(bar) + 8
+        pad = np.full((self.top_h, out.shape[1], 3), 32, np.uint8)
         for k, line in enumerate(bar):
             cv2.putText(pad, line, (8, 18 + 22 * k), cv2.FONT_HERSHEY_SIMPLEX,
                         0.5, (235, 235, 235), 1, cv2.LINE_AA)
-        return np.vstack([pad, out])
+        return np.vstack([pad, out, self.render_toolbar(out.shape[1])])
 
     def _has_points(self, r: dict) -> bool:
         if r["image_id"] == self.row["image_id"]:
@@ -232,10 +250,142 @@ class Labeller:
         except (json.JSONDecodeError, OSError):
             return False
 
+    # ---- toolbar ----
+    # Every action is reachable by mouse as well as by key. cv2.waitKey()
+    # only sees keystrokes routed to a FOCUSED HighGUI window, and a window
+    # that never took focus makes the whole app look broken -- no key does
+    # anything and there is nothing to click as a fallback. The toolbar is
+    # that fallback, and it is also the faster way to hold down "crack +"
+    # while hunting for a crack number above 9.
+
+    def _toolbar_items(self) -> list[tuple[str, str]]:
+        return [
+            ("prev", "<< photo"),
+            ("next", "photo >>"),
+            ("mask", "mask ON" if self.show_mask else "mask"),
+            ("snap", "snap OFF" if not self.snap else "snap ON"),
+            ("accept", "accept"),
+            ("clear", "clear"),
+            ("crack-", "crack -"),
+            ("crack+", "crack +"),
+            ("save", "save"),
+            ("quit", "quit"),
+        ]
+
+    def _toolbar_rows(self, width: int) -> list[list[tuple[str, str, int, int]]]:
+        """Lay buttons out left to right, wrapping to a new row when full."""
+        font, scale = cv2.FONT_HERSHEY_SIMPLEX, 0.5
+        sized = []
+        for key, label in self._toolbar_items():
+            (tw, th), _ = cv2.getTextSize(label, font, scale, 1)
+            sized.append((key, label, tw + 26, th))
+        max_w = width - 2 * self.BTN_GAP
+        rows: list[list[tuple[str, str, int, int]]] = []
+        cur: list[tuple[str, str, int, int]] = []
+        cur_w = 0
+        for it in sized:
+            add = it[2] + (self.BTN_GAP if cur else 0)
+            if cur and cur_w + add > max_w:
+                rows.append(cur)
+                cur, cur_w = [it], it[2]
+            else:
+                cur.append(it)
+                cur_w += add
+        if cur:
+            rows.append(cur)
+        return rows
+
+    def render_toolbar(self, width: int) -> np.ndarray:
+        rows = self._toolbar_rows(width)
+        n_rows = len(rows)
+        self.bot_h = n_rows * (self.BTN_H + self.BTN_GAP) + self.BTN_GAP
+        out = np.full((self.bot_h, width, 3), 24, np.uint8)
+
+        self.btn_rects = {}
+        for r, row in enumerate(rows):
+            row_w = sum(it[2] for it in row) + self.BTN_GAP * (len(row) - 1)
+            x = max(self.BTN_GAP, (width - row_w) // 2)
+            y = self.BTN_GAP + r * (self.BTN_H + self.BTN_GAP)
+            for key, label, w, th in row:
+                rect = (x, y, x + w, y + self.BTN_H)
+                self.btn_rects[key] = rect
+                hot = (self.hover == key)
+                fill = (70, 120, 200) if hot else (52, 52, 52)
+                edge = (255, 220, 160) if hot else (110, 110, 110)
+                if key == "quit":
+                    fill = (150, 70, 60) if hot else (78, 48, 44)
+                cv2.rectangle(out, rect[:2], rect[2:], fill, -1, cv2.LINE_AA)
+                cv2.rectangle(out, rect[:2], rect[2:], edge, 1, cv2.LINE_AA)
+                (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX,
+                                              0.5, 1)
+                cv2.putText(out, label, (x + (w - tw) // 2, y + th + 9),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (245, 245, 245),
+                            1, cv2.LINE_AA)
+                x += w + self.BTN_GAP
+
+        # the current identity is the one number you must never get wrong,
+        # so it is spelled out large next to the buttons
+        txt = self.identity()
+        (tw, th), _ = cv2.getTextSize(txt, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)
+        if width - tw - 24 > 0:
+            cv2.putText(out, txt, (width - tw - 12, self.bot_h - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (120, 235, 255),
+                        2, cv2.LINE_AA)
+        return out
+
+    def _button_at(self, x: int, y: int) -> str | None:
+        for key, (x0, y0, x1, y1) in self.btn_rects.items():
+            if x0 <= x < x1 and y0 <= y < y1:
+                return key
+        return None
+
+    def _act(self, key: str) -> None:
+        """Single dispatch point shared by the toolbar and the keyboard."""
+        if key == "prev":
+            self._goto(self.i - 1)
+        elif key == "next":
+            self._goto(self.i + 1)
+        elif key == "mask":
+            self.show_mask = not self.show_mask
+        elif key == "snap":
+            self.snap = not self.snap
+        elif key == "accept":
+            if any(pt.get("provisional") for pt in self.points):
+                for pt in self.points:
+                    pt.pop("provisional", None)
+                self.dirty = True
+        elif key == "clear":
+            if self.points:
+                self.points = []
+                self.dirty = True
+        elif key == "crack-":
+            self.crack_no = max(1, self.crack_no - 1)
+        elif key == "crack+":
+            self.crack_no += 1
+        elif key == "save":
+            self.save()
+        elif key == "quit":
+            self.save()
+            self.quit = True
+
+    def _goto(self, i: int) -> None:
+        self.save()
+        self.i = i % len(self.rows)
+        self._load()
+
     # ---- mouse ----
     def on_mouse(self, event, x, y, flags, param):
-        y -= self.bar_h                       # canvas is [status bar; image]
+        y -= self.top_h
         if y < 0:
+            return
+        if y >= self.base.shape[0]:
+            key = self._button_at(x, y - self.base.shape[0])
+            if event == cv2.EVENT_LBUTTONDOWN and key:
+                self._act(key)
+            self.hover = key
+            return
+        if event == cv2.EVENT_MOUSEMOVE:
+            self.hover = self._button_at(x, y + self.base.shape[0])
             return
         if event == cv2.EVENT_LBUTTONDOWN:
             ox, oy = int(round(x / self.scale)), int(round(y / self.scale))
@@ -261,42 +411,32 @@ class Labeller:
         cv2.namedWindow(win, cv2.WINDOW_NORMAL)
         cv2.setMouseCallback(win, self.on_mouse)
         while True:
-            canvas = self.render()
-            self.bar_h = canvas.shape[0] - self.base.shape[0]
-            cv2.imshow(win, canvas)
+            cv2.imshow(win, self.render())
             k = cv2.waitKey(20) & 0xFF
             if k in (ord("q"), 27):
-                self.save()
-                break
+                self._act("quit")
             elif k == ord("n"):
-                self.save()
-                self.i = (self.i + 1) % len(self.rows)
-                self._load()
+                self._act("next")
             elif k == ord("p"):
-                self.save()
-                self.i = (self.i - 1) % len(self.rows)
-                self._load()
+                self._act("prev")
             elif k == ord("]"):
-                self.crack_no += 1
+                self._act("crack+")
             elif k == ord("["):
-                self.crack_no = max(1, self.crack_no - 1)
+                self._act("crack-")
             elif ord("0") <= k <= ord("9"):
                 self.crack_no = max(1, k - ord("0"))
             elif k == ord("m"):
-                self.show_mask = not self.show_mask
+                self._act("mask")
             elif k == ord("g"):
-                self.snap = not self.snap
+                self._act("snap")
             elif k == ord("a"):
-                if any(pt.get("provisional") for pt in self.points):
-                    for pt in self.points:
-                        pt.pop("provisional", None)
-                    self.dirty = True
+                self._act("accept")
             elif k == ord("c"):
-                if self.points:
-                    self.points = []
-                    self.dirty = True
+                self._act("clear")
             elif k == ord("s"):
-                self.save()
+                self._act("save")
+            if self.quit:
+                break
         cv2.destroyAllWindows()
 
 

@@ -7,7 +7,6 @@
         1608,
         1511
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall17_crack01",
         "verdict": "unchanged"
@@ -19,33 +18,8 @@
         1534,
         1763
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall17_crack02",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall17_crack03",
-      "xy": [
-        2242,
-        1887
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall17_crack03",
-        "verdict": "unchanged"
-      }
-    },
-    {
-      "identity": "wall17_crack03",
-      "xy": [
-        2167,
-        1985
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall17_crack04",
         "verdict": "reassigned"
       }
     },
@@ -55,21 +29,8 @@
         1260,
         2050
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall17_crack05",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall17_crack03",
-      "xy": [
-        2111,
-        2050
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall17_crack06",
         "verdict": "reassigned"
       }
     },
@@ -79,7 +40,6 @@
         1032,
         2372
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall17_crack07",
         "verdict": "reassigned"
@@ -91,21 +51,8 @@
         948,
         2492
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall17_crack08",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall17_crack04",
-      "xy": [
-        1692,
-        2600
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall17_crack09",
         "verdict": "reassigned"
       }
     },
@@ -115,21 +62,8 @@
         919,
         2779
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall17_crack10",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall17_crack04",
-      "xy": [
-        1469,
-        2886
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall17_crack11",
         "verdict": "reassigned"
       }
     },
@@ -139,47 +73,66 @@
         910,
         2947
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall17_crack12",
         "verdict": "reassigned"
       }
     },
     {
-      "identity": "wall17_crack04",
+      "identity": "wall17_crack01",
       "xy": [
-        1337,
-        3054
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall17_crack13",
-        "verdict": "reassigned"
-      }
+        1608,
+        1511
+      ]
     },
     {
-      "identity": "wall17_crack05",
+      "identity": "wall17_crack01",
       "xy": [
-        903,
-        3626
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall17_crack14",
-        "verdict": "reassigned"
-      }
+        1534,
+        1763
+      ]
     },
     {
-      "identity": "wall17_crack06",
+      "identity": "wall17_crack01",
       "xy": [
-        626,
-        3986
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall17_crack15",
-        "verdict": "reassigned"
-      }
+        1260,
+        2050
+      ]
+    },
+    {
+      "identity": "wall17_crack01",
+      "xy": [
+        1032,
+        2372
+      ]
+    },
+    {
+      "identity": "wall17_crack01",
+      "xy": [
+        948,
+        2492
+      ]
+    },
+    {
+      "identity": "wall17_crack01",
+      "xy": [
+        919,
+        2779
+      ]
+    },
+    {
+      "identity": "wall17_crack01",
+      "xy": [
+        910,
+        2947
+      ]
+    },
+    {
+      "identity": "wall17_crack01",
+      "xy": [
+        875,
+        3169
+      ]
     }
   ]
 }

@@ -7,7 +7,6 @@
         126,
         239
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack34",
         "verdict": "reassigned"
@@ -19,7 +18,6 @@
         3,
         1603
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack35",
         "verdict": "reassigned"
@@ -31,7 +29,6 @@
         397,
         1728
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack36",
         "verdict": "reassigned"
@@ -43,7 +40,6 @@
         484,
         1724
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack22",
         "verdict": "reassigned"
@@ -55,7 +51,6 @@
         1031,
         1885
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack37",
         "verdict": "reassigned"
@@ -67,7 +62,6 @@
         936,
         2073
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack38",
         "verdict": "reassigned"
@@ -79,7 +73,6 @@
         181,
         2152
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack25",
         "verdict": "reassigned"
@@ -91,7 +84,6 @@
         864,
         2206
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack24",
         "verdict": "reassigned"
@@ -103,7 +95,6 @@
         49,
         2249
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack27",
         "verdict": "reassigned"
@@ -115,7 +106,6 @@
         791,
         2275
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack39",
         "verdict": "reassigned"
@@ -127,7 +117,6 @@
         311,
         2439
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack28",
         "verdict": "reassigned"
@@ -139,7 +128,6 @@
         1744,
         2506
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack40",
         "verdict": "reassigned"
@@ -151,7 +139,6 @@
         1852,
         2586
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack41",
         "verdict": "reassigned"
@@ -163,7 +150,6 @@
         1623,
         2575
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack42",
         "verdict": "reassigned"
@@ -175,7 +161,6 @@
         1898,
         2694
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack43",
         "verdict": "reassigned"
@@ -187,7 +172,6 @@
         1586,
         3096
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack44",
         "verdict": "reassigned"
@@ -199,23 +183,52 @@
         1846,
         3103
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall15_crack45",
         "verdict": "reassigned"
       }
     },
     {
-      "identity": "wall15_crack34",
+      "identity": "wall15_crack26",
       "xy": [
-        1833,
-        3341
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall15_crack46",
-        "verdict": "reassigned"
-      }
+        1846,
+        3103
+      ]
+    },
+    {
+      "identity": "wall15_crack26",
+      "xy": [
+        767,
+        1813
+      ]
+    },
+    {
+      "identity": "wall15_crack26",
+      "xy": [
+        791,
+        2275
+      ]
+    },
+    {
+      "identity": "wall15_crack26",
+      "xy": [
+        311,
+        2439
+      ]
+    },
+    {
+      "identity": "wall15_crack26",
+      "xy": [
+        249,
+        2692
+      ]
+    },
+    {
+      "identity": "wall15_crack26",
+      "xy": [
+        279,
+        2841
+      ]
     }
   ]
 }

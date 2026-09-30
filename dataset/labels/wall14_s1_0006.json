@@ -1,4 +1,173 @@
 {
   "image_id": "wall14_s1_0006",
-  "points": []
+  "points": [
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1210,
+        2796
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1262,
+        2696
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1266,
+        2599
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1296,
+        2495
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1300,
+        2346
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1300,
+        2212
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1329,
+        2063
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1337,
+        1940
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1363,
+        1843
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1363,
+        1698
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1370,
+        1583
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1400,
+        1411
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1419,
+        1173
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1456,
+        1017
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1456,
+        1039
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1467,
+        763
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1482,
+        573
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1497,
+        637
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1430,
+        897
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1408,
+        838
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        302,
+        86
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        302,
+        249
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        339,
+        391
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        350,
+        532
+      ]
+    }
+  ]
 }

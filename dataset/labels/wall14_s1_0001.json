@@ -7,7 +7,6 @@
         972,
         466
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack01",
         "verdict": "unchanged"
@@ -19,7 +18,6 @@
         1052,
         833
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack02",
         "verdict": "reassigned"
@@ -31,7 +29,6 @@
         1076,
         1012
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack03",
         "verdict": "reassigned"
@@ -43,7 +40,6 @@
         1083,
         1231
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack04",
         "verdict": "reassigned"
@@ -55,7 +51,6 @@
         1132,
         1351
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack05",
         "verdict": "reassigned"
@@ -67,7 +62,6 @@
         1181,
         1711
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack06",
         "verdict": "reassigned"
@@ -79,7 +73,6 @@
         1217,
         1943
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack07",
         "verdict": "reassigned"
@@ -91,7 +84,6 @@
         1256,
         2155
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack08",
         "verdict": "reassigned"
@@ -103,7 +95,6 @@
         1287,
         2345
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack09",
         "verdict": "reassigned"
@@ -115,11 +106,45 @@
         1318,
         2615
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack10",
         "verdict": "reassigned"
       }
+    },
+    {
+      "identity": "wall14_crack01",
+      "xy": [
+        897,
+        63
+      ]
+    },
+    {
+      "identity": "wall14_crack01",
+      "xy": [
+        927,
+        190
+      ]
+    },
+    {
+      "identity": "wall14_crack01",
+      "xy": [
+        972,
+        466
+      ]
+    },
+    {
+      "identity": "wall14_crack01",
+      "xy": [
+        1318,
+        2615
+      ]
+    },
+    {
+      "identity": "wall14_crack01",
+      "xy": [
+        1344,
+        2849
+      ]
     }
   ]
 }

@@ -2,28 +2,74 @@
   "image_id": "wall14_s1_0004",
   "points": [
     {
-      "identity": "wall14_crack08",
+      "identity": "wall14_crack02",
       "xy": [
-        319,
-        2278
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall14_crack23",
-        "verdict": "reassigned"
-      }
+        1020,
+        2279
+      ]
     },
     {
-      "identity": "wall14_crack09",
+      "identity": "wall14_crack02",
       "xy": [
-        1438,
-        2820
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall14_crack24",
-        "verdict": "reassigned"
-      }
+        793,
+        2420
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        719,
+        2469
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        629,
+        2521
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1151,
+        2227
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1314,
+        2093
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1448,
+        2026
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1609,
+        1929
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1772,
+        1821
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1951,
+        1739
+      ]
     }
   ]
 }

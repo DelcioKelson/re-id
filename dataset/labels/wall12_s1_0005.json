@@ -7,7 +7,6 @@
         1319,
         193
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall12_crack10",
         "verdict": "reassigned"
@@ -19,7 +18,6 @@
         1400,
         1064
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall12_crack22",
         "verdict": "reassigned"
@@ -31,7 +29,6 @@
         1387,
         1172
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall12_crack04",
         "verdict": "reassigned"
@@ -43,11 +40,94 @@
         1354,
         1366
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall12_crack16",
         "verdict": "reassigned"
       }
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1565,
+        3071
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1513,
+        2934
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1491,
+        2789
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1328,
+        1599
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1313,
+        1695
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1400,
+        1064
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1328,
+        657
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1235,
+        560
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1220,
+        423
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1319,
+        193
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1400,
+        1064
+      ]
+    },
+    {
+      "identity": "wall12_crack01",
+      "xy": [
+        1365,
+        842
+      ]
     }
   ]
 }

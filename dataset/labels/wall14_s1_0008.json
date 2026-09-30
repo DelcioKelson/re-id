@@ -7,11 +7,94 @@
         1117,
         2113
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall14_crack31",
         "verdict": "reassigned"
       }
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1139,
+        156
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1117,
+        309
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1080,
+        495
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1125,
+        748
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1147,
+        1203
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1139,
+        1363
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1102,
+        1571
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1102,
+        1735
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1117,
+        2113
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1117,
+        2113
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1102,
+        2398
+      ]
+    },
+    {
+      "identity": "wall14_crack02",
+      "xy": [
+        1091,
+        2513
+      ]
     }
   ]
 }

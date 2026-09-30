@@ -2,24 +2,11 @@
   "image_id": "wall11_s1_0004",
   "points": [
     {
-      "identity": "wall11_crack02",
-      "xy": [
-        1225,
-        929
-      ],
-      "provisional": true,
-      "model_review": {
-        "prefill_identity": "wall11_crack07",
-        "verdict": "reassigned"
-      }
-    },
-    {
       "identity": "wall11_crack01",
       "xy": [
         904,
         1960
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall11_crack10",
         "verdict": "reassigned"
@@ -31,7 +18,6 @@
         974,
         2013
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall11_crack11",
         "verdict": "reassigned"
@@ -43,7 +29,6 @@
         1125,
         2290
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall11_crack05",
         "verdict": "reassigned"
@@ -55,11 +40,80 @@
         1597,
         2227
       ],
-      "provisional": true,
       "model_review": {
         "prefill_identity": "wall11_crack08",
         "verdict": "reassigned"
       }
+    },
+    {
+      "identity": "wall11_crack01",
+      "xy": [
+        904,
+        1960
+      ]
+    },
+    {
+      "identity": "wall11_crack01",
+      "xy": [
+        974,
+        2013
+      ]
+    },
+    {
+      "identity": "wall11_crack01",
+      "xy": [
+        974,
+        2013
+      ]
+    },
+    {
+      "identity": "wall11_crack01",
+      "xy": [
+        1125,
+        2290
+      ]
+    },
+    {
+      "identity": "wall11_crack01",
+      "xy": [
+        1125,
+        2290
+      ]
+    },
+    {
+      "identity": "wall11_crack01",
+      "xy": [
+        1243,
+        2537
+      ]
+    },
+    {
+      "identity": "wall11_crack01",
+      "xy": [
+        1358,
+        2411
+      ]
+    },
+    {
+      "identity": "wall11_crack01",
+      "xy": [
+        1597,
+        2227
+      ]
+    },
+    {
+      "identity": "wall11_crack01",
+      "xy": [
+        1398,
+        2329
+      ]
+    },
+    {
+      "identity": "wall11_crack01",
+      "xy": [
+        2140,
+        2240
+      ]
     }
   ]
 }
