@@ -1,0 +1,15 @@
+method                  scope          nQ    R@1    R@5    mAP  DIR@FAR.1  pairF1* pairF1@v   assF1  scored  total_s
+--------------------------------------------------------------------------------------------------------------------
+SIFT                    crop          281  0.431  0.823  0.412      0.036    0.324    0.317   0.335    1.00     37.7
+
+nQ = queries with a correct answer (the only ones R@1/mAP average over).
+pairF1*  = ORACLE: max F1 swept over thresholds on THIS (test) matrix. It is an
+           upper bound no deployment can pick, and is not comparable with assF1.
+pairF1@v = the same curve read at the threshold calibrated on VALIDATION -- the
+           number a deployed system gets. Quote this one; quote pairF1* as a ceiling.
+assF1  = one-to-one assignment F1 at the validation-calibrated threshold.
+scored = fraction of valid pairs the method returned a finite score for.
+         Below 1.00 is a PENALTY, not an easier subset: an unscored pair takes the
+         fail distance, ranks last, and its query is still counted. See the
+         coverage breakdown in results.json for what the missing fraction is made of.
+total_s = prepare + score. Embedding methods do all their work in prepare.

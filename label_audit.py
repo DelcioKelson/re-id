@@ -145,8 +145,8 @@ def load_labels(label_dir: str) -> dict[str, list[dict]]:
     return out
 
 
-def load_changelog(root: str) -> dict:
-    p = os.path.join(root, "labels", "_changelog.json")
+def load_changelog(root: str, path: str | None = None) -> dict:
+    p = path or os.path.join(root, "labels", "_changelog.json")
     return json.load(open(p)) if os.path.exists(p) else {}
 
 
@@ -154,9 +154,14 @@ def load_changelog(root: str) -> dict:
 # 1. The merge rule, stated
 # ===========================================================================
 
-def merge_report(root: str) -> dict:
-    """Per-split merge statistics -- the paragraph the paper owes S8."""
-    log = load_changelog(root)
+def merge_report(root: str, changelog: str | None = None) -> dict:
+    """Per-split merge statistics -- the paragraph the paper owes S8.
+
+    `changelog` overrides the path to the merge record. Pass
+    labels/_changelog_rebuilt.json to score against identities that still
+    have clicks; the default file also lists 49 that have none.
+    """
+    log = load_changelog(root, changelog)
     split_of = _split_of(root)
     out = {}
     for wall, rec in sorted(log.items()):
@@ -181,20 +186,31 @@ def format_merge_report(rep: dict, triage: list | None = None) -> str:
          f"{'split':<12}{'identities':>11}{'merged':>9}{'%':>6}"
          f"{'median gap':>12}{'p90 gap':>9}{'max gap':>9}"]
     L.append("-" * len(L[-1]))
+    n_gap_missing = 0
     for split, rows in sorted(rep.items()):
         merged = [r for r in rows if r["merged"]]
-        gaps = np.array([r["max_merge_gap"] for r in merged]) if merged else np.array([0.0])
+        known = [r["max_merge_gap"] for r in merged
+                 if r["max_merge_gap"] is not None]
+        n_gap_missing += len(merged) - len(known)
+        gaps = np.array(known) if known else None
+        gap_cols = (f"{np.median(gaps):>12.1f}{np.percentile(gaps, 90):>9.1f}"
+                    f"{gaps.max():>9.1f}") if gaps is not None else \
+                   f"{'n/a':>12}{'n/a':>9}{'n/a':>9}"
         L.append(f"{split:<12}{len(rows):>11}{len(merged):>9}"
-                 f"{100 * len(merged) / max(len(rows), 1):>6.0f}"
-                 f"{np.median(gaps):>12.1f}{np.percentile(gaps, 90):>9.1f}{gaps.max():>9.1f}")
+                 f"{100 * len(merged) / max(len(rows), 1):>6.0f}" + gap_cols)
     L += ["",
           "'merged' = an identity that absorbed more than one prefill identity, i.e. one",
           "the automatic rule decided were fragments of a single physical crack.",
           "'gap' = the largest pixel distance bridged inside one identity (max_merge_gap).",
+          "A null gap means the changelog does not record one. rebuild_changelog.py emits",
+          "null for every identity, because no code in this repository ever computed the",
+          "value -- it was typed in by hand. 'n/a' above is that absence, not a zero.",
           "",
           "A merge that joins two DISTINCT cracks turns a hard negative into a free positive",
           "and inflates mAP for every method at once. So the paper must quote: the rule, the",
           "gap threshold, and an audited error rate over a random sample (--sample/--score)."]
+    if n_gap_missing:
+        L.append(f"{n_gap_missing} merged identities carry no recorded gap.")
     if triage:
         worst = sorted(triage, key=lambda t: -t.get("max_merge_gap", 0))[:8]
         L += ["", f"ALREADY FLAGGED BY TRIAGE: {len(triage)} identities. Widest gaps:",
@@ -213,17 +229,27 @@ def format_merge_report(rep: dict, triage: list | None = None) -> str:
 # ===========================================================================
 
 def sample_identities(root: str, n: int = 30, seed: int = 0,
-                      split: str | None = None) -> list[dict]:
+                      split: str | None = None,
+                      changelog: str | None = None) -> list[dict]:
     """Reproducible stratified sample: half merged identities, half not.
 
     Stratified because the merged ones are where the error is, and an
     unstratified sample of 30 out of 271 would draw too few of them to
     estimate their error rate -- but the unmerged half is kept so the
     audit can also catch the opposite failure, one crack split in two.
+
+    Every sampled row must be reviewable. The default changelog lists 49
+    identities that hold no clicks; they render no contact sheet, so a
+    sampled row that names one can only ever be signed off unread, which
+    is how an audit comes to report zero errors. Passing the rebuilt
+    changelog restricts the pool to identities that exist.
     """
-    rep = merge_report(root)
+    rep = merge_report(root, changelog)
     rows = [r for split_name, rs in rep.items() for r in rs
             if split is None or split_name == split]
+    have = {p["identity"] for pts in load_labels(
+        os.path.join(root, "labels")).values() for p in pts}
+    rows = [r for r in rows if r["identity"] in have]
     merged = [r for r in rows if r["merged"]]
     plain = [r for r in rows if not r["merged"]]
     rng = random.Random(seed)
@@ -889,6 +915,10 @@ if __name__ == "__main__":
     ap.add_argument("--split", default=None, help="restrict the sample to one split")
     ap.add_argument("--score", metavar="AUDIT_JSON",
                     help="report the error rate from a filled-in audit file")
+    ap.add_argument("--changelog", default=None, metavar="PATH",
+                    help="merge record to read instead of labels/_changelog.json; "
+                         "pass labels/_changelog_rebuilt.json to drop the 49 "
+                         "identities that hold no clicks")
     ap.add_argument("--agree", nargs=2, metavar=("DIR_A", "DIR_B"),
                     help="inter-annotator agreement between two label directories")
     ap.add_argument("--unresolved", action="store_true",
@@ -902,7 +932,7 @@ if __name__ == "__main__":
     if args.report:
         triage_path = os.path.join(args.root, "labels", "_triage.json")
         triage = json.load(open(triage_path)) if os.path.exists(triage_path) else None
-        print(format_merge_report(merge_report(args.root), triage))
+        print(format_merge_report(merge_report(args.root, args.changelog), triage))
         did = True
 
     if args.unresolved:
@@ -930,7 +960,8 @@ if __name__ == "__main__":
 
     if args.sample:
         picked = sample_identities(args.root, n=args.sample, seed=args.seed,
-                                   split=args.split)
+                                   split=args.split,
+                                   changelog=args.changelog)
         out = os.path.join(args.root, "labels", f"_audit_{args.seed}.json")
         with open(out, "w") as f:
             json.dump({"seed": args.seed, "split": args.split,
