@@ -1,266 +1,196 @@
 {
-  "image_id": "wall04_s1_0004",
-  "points": [
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3776,
-        243
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack09",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3593,
-        309
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack10",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3442,
-        351
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack01",
-        "verdict": "unchanged"
-      }
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3376,
-        404
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack02",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3282,
-        458
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack12",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3210,
-        519
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack11",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2980,
-        672
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack05",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2822,
-        743
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack14",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2401,
-        786
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack04",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2727,
-        793
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack15",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall04_crack03",
-      "xy": [
-        1263,
-        1371
-      ],
-      "model_review": {
-        "prefill_identity": "wall04_crack13",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        286,
-        2044
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        586,
-        1862
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        831,
-        1702
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        1263,
-        1371
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        961,
-        1524
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        1595,
-        1257
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        1821,
-        1124
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2055,
-        994
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2259,
-        964
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2047,
-        827
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2148,
-        816
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2401,
-        786
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2727,
-        793
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2822,
-        743
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        2980,
-        672
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3210,
-        519
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3282,
-        458
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3442,
-        351
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3593,
-        309
-      ]
-    },
-    {
-      "identity": "wall04_crack01",
-      "xy": [
-        3776,
-        243
-      ]
-    }
-  ]
+ "image_id": "wall04_s1_0004",
+ "points": [
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    3776,
+    243
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack09",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    3593,
+    309
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack10",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    3442,
+    351
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack01",
+    "verdict": "unchanged"
+   }
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    3376,
+    404
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack02",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    3282,
+    458
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack12",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    3210,
+    519
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack11",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    2980,
+    672
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack05",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    2822,
+    743
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack14",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    2401,
+    786
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack04",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    2727,
+    793
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack15",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall04_crack03",
+   "xy": [
+    1263,
+    1371
+   ],
+   "model_review": {
+    "prefill_identity": "wall04_crack13",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    286,
+    2044
+   ]
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    586,
+    1862
+   ]
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    831,
+    1702
+   ]
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    961,
+    1524
+   ]
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    1595,
+    1257
+   ]
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    1821,
+    1124
+   ]
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    2055,
+    994
+   ]
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    2259,
+    964
+   ]
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    2047,
+    827
+   ]
+  },
+  {
+   "identity": "wall04_crack01",
+   "xy": [
+    2148,
+    816
+   ]
+  }
+ ]
 }

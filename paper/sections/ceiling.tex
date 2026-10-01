@@ -67,7 +67,7 @@ methods exactly at the floor, nine within $0.052$), across two decades of
 methods and more than two orders of compute ($0.011$\,s to $8.6$\,s per query,
 Table~\ref{tab:main}). At a
 deployable (validation-calibrated) threshold, nine of the ten span only
-$-0.012$ to $+0.012$ around chance; \textbf{LoFTR is the exception},
+$-0.012$ to $+0.012$ around chance; LoFTR is the exception,
 $F_1^{@v}=0.351$ ($+0.046$), and the most expensive crop method. Ranking does
 not transfer to deciding: the ten separate over a $0.302$ range on Rank-1,
 yet OSNet ties for best Rank-1 ($0.654$) while its oracle pairwise $F_1^{*}$
@@ -86,7 +86,7 @@ Validation pair prevalence is $0.292$ ($26\,012/89\,118$) against $0.180$ on
 test, so the $F_1$-optimal threshold is not a property of a method but of the
 pool it was fitted on: the same scores that separate cracks on the denser
 validation pool place their boundary in the wrong place once prevalence
-falls, and every method pays the same shift. The pairwise-$F_1$ floor moves
+falls, and every method shifts by the same amount. The pairwise-$F_1$ floor moves
 with it, from $0.452$ to $0.305$. This is a mechanism, not a measurement: the
 threshold-free version of the claim (pairwise average precision, or AUROC
 against prevalence) would settle it, and we do not report it because the
@@ -99,12 +99,11 @@ condition (wider crop) and a \emph{crack-erased} condition (the crack
 inpainted out of that widened view). Context helps a lot: OSNet's Rank-1
 rises from $0.654$ to $0.775$, mAP to $0.595$, open-set rate from $0.168$ to
 $0.404$, and its pairwise $F_1^{*}$ from $0.309$ to $0.354$; CLIP's open-set
-rate rises from $0.143$ to $0.311$,
-\textbf{but erasing the crack costs almost none of it}: OSNet retains Rank-1
+rate rises from $0.143$ to $0.311$, but erasing the crack costs almost none of it: OSNet retains Rank-1
 $0.711$, mAP $0.574$ and open-set $0.393$; CLIP retains Rank-1 $0.600$, mAP
 $0.502$, open-set $0.286$. Both erased views still outrank every tight-crop
-method: the retrieved cue is the wall, that is, location. \textbf{Pairwise
-$F_1$ moves little with context:} all four context variants lie between
+method: the retrieved cue is the wall, that is, location. Pairwise
+$F_1$ moves little with context: all four context variants lie between
 $0.346$ and $0.361$, at most $0.056$ above the floor, over a change that
 gives OSNet $+0.236$ of open-set rate. We read the aggregate as a property
 of the data: methods with no shared inductive bias land near the floor, and

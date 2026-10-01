@@ -1,190 +1,183 @@
 {
-  "image_id": "wall15_s1_0006",
-  "points": [
-    {
-      "identity": "wall15_crack43",
-      "xy": [
-        1641,
-        85
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack74",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack44",
-      "xy": [
-        1516,
-        563
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack75",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack45",
-      "xy": [
-        1459,
-        1447
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack76",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack21",
-      "xy": [
-        785,
-        2103
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack77",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack46",
-      "xy": [
-        1498,
-        2082
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack78",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack22",
-      "xy": [
-        1596,
-        2182
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack79",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack21",
-      "xy": [
-        697,
-        2685
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack80",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack22",
-      "xy": [
-        1763,
-        2732
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack81",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack06",
-      "xy": [
-        489,
-        2567
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack82",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack06",
-      "xy": [
-        916,
-        2712
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack83",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack06",
-      "xy": [
-        1403,
-        2717
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack84",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack06",
-      "xy": [
-        1290,
-        2726
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack85",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack06",
-      "xy": [
-        963,
-        2745
-      ],
-      "model_review": {
-        "prefill_identity": "wall15_crack86",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall15_crack26",
-      "xy": [
-        722,
-        2331
-      ]
-    },
-    {
-      "identity": "wall15_crack26",
-      "xy": [
-        1705,
-        2424
-      ]
-    },
-    {
-      "identity": "wall15_crack26",
-      "xy": [
-        1482,
-        827
-      ]
-    },
-    {
-      "identity": "wall15_crack26",
-      "xy": [
-        1381,
-        1020
-      ]
-    },
-    {
-      "identity": "wall15_crack26",
-      "xy": [
-        1374,
-        1233
-      ]
-    },
-    {
-      "identity": "wall15_crack26",
-      "xy": [
-        1516,
-        563
-      ]
-    }
-  ]
+ "image_id": "wall15_s1_0006",
+ "points": [
+  {
+   "identity": "wall15_crack43",
+   "xy": [
+    1641,
+    85
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack74",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack44",
+   "xy": [
+    1516,
+    563
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack75",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack45",
+   "xy": [
+    1459,
+    1447
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack76",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack21",
+   "xy": [
+    785,
+    2103
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack77",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack46",
+   "xy": [
+    1498,
+    2082
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack78",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack22",
+   "xy": [
+    1596,
+    2182
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack79",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack21",
+   "xy": [
+    697,
+    2685
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack80",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack22",
+   "xy": [
+    1763,
+    2732
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack81",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack06",
+   "xy": [
+    489,
+    2567
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack82",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack06",
+   "xy": [
+    916,
+    2712
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack83",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack06",
+   "xy": [
+    1403,
+    2717
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack84",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack06",
+   "xy": [
+    1290,
+    2726
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack85",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack06",
+   "xy": [
+    963,
+    2745
+   ],
+   "model_review": {
+    "prefill_identity": "wall15_crack86",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall15_crack26",
+   "xy": [
+    722,
+    2331
+   ]
+  },
+  {
+   "identity": "wall15_crack26",
+   "xy": [
+    1705,
+    2424
+   ]
+  },
+  {
+   "identity": "wall15_crack26",
+   "xy": [
+    1482,
+    827
+   ]
+  },
+  {
+   "identity": "wall15_crack26",
+   "xy": [
+    1381,
+    1020
+   ]
+  },
+  {
+   "identity": "wall15_crack26",
+   "xy": [
+    1374,
+    1233
+   ]
+  }
+ ]
 }

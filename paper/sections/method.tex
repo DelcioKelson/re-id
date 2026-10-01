@@ -11,7 +11,7 @@ beyond the shared crack segmenter.
 \subsection{Alignment driven by non-crack texture}
 A wall is planar, so the homography $x' \sim Hx$ mapping photograph $I_a$
 into $I_b$'s frame is the correct model. The design decision that matters is
-\textbf{what drives the fit}: we dilate the crack masks by $15$\,px and
+what drives the fit: we dilate the crack masks by $15$\,px and
 exclude those pixels from detection, so $H$ comes from wall texture alone.
 This is not an optimization but what makes the projected position an
 independent identity cue: were cracks to participate, a long crack could
@@ -23,8 +23,8 @@ $4$\,px requiring $25$ inliers.
 \subsection{A cascade for two surface families}
 One front end does not serve both surfaces, and the failure is categorical:
 On the smooth-plaster walls, crack-masked SIFT succeeds on \emph{exactly
-zero} pairs. We try three in order: (i)~\textbf{SIFT on masked wall
-texture}, for stippled render; (ii)~\textbf{SIFT with cracks restored},
+zero} pairs. We try three in order: (i)SIFT on masked wall
+texture, for stippled render; (ii)SIFT with cracks restored,
 triggered only when masking starves detection below $300$ keypoints (on
 plaster the crack is the only feature in frame), accepting the circularity
 stage~(i) avoids, and recording which front end produced each result;

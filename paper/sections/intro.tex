@@ -26,26 +26,21 @@ skeleton-comparison fallback and per-pair blending, so its reversal does not
 directly contradict Table~\ref{tab:main}.
 
 \smallskip
-\noindent\textbf{Appearance buys almost nothing on the decision.} On ranking
+\noindent{Appearance buys almost nothing on the decision.} On ranking
 the ten matchers separate as expected (Rank-1 $0.352$ to $0.654$ against
 $0.336$ chance); on pairwise $F_1$, the \emph{same-crack-or-not} decision a
 record makes at a threshold, all ten land between $0.000$ and $0.054$ above
 the $0.305$ floor, three (ORB, DeiT, DINOv2) at exactly zero, and at a
-validation-calibrated threshold nine of the ten span only $-0.012$ to
+validation-calibrated threshold, nine of the ten span only $-0.012$ to
 $+0.012$ around chance while LoFTR holds a real margin of $0.046$.
 
-\smallskip
-\noindent\textbf{Two controls say where the difficulty is not. } Giving an
-embedder the surrounding wall raises OSNet's open-set rate from $0.168$ to
+Two controls say where the difficulty is not. Giving an embedder the surrounding wall raises OSNet's open-set rate from $0.168$ to
 $0.404$; \emph{erasing the crack} from that view costs almost none of it
 ($0.393$). Such a method retrieves on the wall, and the cue that works, even
 implicitly, is \emph{location}.
 
-\smallskip
-\noindent\textbf{A geometric baseline makes location explicit.} Registering
-on non-crack texture, projecting crack masks into a common frame, and
-Chamfer-matching under global assignment reaches
-$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ against $0.429$ (best crop) and
+A geometric baseline makes location explicit. Registering on non-crack texture, projecting crack masks into a common frame, and
+Chamfer-matching under global assignment reaches $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ against $0.429$ (best crop) and
 $0.404$ (best context), answering $48\%$ of pairs; a \textsc{Coverage-only}
 control scores $0.000$ on the same metric, so the open-set gap is matching,
 not alignment coverage. This is a conditional result, not a deployment-ready
@@ -54,9 +49,7 @@ and baseline both use homography-based alignment. The resulting geometric
 advantage is therefore a hypothesis about this benchmark, not an
 independently established identity effect.
 
-\smallskip
-\noindent\textbf{The revisit check reverses the ranking story. } The real
-data are one continuous walk-around per wall, minutes apart, not separate
+The revisit check reverses the ranking story. The real data are one continuous walk-around per wall, minutes apart, not separate
 visits. Under the synthetic warp-plus-appearance protocol, OSNet$+$context
 beats the hybrid at R@1 ($0.826/0.671$ versus $0.275/0.274$) and open-set
 rate ($0.739/0.663$ versus $0.343/0.342$) for growth/appearance change; the

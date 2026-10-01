@@ -1,299 +1,187 @@
 {
-  "image_id": "wall02_s1_0003",
-  "points": [
-    {
-      "identity": "wall02_crack10",
-      "xy": [
-        144,
-        319
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack17",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack10",
-      "xy": [
-        282,
-        434
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack18",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        540,
-        829
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack19",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        903,
-        1088
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack01",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        1062,
-        1276
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack02",
-        "verdict": "unchanged"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        1115,
-        1349
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack10",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        1197,
-        1458
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack03",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        1305,
-        1630
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack04",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        1588,
-        2107
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack11",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        1725,
-        2361
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack08",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        1771,
-        2442
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack20",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        2008,
-        2907
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack12",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack02",
-      "xy": [
-        2184,
-        3139
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack13",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack06",
-      "xy": [
-        2769,
-        3822
-      ],
-      "model_review": {
-        "prefill_identity": "wall02_crack16",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        2496,
-        3501
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        144,
-        319
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        282,
-        434
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        282,
-        434
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        540,
-        829
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        903,
-        1088
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        1062,
-        1276
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        1197,
-        1458
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        1115,
-        1349
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        1197,
-        1458
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        1305,
-        1630
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        1588,
-        2107
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        1725,
-        2361
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        1771,
-        2442
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        1884,
-        2656
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        2008,
-        2907
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        2184,
-        3139
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        2348,
-        3383
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        2769,
-        3822
-      ]
-    },
-    {
-      "identity": "wall02_crack01",
-      "xy": [
-        1424,
-        1895
-      ]
-    }
-  ]
+ "image_id": "wall02_s1_0003",
+ "points": [
+  {
+   "identity": "wall02_crack10",
+   "xy": [
+    144,
+    319
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack17",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack10",
+   "xy": [
+    282,
+    434
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack18",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    540,
+    829
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack19",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    903,
+    1088
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack01",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    1062,
+    1276
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack02",
+    "verdict": "unchanged"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    1115,
+    1349
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack10",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    1197,
+    1458
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack03",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    1305,
+    1630
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack04",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    1588,
+    2107
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack11",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    1725,
+    2361
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack08",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    1771,
+    2442
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack20",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    2008,
+    2907
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack12",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack02",
+   "xy": [
+    2184,
+    3139
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack13",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack06",
+   "xy": [
+    2769,
+    3822
+   ],
+   "model_review": {
+    "prefill_identity": "wall02_crack16",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall02_crack01",
+   "xy": [
+    2496,
+    3501
+   ]
+  },
+  {
+   "identity": "wall02_crack01",
+   "xy": [
+    1884,
+    2656
+   ]
+  },
+  {
+   "identity": "wall02_crack01",
+   "xy": [
+    2348,
+    3383
+   ]
+  },
+  {
+   "identity": "wall02_crack01",
+   "xy": [
+    1424,
+    1895
+   ]
+  }
+ ]
 }

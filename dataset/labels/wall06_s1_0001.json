@@ -1,171 +1,129 @@
 {
-  "image_id": "wall06_s1_0001",
-  "points": [
-    {
-      "identity": "wall06_crack04",
-      "xy": [
-        1697,
-        382
-      ],
-      "model_review": {
-        "prefill_identity": "wall06_crack01",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall06_crack04",
-      "xy": [
-        1642,
-        459
-      ],
-      "model_review": {
-        "prefill_identity": "wall06_crack02",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall06_crack05",
-      "xy": [
-        1354,
-        3058
-      ],
-      "model_review": {
-        "prefill_identity": "wall06_crack03",
-        "verdict": "reassigned"
-      }
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1369,
-        3312
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1354,
-        3058
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1346,
-        2726
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1354,
-        3058
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1354,
-        3058
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1383,
-        2567
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1424,
-        2400
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1613,
-        1495
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1521,
-        2159
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1558,
-        2014
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1573,
-        1847
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1591,
-        1228
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1539,
-        872
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1536,
-        705
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1565,
-        1072
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1569,
-        1046
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1642,
-        459
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1642,
-        459
-      ]
-    },
-    {
-      "identity": "wall06_crack01",
-      "xy": [
-        1697,
-        382
-      ]
-    }
-  ]
+ "image_id": "wall06_s1_0001",
+ "points": [
+  {
+   "identity": "wall06_crack04",
+   "xy": [
+    1697,
+    382
+   ],
+   "model_review": {
+    "prefill_identity": "wall06_crack01",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall06_crack04",
+   "xy": [
+    1642,
+    459
+   ],
+   "model_review": {
+    "prefill_identity": "wall06_crack02",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall06_crack05",
+   "xy": [
+    1354,
+    3058
+   ],
+   "model_review": {
+    "prefill_identity": "wall06_crack03",
+    "verdict": "reassigned"
+   }
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1369,
+    3312
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1346,
+    2726
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1383,
+    2567
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1424,
+    2400
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1613,
+    1495
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1521,
+    2159
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1558,
+    2014
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1573,
+    1847
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1591,
+    1228
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1539,
+    872
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1536,
+    705
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1565,
+    1072
+   ]
+  },
+  {
+   "identity": "wall06_crack01",
+   "xy": [
+    1569,
+    1046
+   ]
+  }
+ ]
 }
