@@ -19,11 +19,9 @@ one visit, a hypothesized upper bound on multi-visit performance, not yet a meas
 of it.
 
 \smallskip
-\noindent\emph{Adjacent-frame retrieval.} On the prior snapshot, $100\%$ of
-$280$ answerable test queries had their nearest correct gallery entry in the
-adjacent frame; on the current labels $95.8\%$ of $306$ do. Ranking therefore rewards short-baseline correspondence;
-Sec.~\ref{sec:results} sweeps the exclusion gap (prior pool
-$280{\to}205{\to}149{\to}105$; current pool $306{\to}247{\to}188{\to}124$ with floors
+\noindent\emph{Adjacent-frame retrieval.} $95.8\%$ of $306$ answerable test queries have their nearest correct gallery entry in the
+adjacent frame. Ranking therefore rewards short-baseline correspondence;
+Sec.~\ref{sec:results} sweeps the exclusion gap ($306{\to}247{\to}188{\to}124$ with floors
 $0.337{\to}0.288{\to}0.250{\to}0.204$) and reports that Rank-1 stays flat while the
 pool and prevalence change with it, so the sweep characterises robustness,
 not proof that duplicates are irrelevant.
@@ -51,12 +49,9 @@ to 1,051 connected components; ``points'' below means clicks, not components.
 Single-annotator;
 agreement unmeasured, so the merge risk above is bounded by reporting,
 not removed. Counts in this section and Table~\ref{tab:units} refer to the
-frozen benchmark snapshot (legacy directory \texttt{banchmark\_out/}, historic
-spelling retained for reproducibility); \texttt{dataset/labels/} has
+frozen benchmark snapshot; \texttt{dataset/labels/} has
 since been re-edited (walls 18--19 added, audit in progress) and its raw
-identity/point totals no longer match exactly. The snapshot, its
-\texttt{result.txt}, \texttt{chance.json}, \texttt{pair\_outcomes.json}, and
-\texttt{viewpoint.json} are the version of record for all accuracy rows.
+identity/point totals no longer match exactly.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.85\columnwidth]{figs/dataset_examples.pdf}

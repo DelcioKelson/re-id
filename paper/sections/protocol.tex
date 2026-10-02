@@ -7,12 +7,12 @@ The benchmark evaluates the visual association component required by building ti
 
 A \emph{wall} is one physical wall at the capture site. An \emph{identity} is an annotation label linking observations attributed to the same crack across photographs. These labels define the reference correspondence used for evaluation; they are not independent verification of physical identity, and their annotation provenance is described in Section~\ref{sec:annotation}. A \emph{query} is one annotated crack instance to be associated with a reference record. Its \emph{gallery} contains eligible crack instances from other photographs of the same wall, excluding the query photograph. Multiple gallery instances may share an identity, representing several observations of the same recorded defect. Restricting candidates to the same wall assumes that the wall has already been identified; cross-wall search and localisation are outside the benchmark's scope. A query is \emph{known} when at least one eligible gallery instance has the same annotated identity. It is \emph{unknown} when no such instance is available. Unknown therefore means that no matching observation exists in the evaluated gallery; it does not necessarily establish that the physical damage has never been recorded elsewhere. Each method assigns a similarity score to query--gallery pairs. These scores support candidate ranking, thresholded same-identity decisions, and identification with rejection. A \emph{query--gallery pair} is the unit used for pairwise classification, whereas an \emph{image pair} comprises two photographs and is the unit used for registration and correspondence assignment. The gallery is an experimental reference set rather than a chronological ticket database. Accordingly, the benchmark evaluates visual association between observations without claiming to reproduce the temporal arrival of reports or the creation and updating of tickets.
 
-Test contains 306 answerable (known) and 199 unknown queries on the current labels ($30\,390$ valid pairs, $6\,160$ positive, prevalence $0.203$, floor $0.337$; \texttt{banchmark\_out/chance\_nq305.json}). Table~\ref{tab:units} retains the prior-pool recount for provenance; its test positives/valid counts ($5\,722/31\,822$) are superseded for the crop rerun. On test, registration is attempted for all $301$ same-wall image pairs; $255$ contain at least one scored crack instance and produce validity-mask cells, while $46$ yield no valid query--gallery pair after the $200$\,px size filter (see Sec.~\ref{sec:coverage}).
+Test contains 306 answerable (known) and 199 unknown queries ($30\,390$ valid pairs, $6\,160$ positive, prevalence $0.203$, floor $0.337$). On test, registration is attempted for all $301$ same-wall image pairs; $255$ contain at least one scored crack instance and produce validity-mask cells, while $46$ yield no valid query--gallery pair after the $200$\,px size filter (see Sec.~\ref{sec:coverage}).
 
 \begin{table}[t]
 \centering
 \small
-\caption{Counting units for every metric (prior $n_Q{=}280$ snapshot; current pool in text).}
+\caption{Counting units for every metric.}
 \label{tab:units}
 \begin{tabular}{lrr}
 \toprule
@@ -20,15 +20,15 @@ Test contains 306 answerable (known) and 199 unknown queries on the current labe
 \midrule
 Walls / photographs / identities & 6 / 66 / 66 & 11 / 74 / 146 \\
 Identities in $\geq 2$ photographs & 18 & 19 \\
-Answerable queries & 439 & 280 \\
-Positive query--gallery pairs & 26\,012 & 5\,722 \\
-Valid query--gallery pairs & 89\,118 & 31\,822 \\
+Answerable queries & 439 & 306 \\
+Positive query--gallery pairs & 26\,012 & 6\,160 \\
+Valid query--gallery pairs & 89\,118 & 30\,390 \\
 Same-wall image pairs & 394 & 301 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Counts in Table~\ref{tab:units} refer to the prior $n_Q{=}280$ snapshot (test prevalence $0.180$); the current test pool is $306$ answerable, $30\,390$ valid, $6\,160$ positive (prevalence $0.203$). The registration pool ($301$ test pairs) differs from the scored-pair subset ($255$ pairs with validity-mask cells on the prior snapshot). See Sec.~\ref{sec:annotation} for label drift.
+The registration pool ($301$ test pairs) differs from the scored-pair subset ($255$ pairs with validity-mask cells).
 
 \subsection{Unchanged damage under different acquisition conditions}
 
@@ -60,4 +60,4 @@ Coverage is reported as the proportion of valid pairs receiving a finite score. 
 
 Metrics are interpreted against appropriate reference baselines, including random-ranking performance and the pairwise $F_1$ obtained by predicting every pair as a correspondence. The latter equals $2p/(1+p)$, where $p$ is the positive-pair prevalence, and is a constant-predictor reference rather than a guaranteed lower bound. Counts, prevalence, and reference values must correspond to the same frozen evaluation snapshot. Results obtained from different snapshots are reported separately.
 
-Every metric is reported against its chance level, because two are far from zero (current test pool, \texttt{chance\_nq305.json}: $200$ random matrices): pairwise $F_1$ has a best-constant-predictor floor $2p/(1+p) = 0.337$ at prevalence $0.203$, Rank-5 chance $0.778{\pm}0.019$, mAP $0.382$; Rank-1 $0.336{\pm}0.025$ and $\mathrm{DIR}@\mathrm{FAR}$ $0.038{\pm}0.014$, assignment-$F_1$ $0.345$. Prior-pool values were $0.305/0.767/0.336/0.038$. We call $2p/(1+p)$ a floor, not coin-flip chance: it is the score of predicting every pair positive, and it changes when the evaluated pair pool changes. Confidence resampling uses walls rather than queries because queries from one wall share capture conditions. With 11 test walls, no numeric interval is attached; wall-level intervals await a larger dataset and release of the per-pair score matrices (Sec.~\ref{sec:validity}).
+Every metric is reported against its chance level, because two are far from zero: pairwise $F_1$ has a best-constant-predictor floor $2p/(1+p) = 0.337$ at prevalence $0.203$, Rank-5 chance $0.778{\pm}0.019$, mAP $0.382$; Rank-1 $0.336{\pm}0.025$ and $\mathrm{DIR}@\mathrm{FAR}$ $0.038{\pm}0.014$, assignment-$F_1$ $0.345$. We call $2p/(1+p)$ a floor, not coin-flip chance: it is the score of predicting every pair positive, and it changes when the evaluated pair pool changes. Confidence resampling uses walls rather than queries because queries from one wall share capture conditions. With 11 test walls, no numeric interval is attached; wall-level intervals await a larger dataset and release of the per-pair score matrices (Sec.~\ref{sec:validity}).

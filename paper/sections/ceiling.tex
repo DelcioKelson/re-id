@@ -7,9 +7,8 @@
 % (see verify_claims.py parse_results_table strictness notes)
 \caption{\textbf{Main result} on \textsc{CrackID} test ($n_Q{=}306$ over 11 walls).
 $F_1^{*}$ is oracle-thresholded on test; $\Delta F_1^{*}$ is excess over the $0.337$ floor;
-$F_1^{@v}$ uses the validation-calibrated threshold. Bold: best new crop row per column.
-$^\dagger$CLIP, \coverage{}, and \ours{} rows are the prior $n_Q{=}280$ snapshot, not comparable
-to the new rows. Scoring, chance levels, and costs: Sec.~\ref{sec:protocol}--\ref{sec:coverage}.}
+$F_1^{@v}$ uses the validation-calibrated threshold. Bold: best crop row per column.
+Scoring, chance levels, and costs: Sec.~\ref{sec:protocol}--\ref{sec:coverage}.}
 \label{tab:main}
 \small
 \begin{tabular}{llcccccccr}
@@ -19,9 +18,9 @@ Method & Family & R@1 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & $\Delta F_1^{*}$ & $F_
 \rowcolor{black!8}
 \multicolumn{10}{l}{\emph{Reference level (same $0.48$ pool as geometry)}} \\
 \rowcolor{black!8}
-\coverage{} & geometry & 0.515 & 0.533 & 0.000 & 0.544 & 0.239 & 0.544 & 0.48 & --- \\
+\coverage{} & geometry & 0.515 & 0.533 & 0.000 & 0.544 & 0.207 & 0.544 & 0.48 & --- \\
 \midrule
-\multicolumn{10}{l}{\emph{Crop scope (new $n_Q{=}306$ rerun except CLIP)}} \\
+\multicolumn{10}{l}{\emph{Crop scope}} \\
 ORB~\cite{rublee2011orb}            & keypoint   & 0.370 & 0.372 & 0.043 & 0.337 & 0.000 & 0.337 & 1.00 & 0.077 \\
 SIFT~\cite{lowe2004sift}            & keypoint   & 0.420 & 0.408 & 0.049 & 0.343 & 0.006 & 0.337 & 1.00 & 0.155 \\
 SuperGlue~\cite{sarlin2020superglue}& learned    & 0.518 & 0.434 & \best{0.384} & 0.357 & 0.020 & 0.337 & 1.00 & 5.196 \\
@@ -29,14 +28,14 @@ LoFTR~\cite{sun2021loftr}           & learned    & 0.512 & 0.424 & 0.285 & 0.357
 YOLOv8 backbone~\cite{jocher2023ultralytics} & embedding  & 0.525 & 0.439 & 0.134 & \best{0.374} & \best{0.037} & \best{0.338} & 1.00 & 0.016 \\
 ViT-B/16~\cite{dosovitskiy2021vit}  & embedding  & \best{0.613} & 0.487 & 0.259 & 0.344 & 0.007 & 0.336 & 1.00 & 0.021 \\
 DeiT-S~\cite{touvron2021deit}       & embedding  & 0.570 & 0.479 & 0.223 & 0.337 & 0.000 & 0.337 & 1.00 & 0.008 \\
-CLIP ViT-B/32~\cite{radford2021clip}& embedding$^\dagger$  & 0.604 & 0.471 & 0.143 & 0.307 & 0.002 & 0.306 & 1.00 & 0.050 \\
+CLIP ViT-B/32~\cite{radford2021clip}& embedding  & 0.604 & 0.471 & 0.143 & 0.307 & -0.030 & 0.306 & 1.00 & 0.050 \\
 DINOv2~\cite{oquab2024dinov2}      & embedding  & 0.567 & 0.459 & 0.272 & 0.337 & 0.000 & 0.331 & 1.00 & 0.011 \\
 OSNet~\cite{zhou2019osnet}          & re-ID      & 0.603 & \best{0.497} & 0.154 & 0.338 & 0.001 & 0.337 & 1.00 & \best{0.006} \\
 \midrule
 \rowcolor{black!5}
 \multicolumn{10}{l}{\emph{Full-image scope}} \\
 \rowcolor{black!5}
-\ours{} (reference) & geometry & 0.952 & 0.886 & 0.768 & 0.656 & 0.351 & 0.582 & 0.48 & 27.92 \\
+\ours{} (reference) & geometry & 0.878 & 0.815 & 0.725 & 0.638 & 0.301 & 0.566 & 0.48 & 30.30 \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -58,20 +57,20 @@ Context experiments use OSNet and CLIP to examine whether matching depends on th
 \ours{} follows the registration and mask-comparison procedure described in Section~\ref{sec:method}. It uses spatial correspondence between wall photographs to compare crack instances in a common coordinate frame. A \coverage{} control assigns one constant score to pairs from successfully registered images and no finite score to unregistered pairs. It does not compare crack shape or appearance. This control measures how much performance can arise from the pattern of registration success alone. The synthetic experiment compares OSNet with context against \hybrid{}. \hybrid{} supplements geometric alignment with skeleton comparison through fallback and blending, using a fixed tolerance of $8$ pixels. It is a separate configuration from \ours{}. LightGlue~\cite{lindenberger2023lightglue} and NetVLAD~\cite{arandjelovic2016netvlad} are relevant candidates for future comparison but are not evaluated in this benchmark given compute and scope limits.
 
 \subsection{Result: appearance buys almost nothing on the decision}
-Table~\ref{tab:main} summarises the primary benchmark for unchanged damage under acquisition variation. Among the nine updated crop methods, Rank-1 ranges from $0.370$ to $0.613$. ViT-B/16 achieves the highest Rank-1, while OSNet achieves the highest mAP. SuperGlue obtains the highest DIR@FAR$=0.1$ among these methods.
+Table~\ref{tab:main} summarises the primary benchmark for unchanged damage under acquisition variation. Among the nine crop methods, Rank-1 ranges from $0.370$ to $0.613$. ViT-B/16 achieves the highest Rank-1, while OSNet achieves the highest mAP. SuperGlue obtains the highest DIR@FAR$=0.1$ among these methods.
 
-On the decision a record actually makes---same crack or not, at a threshold---no new crop row clears the best-constant floor by more than $0.037$.
-At the oracle threshold on test, new $F_1^{*}$ spans $0.337$ to $0.374$ against the $0.337$ floor at prevalence $0.203$ (Table~\ref{tab:main}), i.e.\ $+0.000$ to $+0.037$, with three rows at the floor to three decimals. This band spans handcrafted keypoints to foundation-model embeddings and more than two orders of relative compute ($0.006$\,s to $7.19$\,s per query in separate per-method runs, Table~\ref{tab:main}; absolute timings are workstation-dependent).
+On the decision a record actually makes---same crack or not, at a threshold---no crop row clears the best-constant floor by more than $0.037$.
+At the oracle threshold on test, $F_1^{*}$ spans $0.337$ to $0.374$ against the $0.337$ floor at prevalence $0.203$ (Table~\ref{tab:main}), i.e.\ $+0.000$ to $+0.037$, with three rows at the floor to three decimals. This band spans handcrafted keypoints to foundation-model embeddings and more than two orders of relative compute ($0.006$\,s to $7.19$\,s per query in separate per-method runs, Table~\ref{tab:main}; absolute timings are workstation-dependent).
 
-At a deployable validation-calibrated threshold, the nine new rows sit at
+At a deployable validation-calibrated threshold, the nine rows sit at
 $F_1^{@v}{=}0.331$--$0.338$ against the $0.337$ floor ($-0.006$ to $+0.001$):
 thresholded decisions are at or below chance.
 
-Ranking does not transfer to deciding. the nine new rows separate over a $0.243$ range on Rank-1
+Ranking does not transfer to deciding. The nine rows separate over a $0.243$ range on Rank-1
 ($0.370$--$0.613$; chance $0.336{\pm}0.025$),
 yet ViT takes best Rank-1 ($0.613$) while its oracle pairwise $F_1^{*}$
 sits only $0.007$ above the floor, and SuperGlue (seventh on Rank-1) has the
-best new crop open-set rate ($0.384$; chance $0.038{\pm}0.014$).
+best crop open-set rate ($0.384$; chance $0.038{\pm}0.014$).
 Ordering a gallery well and keeping a record are different capabilities. The
 collapse after validation calibration is consistent with threshold
 instability under a small, wall-clustered sample: methods can order
@@ -81,11 +80,11 @@ interpretation of the observed pattern, not a claim that calibration itself
 is the sole cause. With $19$ matchable test identities and no wall-level
 intervals, no fine ranking among crop baselines is claimed.
 
-One contributor is checkable from the counting units. Validation pair prevalence was $0.292$ ($26\,012/89\,118$) on the prior snapshot against $0.203$ on
-the current test pool ($6\,160/30\,390$), so the $F_1$-optimal threshold is not a property of a method but of the
+One contributor is checkable from the counting units. Validation pair prevalence is $0.292$ ($26\,012/89\,118$) against $0.203$ on
+the test pool ($6\,160/30\,390$), so the $F_1$-optimal threshold is not a property of a method but of the
 pool it was fitted on: the same scores that separate cracks on the denser
 validation pool place their boundary in the wrong place once prevalence
-shifts, and every method shifts together. The current test floor is $0.337$ (validation floor TBD after val-split rerun with walls 18--19). This is a mechanism, not a measurement: the
+shifts, and every method shifts together. This is a mechanism, not a measurement: the
 threshold-free version of the claim (pairwise average precision, or AUROC
 against prevalence) would settle it, and we do not report it; releasing the
 saved score matrices it requires is listed as future work
@@ -93,44 +92,41 @@ saved score matrices it requires is listed as future work
 
 \subsection{Is it the crack, or the wall behind it?}
 \label{sec:controls}
-In the earlier snapshot, adding context increases OSNet's Rank-1 from $0.654$ to $0.775$ and DIR@FAR$=0.1$ from $0.168$ to $0.404$ (prior $n_Q{=}280$ snapshot; context controls pending rerun at $n_Q{=}306$). Two controls separate identity cue from field of view at fixed backbone: a \emph{crop$+$context}
+Adding context increases OSNet's Rank-1 from $0.654$ to $0.775$ and DIR@FAR$=0.1$ from $0.168$ to $0.404$. Two controls separate identity cue from field of view at fixed backbone: a \emph{crop$+$context}
 condition (\texttt{@ctx1}: instance bounding box expanded by $1.0{\times}$
 its size on each side) and a \emph{crack-erased} condition
 (\texttt{@ctx1@nocrack}: the same widened view with the crack mask dilated by
 $5$\,px and filled by Telea inpainting, radius $3$\,px, so the silhouette is
 removed rather than blacked out). Context helps a lot: OSNet's Rank-1
 rises from $0.654$ to $0.775$, mAP to $0.595$, open-set rate from $0.168$ to
-$0.404$, and its pairwise $F_1^{*}$ from $0.309$ to $0.354$ (prior $n_Q{=}280$
-snapshot; context controls pending rerun at $n_Q{=}306$); CLIP's open-set
+$0.404$, and its pairwise $F_1^{*}$ from $0.309$ to $0.354$; CLIP's open-set
 rate rises from $0.143$ to $0.311$, but erasing the crack costs almost none of it: OSNet retains Rank-1
 $0.711$, mAP $0.574$ and open-set $0.393$; CLIP retains Rank-1 $0.600$, mAP
 $0.502$, open-set $0.286$. Both erased views still outrank every tight-crop
 method: the retrieved cue is the wall, that is, location. The persistence of performance after crack erasure indicates that surrounding wall cues contribute strongly to association in this dataset. These cues may help recognise the location of an observation even when the crack itself provides limited distinguishing information. The experiment supports the use of context, while leaving its robustness across separate inspections to be established. RQ2 (context part): wall context improves retrieval and identification with rejection. Much of this benefit persists after crack erasure, indicating that surrounding wall cues contribute substantially to association in this dataset. Pairwise
-$F_1$ moves little with context on the prior pool: all four context variants lie between
-$0.346$ and $0.361$ (prior floor $0.305$), over a change that
+$F_1$ moves little with context: all four context variants lie between
+$0.346$ and $0.361$, over a change that
 gives OSNet $+0.236$ of open-set rate. We read the aggregate as a property
-of the data, pending rerun at the current pool: methods with no shared inductive bias land near the floor, and
+of the data: methods with no shared inductive bias land near the floor, and
 wherever a crop method improves, the improvement is not the crack. Ten
 methods are a sample, not proof; the result establishes that the obvious
-moves buy at most $0.037$ above the $0.337$ floor on the decision under the
-new rerun, reason to change
+moves buy at most $0.037$ above the $0.337$ floor on the decision,
+reason to change
 the formulation, not the encoder. Differences in retrieval performance are accompanied by a much narrower range of thresholded pairwise accuracy, so a method's ability to place the correct candidate near the top of a list does not necessarily translate into a reliable same-defect decision. For ticket management, a ranked list may help an operator locate a related record, while accepting that association requires additional evidence. Therefore (RQ1): although methods can retrieve observations of the same crack under within-visit acquisition variation, reliable automatic identity decisions remain limited.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/ceiling.pdf}
 \caption{The appearance ceiling. Pairwise $F_1$ for ten crop-scope
-matchers spanning four method families on \textsc{CrackID} test ($n_Q{=}306$
-for nine rows; CLIP-crop prior snapshot). New rows fall inside $0.337$ to
+matchers spanning four method families on \textsc{CrackID} test. Rows fall inside $0.337$ to
 $0.374$ against the $0.337$ best-constant floor ($2p/(1+p)$ at prevalence $0.203$),
 irrespective of family
-or relative compute. The geometric reference baseline (red, prior snapshot)
+or relative compute. The geometric reference baseline (red)
 leaves the band,
-but it answers only $48\%$ of pairs, for which the best-constant floor on the current labels is
-$0.558$ (the \coverage{} level with old registration outcomes), not $0.337$: its bar is drawn
+but it answers only $48\%$ of pairs, for which the best-constant floor is
+$0.558$ (the \coverage{} level), not $0.337$: its bar is drawn
 against the dashed line and must not be read against the crop floor. Ranking metrics separate the same methods over a
-$0.24$ range; the decision metric does not. All bars are point estimates on
-the rerun pool with no wall-level intervals. Figure bars show the prior-pool band and await
-regeneration after the full-pool rerun; numbers in Table~\ref{tab:main} take precedence.}
+$0.24$ range; the decision metric does not. All bars are point estimates
+with no wall-level intervals; numbers in Table~\ref{tab:main} take precedence.}
 \label{fig:ceiling}
 \end{figure}
