@@ -4,12 +4,8 @@
   journal = {International Journal of Computer Vision},
   volume = {60}, number = {2}, pages = {91--110}, year = {2004}
 }
-@inproceedings{bay2006surf,
-  author = {Bay, Herbert and Tuytelaars, Tinne and Van Gool, Luc},
-  title = {{SURF}: Speeded Up Robust Features},
-  booktitle = {European Conference on Computer Vision (ECCV)},
-  pages = {404--417}, year = {2006}
-}
+% SURF and additional single-image crack datasets (CFD, Crack500) omitted:
+% no method in Table~\ref{tab:main} uses them and no claim depends on them.
 @inproceedings{rublee2011orb,
   author = {Rublee, Ethan and Rabaud, Vincent and Konolige, Kurt and Bradski, Gary},
   title = {{ORB}: An Efficient Alternative to {SIFT} or {SURF}},
@@ -62,11 +58,8 @@
   booktitle = {Readings in Computer Vision}, publisher = {Morgan Kaufmann},
   pages = {726--740}, year = {1987}
 }
-@article{acuna2019homography,
-  author = {Acuna, Raul and Willert, Volker},
-  title = {Insights into the Robustness of Control Point Configurations for Homography and Planar Pose Estimation},
-  journal = {arXiv preprint arXiv:1803.03025}, year = {2019}
-}
+% Homography robustness survey omitted: the planar assumption is stated
+% as a limitation (Sec.~\ref{sec:method}, \ref{sec:validity}), not a robustness claim.
 @article{maiano2023antifraud,
   author = {Maiano, Luca and Montuschi, Antonio and Caserio, Marta and others},
   title = {A Deep-Learning-Based Antifraud System for Car-Insurance Claims},
@@ -92,17 +85,8 @@
   title = {Identifying Re-Identification Challenges: Past, Current and Future Trends},
   journal = {SN Computer Science}, volume = {5}, pages = {937}, year = {2024}
 }
-@inproceedings{he2023similarity,
-  author = {He, Lifang and Qiang, Zhenping and Wu, Yifan and Wang, Ming},
-  title = {Survey on Measures of Image Similarity Applied in Image Inpainting Based on Deep Learning},
-  booktitle = {International Conference on Algorithms, Computing and Artificial Intelligence},
-  year = {2023}
-}
-@article{xu2024localmatching,
-  author = {Xu, Shibiao and Chen, Shunpeng and Xu, Rongtao and Wang, Chenyao and Lu, Peng and Guo, Li},
-  title = {Local Feature Matching Using Deep Learning: A Survey},
-  journal = {Information Fusion}, volume = {107}, pages = {102344}, year = {2024}
-}
+% Image-similarity and local-matching surveys omitted: no threshold-free
+% AP/AUROC is claimed (Sec.~\ref{sec:validity} lists it as future work).
 
 @inproceedings{benz2024omnicrack30k,
   author = {Benz, Christian and Rodehorst, Volker},
@@ -113,7 +97,7 @@
 @article{kulkarni2022crackseg9k,
   author = {Kulkarni, Shreyas and Singh, Shreyas and Balakrishnan, Dhananjay and Sharma, Siddharth and Devunuri, Saipraneeth and Korlapati, Sai Chowdeswara Rao},
   title = {{CrackSeg9k}: A Collection and Benchmark for Crack Segmentation Datasets and Frameworks},
-  journal = {arXiv:2208.13054}, year = {2022}
+  howpublished = {arXiv preprint arXiv:2208.13054}, year = {2022}
 }
 @article{harb2025multitemporal,
   author = {Harb, Said and Achanccaray, Pedro and Maboudi, Mehdi and Gerke, Markus},
@@ -135,7 +119,7 @@
 @article{sun2025perspective,
   author = {Sun, Xinxin and Chang, Peter},
   title = {Robust Perspective Correction for Real-World Crack Evolution Tracking in Image-Based Structural Health Monitoring},
-  journal = {arXiv:2506.22437}, year = {2025}
+  howpublished = {arXiv preprint arXiv:2506.22437}, year = {2025}
 }
 @misc{nec2019guide,
   author = {{NEC Corporation}},
@@ -193,22 +177,8 @@
   year = {2012}
 }
 
-@article{shi2016cfd,
-  author = {Shi, Yong and Cui, Limeng and Qi, Zhiquan and Meng, Fan and Chen, Zhensong},
-  title = {Automatic Road Crack Detection Using Random Structured Forests},
-  journal = {IEEE Trans. Intelligent Transportation Systems},
-  volume = {17}, number = {12}, pages = {3434--3445},
-  year = {2016}
-}
-
-@article{yang2018crack500,
-  author = {Yang, Fan and Zhang, Lei and Yu, Sijia and Prokhorov, Danil and
-            Mei, Xue and Ling, Haibin},
-  title = {Feature Pyramid and Hierarchical Boosting Network for Pavement
-           Crack Detection},
-  journal = {IEEE Trans. Intelligent Transportation Systems},
-  year = {2020}
-}
+% CFD and Crack500 omitted (see SURF note above); CrackTree, DeepCrack and
+% GAPS retained as the cited single-image lineage in Sec.~II.
 
 @article{liu2019deepcrack,
   author = {Liu, Yahui and Yao, Jian and Lu, Xiaohu and Xie, Renping and Li, Li},

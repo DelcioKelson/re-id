@@ -24,7 +24,7 @@
 \bibitem{kulkarni2022crackseg9k}
 S.~Kulkarni, S.~Singh, D.~Balakrishnan, S.~Sharma, S.~Devunuri, and S.~C.~R.
   Korlapati, ``{CrackSeg9k}: A collection and benchmark for crack segmentation
-  datasets and frameworks,'' \emph{arXiv:2208.13054}, 2022.
+  datasets and frameworks,'' 2022.
 
 \bibitem{benz2024omnicrack30k}
 C.~Benz and V.~Rodehorst, ``{OmniCrack30k}: A benchmark for crack segmentation
@@ -77,8 +77,7 @@ S.~Harb, P.~Achanccaray, M.~Maboudi, and M.~Gerke, ``Multi-temporal crack
 
 \bibitem{sun2025perspective}
 X.~Sun and P.~Chang, ``Robust perspective correction for real-world crack
-  evolution tracking in image-based structural health monitoring,''
-  \emph{arXiv:2506.22437}, 2025.
+  evolution tracking in image-based structural health monitoring,'' 2025.
 
 \bibitem{nec2019guide}
 {NEC Corporation}, ``Photographing guide device,'' US Patent 12{,}223{,}639 B2
@@ -130,6 +129,10 @@ M.~Oquab, T.~Darcet, T.~Moutakanni \emph{et~al.}, ``{DINOv2}: Learning robust
   visual features without supervision,'' \emph{Transactions on Machine Learning
   Research}, 2024.
 
+\bibitem{jocher2023ultralytics}
+G.~Jocher, A.~Chaurasia, and J.~Qiu, ``{Ultralytics YOLOv8},''
+  \url{https://github.com/ultralytics/ultralytics}, 2023.
+
 \bibitem{lindenberger2023lightglue}
 P.~Lindenberger, P.-E. Sarlin, and M.~Pollefeys, ``{LightGlue}: Local feature
   matching at light speed,'' in \emph{IEEE/CVF Int. Conference on Computer
@@ -139,10 +142,6 @@ P.~Lindenberger, P.-E. Sarlin, and M.~Pollefeys, ``{LightGlue}: Local feature
 R.~Arandjelovi{\'c}, P.~Gronat, A.~Torii, T.~Pajdla, and J.~Sivic, ``{NetVLAD}:
   {CNN} architecture for weakly supervised place recognition,'' in \emph{IEEE
   Conf. Computer Vision and Pattern Recognition (CVPR)}, 2016, pp. 5297--5307.
-
-\bibitem{jocher2023ultralytics}
-G.~Jocher, A.~Chaurasia, and J.~Qiu, ``{Ultralytics YOLOv8},''
-  \url{https://github.com/ultralytics/ultralytics}, 2023.
 
 \bibitem{maiano2023antifraud}
 L.~Maiano, A.~Montuschi, M.~Caserio \emph{et~al.}, ``A deep-learning-based
@@ -197,6 +196,11 @@ D.~Barath, J.~Matas, and J.~Noskova, ``{MAGSAC}: Marginalizing sample
 G.~D. Evangelidis and E.~Z. Psarakis, ``Parametric image alignment using
   enhanced correlation coefficient maximization,'' \emph{IEEE Trans. Pattern
   Analysis and Machine Intelligence}, vol.~30, no.~10, pp. 1858--1865, 2008.
+
+\bibitem{zuiderveld1994clahe}
+K.~Zuiderveld, ``Contrast limited adaptive histogram equalization,'' in
+  \emph{Graphics Gems IV}.\hskip 1em plus 0.5em minus 0.4em\relax Academic
+  Press, 1994, pp. 474--485.
 
 \bibitem{kuhn1955hungarian}
 H.~W. Kuhn, ``The {H}ungarian method for the assignment problem,'' \emph{Naval

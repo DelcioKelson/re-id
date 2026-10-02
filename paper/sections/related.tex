@@ -1,51 +1,23 @@
 \section{Related Work}
 
-Crack analysis is overwhelmingly focused on detection and
+Crack analysis targets detection and
 segmentation~\cite{zou2012cracktree,liu2019deepcrack,eisenbach2017gaps}; its
-datasets annotate cracks within single images and the large consolidations
-merging~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k} inherit that
-scope, and multi-view crack pipelines
-fuse several photographs of one inspection into a surface or a
-segmentation~\cite{benz2025crackstructures} without solving instance
-correspondence between them. Structural-health monitoring
-does compare cracks across time with machinery close to
-ours~\cite{parente2022monitoring,harb2025multitemporal,sun2025perspective,nec2019guide},
-but identity is always \emph{given by construction} (fixed camera, marked
-location, operator at a viewpoint): the subject is one known crack, the
-question of width or extent, and no dataset supports method comparison on the
-association decision itself. Those systems therefore solve measurement
-after correspondence has already been supplied; they do not decide whether
-a newly observed crack is the same physical defect as a gallery crack under
-an open-set protocol. The benchmark targets that missing association
-decision, while its real capture scope remains within one walk-around
-rather than a true longitudinal study.
+datasets annotate single images and consolidations
+inherit that scope~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k}, and multi-view pipelines
+fuse one inspection into a surface or
+segmentation~\cite{benz2025crackstructures} without instance correspondence. Structural-health monitoring
+compares cracks over time with related
+machinery~\cite{parente2022monitoring,harb2025multitemporal,sun2025perspective,nec2019guide},
+but identity is \emph{given by construction} (fixed camera, marked
+location): they measure a known crack rather than deciding association under an open-set protocol, which is our target.
 
 Object re-identification~\cite{qian2024reidtrends} with open-set
-identification~\cite{liao2014openset} is the formal setting we adopt;
+identification~\cite{liao2014openset} is our formal setting;
 keypoint matching~\cite{lowe2004sift,rublee2011orb}, learned correspondence
 (SuperGlue~\cite{sarlin2020superglue}, LoFTR~\cite{sun2021loftr}), and
 region embeddings~\cite{dosovitskiy2021vit,touvron2021deit,radford2021clip,zhou2019osnet,oquab2024dinov2}
-apply directly to crack crops, and our benchmark measures all of them
-zero-shot, without \textsc{CrackID} fine-tuning.
-We cite LightGlue~\cite{lindenberger2023lightglue} and place
-recognition (NetVLAD~\cite{arandjelovic2016netvlad}) as the natural retrieval
-front end, but we benchmark neither given compute and scope limits and the
-within-visit focus; they remain future baselines, not claimed
-comparisons. The YOLOv8 row uses the \texttt{yolov8n.pt} detector backbone
-(layer $9$) as an embedding~\cite{jocher2023ultralytics}, version-pinned in
-code, not a fine-tuned crack model. It is evaluated zero-shot, without \textsc{CrackID} fine-tuning.
-Vehicle-damage assessment already re-identifies damage across claims in
-curated settings~\cite{maiano2023antifraud}, a task the open-set protocol
-here mirrors; the rest of that literature treats damage detection and severity
-rating rather than association~\cite{hasan2025review,perez2024assessment,mallios2023multiview}.
-Whether the crop scope is itself the limiting choice for cracks is the
-question the benchmark is built to answer. The move the baseline makes, aligning
-two captures and then reasoning about what is present in one and absent in
-the other, is change
-detection~\cite{sakurada2015changedetection,alcantarilla2018street}; planar
-registration is
-classical~\cite{hartley2004mvg,fischler1987ransac,barath2019magsac} with
-photometric alignment (ECC~\cite{evangelidis2008ecc}) as the fallback. The
-contribution here is not a new estimator but the observation that the alignment
-target and the matching target should be \emph{disjoint}: the homography is
-driven by the wall precisely because the crack is what is to be identified.
+apply to crack crops, all benchmarked here zero-shot without \textsc{CrackID} fine-tuning (YOLOv8 row: layer-$9$ \texttt{yolov8n.pt} features~\cite{jocher2023ultralytics}; LightGlue~\cite{lindenberger2023lightglue} and NetVLAD~\cite{arandjelovic2016netvlad} left as future retrieval baselines).
+Vehicle-damage re-identification across claims~\cite{maiano2023antifraud} mirrors our open-set protocol; the rest of that literature covers detection/severity rather than association~\cite{hasan2025review,perez2024assessment,mallios2023multiview}.
+Aligning captures then reasoning about presence versus absence is change
+detection~\cite{sakurada2015changedetection,alcantarilla2018street} with classical planar
+registration~\cite{hartley2004mvg,fischler1987ransac,barath2019magsac} and ECC fallback~\cite{evangelidis2008ecc}; our point is that alignment and matching targets should be \emph{disjoint}, with the homography driven by the wall because the crack is what is to be identified.

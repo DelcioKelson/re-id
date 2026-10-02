@@ -2,26 +2,26 @@
 
 We built a dataset that makes crack re-identification testable:
 \textsc{CrackID}, 140 photographs over 17 walls with 212 identities in the
-frozen snapshot, its
-annotation provenance ($45\%$ merged) stated rather than assumed, with the
+frozen snapshot (6 validation walls, 11 test walls; wall18--wall19 excluded), its
+annotation provenance ($45\%$ merged; $48\%$ on test) stated rather than assumed, with the
 triage of unclaimed clicks complete ($107/1\,023$ naming no crack). All
 accuracy rows are point estimates with no
-wall-level intervals ($19$ matchable test identities); we claim
+wall-level intervals ($19$ matchable test identities, $n_Q{=}280$); we claim
 the pattern, not the digits. The
 benchmark's main finding is negative and structural: on the decision a
 record requires, ten zero-shot matchers across four families buy between
-$+0.000$ and $+0.037$ over the $0.337$ best-constant floor ($F_1^{*}$ $0.337$--$0.374$),
-with all nine rows at or below the floor at the validation threshold ($F_1^{@v}$ $0.331$--$0.338$).
+$+0.000$ and $+0.054$ over the $0.305$ best-constant floor ($F_1^{*}$ $0.305$--$0.359$),
+with eight of ten rows at or below the floor at the validation threshold ($F_1^{@v}$ $0.293$--$0.351$; LoFTR alone at $+0.046$).
 Ordering a gallery and deciding an
 identity are not the same capability. The difficulty is not crack
 appearance alone: a geometric reference baseline that registers on wall texture
 with cracks masked out and Chamfer-matches projected masks reaches
-$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.725$ against $0.384$ for the best
+$\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ against $0.429$ for the best
 crop method and $0.404$ for the best
 context method while answering $48\%$ of pairs, and a \coverage{} control
 exploiting
 that alignment without examining a crack scores $0.000$ on the open-set
-metric ($0.544$ pairwise $F_1$).
+metric ($0.544$ pairwise $F_1$ on its own $0.544$ floor).
 Operationally, the open-set advantage comes from an aligned pair supporting
 a \emph{licensed negative}, positive evidence of absence, where a crop
 embedding can only report low similarity; whether that advantage is

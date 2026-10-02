@@ -2,63 +2,17 @@
 \label{sec:dataset}
 
 \subsection{Acquisition and composition}
-The \textsc{CrackID} dataset snapshot contains 140 photographs of 17 exterior walls acquired at one
-site over four half-days with two consumer handsets, at $3072\times4080$.
-The dataset snapshot is archived at Mendeley Data (\url{https://data.mendeley.com/}).
-The walls
-span two surface families that behave very differently under keypoint
-matching: stippled render (densely textured) and smooth painted plaster,
-where the crack is frequently the only structure in frame. Walls split
-disjointly into 6 validation walls (66 photographs, 66 identities) and 11
-test walls (74 photographs, 146 identities). Statistical power is governed
-by identities visible in two or more photographs, since only these form a
-query with an answer: 18 in validation, 19 in test. Each wall was captured
-in one continuous walk-around (consecutive frames a median of $3$\,s apart),
-so the dataset measures viewpoint and scale correspondence within
-one visit, a hypothesized upper bound on multi-visit performance, not yet a measurement
-of it.
+The \textsc{CrackID} frozen benchmark snapshot holds 140 photographs of 17 exterior walls at one site over four half-days (two consumer handsets; archived at Mendeley Data). Walls span stippled render (textured) and smooth painted plaster (often crack-only in frame). Split: 6 validation walls wall01--wall06 (66 photos, 66 identities) and 11 test walls wall07--wall17 (74 photos, 146 identities); only identities in ${\geq}2$ photos yield answerable queries (18 val, 19 test; $n_Q{=}280$ test, $439$ val). Two walls added later (wall18--wall19) are excluded from every number in this paper. Each wall is one continuous walk-around (median $3$\,s between consecutive frames, max span $81$\,s), so the data measures within-visit viewpoint/scale correspondence, a hypothesized upper bound on multi-visit performance.
 
 \smallskip
-\noindent\emph{Adjacent-frame retrieval.} $95.8\%$ of $306$ answerable test queries have their nearest correct gallery entry in the
-adjacent frame. Ranking therefore rewards short-baseline correspondence;
-Sec.~\ref{sec:results} sweeps the exclusion gap ($306{\to}247{\to}188{\to}124$ with floors
-$0.337{\to}0.288{\to}0.250{\to}0.204$) and reports that Rank-1 stays flat while the
-pool and prevalence change with it, so the sweep characterises robustness,
-not proof that duplicates are irrelevant.
+\noindent\emph{Adjacent-frame retrieval.} $100\%$ of $280$ answerable test queries are answered by the adjacent frame; Sec.~\ref{sec:results} gap sweeps ($280{\to}205{\to}149{\to}105$ for gaps $0{\to}3$) find flat Rank-1 on a shrinking pool, characterising short-baseline robustness rather than proving irrelevance.
 
 \subsection{Annotation, and why it needs auditing}
 \label{sec:annotation}
-One click point per crack is propagated across consecutive photographs
-through an ORB homography and one-to-one assignment; identities whose
-components appear to be fragments of one physical crack are then merged. The
-merge is where risk concentrates: a wrongly joined merge converts a hard
-negative into a free positive and inflates \emph{every} method's mAP
-together, so it cannot be caught by comparing methods. We therefore report
-its extent rather than assume its correctness: $95/212$ identities
-($45\%$) were formed by a merge (48\% on test), bridging a median maximum
-gap of $228$ px; the adjusted Rand index against the pre-merge labeling is
-$0.080$, meaning the merge restructured the partition rather than refining
-it. All annotations were validated by a human: a single annotator placed
-and reviewed all 2,095 clicks from homography-propagated prefill until
-zero provisional points remained. The triage is complete: every one of the 1,023 clicks no component
-claimed was reviewed against the imagery --- 916 sit on visible cracks the
-segmenter missed rather than labelling mistakes, leaving 107 clicks
-($10.5\%$, 95\% CI $[8.7\%, 12.5\%]$) naming no crack
-(dataset\texttt{/}labels\texttt{/}\_unresolved.json). The 2,095 clicks resolve
-to 1,051 connected components; ``points'' below means clicks, not components.
-Single-annotator;
-agreement unmeasured, so the merge risk above is bounded by reporting,
-not removed. Counts in this section and Table~\ref{tab:units} refer to the
-frozen benchmark snapshot; \texttt{dataset/labels/} has
-since been re-edited (walls 18--19 added, audit in progress) and its raw
-identity/point totals no longer match exactly.
+One click per crack is propagated across consecutive frames via ORB homography plus one-to-one assignment, then fragment merges join components of one physical crack. Merge risk concentrates here: a wrong join turns a hard negative into a free positive for \emph{every} method. We report extent, not correctness: $95/212$ identities ($45\%$; $70/146$, $48\%$ on test) come from merges, with median bridged gaps of $228$\,px (test) and $286$\,px (val). A single annotator validated all clicks with full triage of unclaimed points ($107/1\,023$ naming no crack; full counts in supplement); agreement is unmeasured, so merge risk is bounded by reporting, not removed. Counts refer to the frozen snapshot (Table~\ref{tab:units}); the live \texttt{dataset/labels/} has since been re-edited (wall18--wall19 added, changelog rebuilt without gap fields) and no longer reproduces these counts until the benchmark is re-run.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.85\columnwidth]{figs/dataset_examples.pdf}
-\caption{Examples from real \textsc{CrackID} captures. Top: the same annotated
-identity in non-adjacent frames of one walk-around. Bottom: the two surface
-families, stippled render and smooth painted plaster. The identity labels
-inherit the dataset's homography-based propagation and are illustrative, not
-an independent annotation audit.}
+\caption{Real \textsc{CrackID} captures. Top: one identity in non-adjacent frames. Bottom: stippled render vs smooth plaster. Labels use homography propagation; illustrative, not an independent audit.}
 \label{fig:dataset-examples}
 \end{figure}
