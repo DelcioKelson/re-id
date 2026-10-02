@@ -121,15 +121,17 @@ growth change, not a real revisit.
 
 \begin{table}[t]
 \centering
-\small
-\begin{tabular}{llccccccc}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llcccccc}
 \toprule
-Protocol & Method & $n_q$ & R@1 & mAP & $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ & $F_1^{@v}$ & $F_1^{a}$ & scored \\
+Protocol & Method & $n_q$ & R@1 & mAP & DIR@FAR$_{0.1}$ & $F_1^{@v}$ & $F_1^{a}$ \\
 \midrule
-A (growth)      & \hybrid{}      & 69 & 0.275 & 0.401 & 0.343      & 0.569 & 0.646 & 1.00 \\
-A (growth)      & OSNet$+$ctx & 69 & \textbf{0.826} & \textbf{0.647} & \textbf{0.739} & 0.601 & 0.631 & 1.00 \\
-B (appearance)  & \hybrid{}      & 82 & 0.274 & 0.403 & 0.342      & 0.574 & 0.640 & 1.00 \\
-B (appearance)  & OSNet$+$ctx & 82 & \textbf{0.671} & \textbf{0.570} & \textbf{0.663} & 0.594 & 0.609 & 1.00 \\
+\multirow{2}{*}{A (growth)} & \hybrid{}     & 69 & 0.275 & 0.401 & 0.343 & 0.569 & 0.646 \\
+ & OSNet$+$ctx & 69 & \textbf{0.826} & \textbf{0.647} & \textbf{0.739} & 0.601 & 0.631 \\
+\midrule
+\multirow{2}{*}{B (appear.)} & \hybrid{}     & 82 & 0.274 & 0.403 & 0.342 & 0.574 & 0.640 \\
+ & OSNet$+$ctx & 82 & \textbf{0.671} & \textbf{0.570} & \textbf{0.663} & 0.594 & 0.609 \\
 \bottomrule
 \end{tabular}
 \caption{\hybrid{} versus the strongest appearance baseline on the synthetic
@@ -137,7 +139,7 @@ revisit protocol (Sec.~\ref{sec:hybridbench}); pairwise and assignment $F_1$
 at the validation-calibrated threshold. One seed ($0$), ten source
 photographs across five walls, no resampling; rows carry no uncertainty and
 are an accuracy checkpoint, not a stability claim
-(Sec.~\ref{sec:hybridbench}). \hybrid{} is not the Table~\ref{tab:main}
+(Sec.~\ref{sec:hybridbench}). All rows score $1.00$ of pairs. \hybrid{} is not the Table~\ref{tab:main}
 \ours{} configuration.}
 \label{tab:hybrid}
 \end{table}
