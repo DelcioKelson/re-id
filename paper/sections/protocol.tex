@@ -13,10 +13,12 @@ identity judgment. A \emph{query} is one annotated crack instance in a
 photograph. Its \emph{gallery} contains instances from eligible photographs
 of the same wall, excluding the query photograph and capture session. A query
 is \emph{known} if at least one valid gallery instance has the same identity;
-otherwise it is \emph{unknown}. Test contains 280 known and 258 unknown
-queries in the prior snapshot (new rerun: $n_Q{=}305$ answerable queries;
-full recount of positives/valid pairs, prevalence, and floors TBD pending
-\texttt{chance\_baseline.py} rerun). A \emph{query--gallery pair} is one query compared with one eligible
+otherwise it is \emph{unknown}. Test contains 306 answerable (known) and 199 unknown
+queries on the current labels ($30\,390$ valid pairs, $6\,160$ positive,
+prevalence $0.203$, floor $0.337$; \texttt{banchmark\_out/chance\_nq305.json}).
+Table~\ref{tab:units} retains the prior-pool recount for provenance; its test
+positives/valid counts ($5\,722/31\,822$) are superseded for the crop rerun.
+A \emph{query--gallery pair} is one query compared with one eligible
 gallery instance; an \emph{image pair} is two photographs of the same wall and
 is the unit charged for registration. Table~\ref{tab:units} summarizes the
 pair and image-pair counts. On test, registration is attempted for all $301$
@@ -28,15 +30,15 @@ after the $200$\,px size filter (see Sec.~\ref{sec:coverage}).
 \centering
 \small
 \caption{\textbf{Counting units for every metric (prior $n_Q{=}280$ snapshot;
-full recount TBD for the $n_Q{=}305$ rerun).} Per split: walls,
+current test pool: $306$ answerable, $30\,390$ valid, $6\,160$ positive).} Per split: walls,
 photographs and identities; identities in two or more photographs (the only
 ones that can form a query with an answer); answerable queries (ranking
-pool); positive and valid query--gallery pairs (pairwise-$F_1$ pool, test
-prevalence $0.180$ prior); and same-wall image pairs (registration pool,
+pool); positive and valid query--gallery pairs (pairwise-$F_1$ pool, prior test
+prevalence $0.180$, current $0.203$); and same-wall image pairs (registration pool,
 Sec.~\ref{sec:coverage}). The registration pool ($301$ test pairs) differs
-from the scored-pair subset ($255$ pairs with validity-mask cells).
-Counts refer to the frozen benchmark snapshot; see
-Sec.~\ref{sec:annotation} for current-label drift.}
+from the scored-pair subset ($255$ pairs with validity-mask cells on the prior snapshot).
+Counts below refer to the prior snapshot except where noted; see
+Sec.~\ref{sec:annotation} for label drift.}
 \label{tab:units}
 \begin{tabular}{lrr}
 \toprule
@@ -79,10 +81,10 @@ score is a miss, while an unknown query with no finite score is not a false
 alarm.
 
 Every metric is reported against its chance level, because two are far from
-zero (prior pool values; TBD for $n_Q{=}305$): pairwise $F_1$ has a best-constant-predictor floor
-$2p/(1+p) = 0.305$ on the prior pool, and Rank-5 chance is $0.767$; Rank-1 and
-$\mathrm{DIR}@\mathrm{FAR}$ chance are $0.336$ and $0.038$ (closed form, plus
-$200$ random matrices through the same evaluation code). We call $2p/(1+p)$
+zero (current test pool, \texttt{chance\_nq305.json}: $200$ random matrices): pairwise $F_1$ has a best-constant-predictor floor
+$2p/(1+p) = 0.337$ at prevalence $0.203$, Rank-5 chance $0.778{\pm}0.019$; Rank-1
+$0.336{\pm}0.025$ and
+$\mathrm{DIR}@\mathrm{FAR}$ $0.038{\pm}0.014$, assignment-$F_1$ $0.345$. Prior-pool values were $0.305/0.767/0.336/0.038$. We call $2p/(1+p)$
 a floor, not coin-flip chance: it is the score of predicting every pair
 positive, and it changes when
 the evaluated pair pool changes. Confidence resampling uses walls rather than

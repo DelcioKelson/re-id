@@ -13,7 +13,7 @@ reference, the prior ranking gains are $+0.437$/$+0.353$, while prior pairwise $
 crop floor would suggest. The open-set result is the one number
 coverage does not explain: prior $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ reaches $0.768$
 against $0.384$ for the best new crop method (SuperGlue at $n_Q{=}305$), $0.404$ for the best
-prior context control, prior chance $0.038$ TBD, and exactly $0.000$ for
+prior context control, chance $0.038{\pm}0.014$, and exactly $0.000$ for
 \coverage{}. Observed: crop methods return a
 similarity to the nearest neighbor, which on self-similar hairline cracks
 is often high, so they cannot decline. Interpretation: an aligned
@@ -31,11 +31,10 @@ Unscorable pairs are charged as predicted negatives. For ranking
 that is a penalty: censoring a complete matrix drops Rank-1 $0.422$ to
 $0.27$ at $34\%$ coverage in a held-out control (score matrices not committed;
 see paper README). For pairwise $F_1$ it is a subsidy: the
-scorable subset retains $100\%$ of positives and $36.8\%$ of negatives, so
-prevalence rises $0.180$ to $0.373$ and the floor with it, $0.305$ to
-$0.544$. \coverage{} scores $0.544$ pairwise $F_1$ and mAP
-$0.533$, both above OSNet ($0.309$ and $0.520$), and Rank-1 $0.515$, above ORB
-and SIFT but below the embedding and learned crop methods, by answering every
+scorable subset retains $93.0\%$ of positives and $37.5\%$ of negatives on the current labels with old registration outcomes ($100\%/36.8\%$ prior), so
+prevalence rises $0.203$ to $0.387$ and the floor with it, $0.337$ to
+$0.558$ (prior: $0.180{\to}0.373$, $0.305{\to}0.544$). \coverage{} scores $0.544$ pairwise $F_1$ on the prior pool ($0.558$ on current labels with old outcomes) and mAP
+$0.533$ on the prior pool (both above prior OSNet $0.309$/$0.520$; current-pool rerun of coverage/geometry pending), and Rank-1 $0.515$ prior-pool, by answering every
 registered pair without examining a crack. Its signal is registration overlap:
 it assigns one constant score to
 registered image pairs and $-\infty$ to unregistered pairs, so candidate
@@ -44,12 +43,11 @@ ranking and pairwise-$F_1$ margin is therefore \emph{which pairs align}; the
 open-set metric is the exception and the result we lead with.
 
 Excluding the adjacent frame, then the two and three nearest, leaves Rank-1
-flat (OSNet $0.654$ to $0.648$) with excess over chance stable in $0.24$ to
+flat on the prior pool (OSNet $0.654$ to $0.648$) with excess over chance stable in $0.24$ to
 $0.32$: the near-duplicate structure is real but the flat curve alone does not
-prove it is irrelevant, because the answerable pool shrinks ($280{\to}105$)
+prove it is irrelevant, because the answerable pool shrinks (prior $280{\to}105$; current $306{\to}124$)
 and prevalence shifts with it. It is also important for interpretation: the adjacent frame answers
-all $280$ queries, whereas the gap-3 sweep leaves only $105$ answerable
-queries, so the headline ranking measures short-baseline correspondence
+almost all queries ($100\%$ prior; $95.8\%$ current), so the headline ranking measures short-baseline correspondence
 rather than broad temporal re-identification. Registration success is
 strongly wall-dependent ($97/301$ pairs, $32.2\%$: walls 07/08/12 $100\%$,
 wall 09 $52\%$, wall 11 $83\%$, walls 13-16 between $3\%$ and $29\%$, walls

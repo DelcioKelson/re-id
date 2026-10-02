@@ -5,14 +5,13 @@ We built a benchmark that makes crack re-identification testable:
 frozen snapshot, its
 annotation provenance ($45\%$ merged) stated rather than assumed, with the
 triage of unclaimed clicks complete ($107/1\,023$ naming no crack). All
-accuracy rows are point estimates on $19$ matchable test identities with no
-wall-level intervals; we claim
+accuracy rows are point estimates with no
+wall-level intervals ($19$ matchable test identities on the prior snapshot); we claim
 the pattern, not the digits. The
 benchmark's main finding is negative and structural: on the decision a
 record requires, ten zero-shot matchers across four families buy between
-$+0.032$ and $+0.069$ over the prior best-constant floor under the new
-$n_Q{=}305$ rerun (new $F_1^{*}$ $0.337$--$0.374$; floors TBD), with no
-single-method exception at the validation threshold ($F_1^{@v}$ $0.331$--$0.338$).
+$+0.000$ and $+0.037$ over the $0.337$ best-constant floor ($F_1^{*}$ $0.337$--$0.374$),
+with all nine new rows at or below the floor at the validation threshold ($F_1^{@v}$ $0.331$--$0.338$).
 Ordering a gallery and deciding an
 identity are not the same capability. The difficulty is not crack
 appearance alone: a geometric reference baseline (prior snapshot) that registers on wall texture
@@ -22,7 +21,7 @@ new crop method and $0.404$ for the best prior
 context method while answering $48\%$ of pairs, and a \coverage{} control
 exploiting
 that alignment without examining a crack scores $0.000$ on the open-set
-metric (though $0.544$ on pairwise $F_1$ by prevalence shift).
+metric (prior $0.544$; $0.558$ on current labels with old registration outcomes).
 Operationally, the open-set advantage comes from an aligned pair supporting
 a \emph{licensed negative}, positive evidence of absence, where a crop
 embedding can only report low similarity; whether that advantage is

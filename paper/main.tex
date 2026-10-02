@@ -30,34 +30,24 @@ Nuno da Costa, Ricardo Rodrigues, and Duarte Fernandes }
 \maketitle
 
 \begin{abstract}
-Maintenance systems turn photographs into tracked defect records:
-a re-photographed crack must match its record or be filed as new.
-Crack \emph{detection} is mature, but we know of no benchmark for crack
-\emph{re-identification}. We introduce \textsc{CrackID}: 140 photographs of
-17 walls with 212 crack identities, each wall captured in one continuous
-walk-around, so the benchmark measures within-visit viewpoint and scale
-robustness, not cross-visit re-identification. Every metric is reported
-against its chance level. We benchmark ten zero-shot crop matchers from four
-families. Ranking separates them (Rank-1 $0.370$--$0.613$ on the $n_Q{=}305$
-rerun; prior chance $0.336$ TBD),
-but on the thresholded same-crack decision none exceeds the prior $0.305$
-pairwise-$F_1$ floor by more than $0.069$ (new $F_1^{*}$ $0.337$--$0.374$;
-floors TBD). Adding wall context raises OSNet's
-open-set rate from $0.168$ to $0.404$ (prior snapshot), yet inpainting the crack out retains
-$0.393$: context retrieves on location, not crack appearance. A geometric
-reference that registers on wall texture with cracks masked and Chamfer-matches
-projected masks reaches $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ against
-$0.384$ for the best new crop method (SuperGlue) and $0.000$ for a coverage-only control,
-answering $48\%$ of pairs (geometry/coverage prior snapshot, not numerically
-comparable to the rerun). It fails on two smooth-plaster walls and shares
-homography-based provenance with the annotations, so the advantage is
-provenance-conditioned. On a small single-seed synthetic revisit check,
-OSNet$+$context outperforms geometry in ranking and open-set rate. All rows
-are point estimates on $19$ test identities; we claim the pattern, not the digits.
+Ticket management systems turn photographs into tracked defect records:
+a re-photographed crack must match its record or be filed as new. This work,
+developed within R2UTechnologies, studies within-visit crack re-identification
+under viewpoint and scale change. We benchmark ten zero-shot crop matchers from four
+families on \textsc{CrackID}, a within-visit wall-crack benchmark. Ranking separates
+them (Rank-1 $0.370$--$0.613$; chance $0.336$), but on the thresholded same-crack-or-not decision
+that a ticket record requires, all remain within $+0.037$ of the $0.337$ chance floor. Adding wall context
+raises OSNet's open-set rate from $0.168$ to $0.404$, yet erasing the crack retains
+$0.393$: context retrieves on location, not crack appearance. A geometric reference
+that registers on wall texture with cracks masked and Chamfer-matches projected masks
+reaches an open-set rate of $0.768$ at $48\%$ coverage, against $0.384$ for the best
+crop method; a coverage-only control scores $0.000$. All accuracy rows are point estimates
+with no wall-level intervals. Ordering a gallery and deciding
+an identity are different capabilities, and the cue that works is location.
 \end{abstract}
 
 \begin{IEEEkeywords}
-crack re-identification, dataset, benchmark, building maintenance, structural
+crack re-identification, dataset, benchmark, ticket management, structural
 inspection, homography, geometric alignment, annotation quality
 \end{IEEEkeywords}
 

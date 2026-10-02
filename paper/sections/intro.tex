@@ -1,8 +1,10 @@
 \section{Introduction}
 
-Automated building-maintenance systems convert photographs into tracked defect
+Ticket management systems convert photographs into tracked defect
 records: a re-photographed defect must eventually be \emph{re-identified},
-matched to its record, or given a new one. This paper first studies
+matched to its record, or given a new one. This work was developed in the
+context of ticket management within R2UTechnologies, where each defect report
+opens an issue ticket that later photographs must be linked to. This paper first studies
 within-visit re-identification under viewpoint change. Wall cracks are a
 common and difficult case, because the same crack is re-photographed from
 different distances, angles, and lighting, and grows between visits.
@@ -28,12 +30,12 @@ reversal does not directly contradict Table~\ref{tab:main}.
 
 \smallskip
 \noindent{Appearance buys almost nothing on the decision.} On ranking
-the ten zero-shot matchers separate (Rank-1 $0.370$ to $0.613$ on the new
-$n_Q{=}305$ rerun; prior chance $0.336$ TBD); on pairwise $F_1$, the \emph{same-crack-or-not} decision a
-record makes at a threshold, new rows land between $+0.032$ and $+0.069$ above
-the prior $0.305$ best-constant floor ($F_1^{*}$ $0.337$--$0.374$; floors TBD),
+the ten zero-shot matchers separate (Rank-1 $0.370$ to $0.613$; chance
+$0.336{\pm}0.025$); on pairwise $F_1$, the \emph{same-crack-or-not} decision a
+record makes at a threshold, new rows land between $+0.000$ and $+0.037$ above
+the $0.337$ best-constant floor ($F_1^{*}$ $0.337$--$0.374$),
 and at a
-validation-calibrated threshold, the nine new rows cluster at $0.331$--$0.338$.
+validation-calibrated threshold all nine new rows sit at or below the floor ($0.331$--$0.338$).
 With no wall-level intervals, no fine ranking is claimed.
 
 Two controls say where the difficulty is not (prior $n_Q{=}280$ snapshot,
