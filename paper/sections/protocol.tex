@@ -1,44 +1,18 @@
 \section{Benchmark Protocol}
 \label{sec:protocol}
 
-The benchmark evaluates open-set retrieval: a photographed crack may or may
-not have a corresponding gallery instance. The protocol retains unknown
-cracks, calibrates thresholds on validation walls, and charges methods for
-unscorable pairs.
+The benchmark evaluates the visual association component required by building ticket management: given a newly reported observation of a crack, determine whether it corresponds to a previously recorded defect or has no matching record in the available reference set. Annotated crack identities serve as experimental proxies for persistent defect records, while photographs provide observations that could be attached to their corresponding tickets. The benchmark measures the accuracy of this association component; it does not directly measure duplicate-ticket reduction or the performance of a complete ticket management workflow. Two evaluation scenarios are considered. The first concerns damage whose physical morphology remains approximately unchanged but whose photographic appearance varies with acquisition conditions. The second concerns previously recorded damage whose appearance or structure changes between observations. Real photographs support the first scenario, whereas controlled synthetic transformations provide a preliminary assessment of the second.
 
-A \emph{wall} is one physical wall at the capture site; all gallery candidates
-for a query come from that wall. An \emph{identity} is a dataset label for a
-crack tracked across photographs, not an independently audited physical-
-identity judgment. A \emph{query} is one annotated crack instance in a
-photograph. Its \emph{gallery} contains instances from eligible photographs
-of the same wall, excluding the query photograph and capture session. A query
-is \emph{known} if at least one valid gallery instance has the same identity;
-otherwise it is \emph{unknown}. Test contains 306 answerable (known) and 199 unknown
-queries on the current labels ($30\,390$ valid pairs, $6\,160$ positive,
-prevalence $0.203$, floor $0.337$; \texttt{banchmark\_out/chance\_nq305.json}).
-Table~\ref{tab:units} retains the prior-pool recount for provenance; its test
-positives/valid counts ($5\,722/31\,822$) are superseded for the crop rerun.
-A \emph{query--gallery pair} is one query compared with one eligible
-gallery instance; an \emph{image pair} is two photographs of the same wall and
-is the unit charged for registration. Table~\ref{tab:units} summarizes the
-pair and image-pair counts. On test, registration is attempted for all $301$
-same-wall image pairs; $255$ contain at least one scored crack instance and
-produce validity-mask cells, while $46$ yield no valid query--gallery pair
-after the $200$\,px size filter (see Sec.~\ref{sec:coverage}).
+\subsection{Task formulation and candidate records}
+
+A \emph{wall} is one physical wall at the capture site. An \emph{identity} is an annotation label linking observations attributed to the same crack across photographs. These labels define the reference correspondence used for evaluation; they are not independent verification of physical identity, and their annotation provenance is described in Section~\ref{sec:annotation}. A \emph{query} is one annotated crack instance to be associated with a reference record. Its \emph{gallery} contains eligible crack instances from other photographs of the same wall, excluding the query photograph. Multiple gallery instances may share an identity, representing several observations of the same recorded defect. Restricting candidates to the same wall assumes that the wall has already been identified; cross-wall search and localisation are outside the benchmark's scope. A query is \emph{known} when at least one eligible gallery instance has the same annotated identity. It is \emph{unknown} when no such instance is available. Unknown therefore means that no matching observation exists in the evaluated gallery; it does not necessarily establish that the physical damage has never been recorded elsewhere. Each method assigns a similarity score to query--gallery pairs. These scores support candidate ranking, thresholded same-identity decisions, and identification with rejection. A \emph{query--gallery pair} is the unit used for pairwise classification, whereas an \emph{image pair} comprises two photographs and is the unit used for registration and correspondence assignment. The gallery is an experimental reference set rather than a chronological ticket database. Accordingly, the benchmark evaluates visual association between observations without claiming to reproduce the temporal arrival of reports or the creation and updating of tickets.
+
+Test contains 306 answerable (known) and 199 unknown queries on the current labels ($30\,390$ valid pairs, $6\,160$ positive, prevalence $0.203$, floor $0.337$; \texttt{banchmark\_out/chance\_nq305.json}). Table~\ref{tab:units} retains the prior-pool recount for provenance; its test positives/valid counts ($5\,722/31\,822$) are superseded for the crop rerun. On test, registration is attempted for all $301$ same-wall image pairs; $255$ contain at least one scored crack instance and produce validity-mask cells, while $46$ yield no valid query--gallery pair after the $200$\,px size filter (see Sec.~\ref{sec:coverage}).
 
 \begin{table}[t]
 \centering
 \small
-\caption{\textbf{Counting units for every metric (prior $n_Q{=}280$ snapshot;
-current test pool: $306$ answerable, $30\,390$ valid, $6\,160$ positive).} Per split: walls,
-photographs and identities; identities in two or more photographs (the only
-ones that can form a query with an answer); answerable queries (ranking
-pool); positive and valid query--gallery pairs (pairwise-$F_1$ pool, prior test
-prevalence $0.180$, current $0.203$); and same-wall image pairs (registration pool,
-Sec.~\ref{sec:coverage}). The registration pool ($301$ test pairs) differs
-from the scored-pair subset ($255$ pairs with validity-mask cells on the prior snapshot).
-Counts below refer to the prior snapshot except where noted; see
-Sec.~\ref{sec:annotation} for label drift.}
+\caption{Counting units for every metric (prior $n_Q{=}280$ snapshot; current pool in text).}
 \label{tab:units}
 \begin{tabular}{lrr}
 \toprule
@@ -54,40 +28,36 @@ Same-wall image pairs & 394 & 301 \\
 \end{tabular}
 \end{table}
 
-\subsection{Metrics}
-Ranking uses Rank-1, Rank-5, and mAP over known queries. Pairwise $F_1$
-classifies each valid query--gallery pair. Assignment $F_1$ ($F_1^{a}$ in
-Table~\ref{tab:hybrid}) evaluates the
-one-to-one matches made independently for each image pair. We distinguish
-$F_1^{*}$ (oracle threshold on test, a ceiling no deployment can pick),
-$F_1^{@v}$ (threshold calibrated on held-out validation walls, the deployable
-number), and $F_1^{a}$ (assignment at the validation threshold). At threshold $t$,
-$\mathrm{FAR}(t)$ is the fraction of unknown queries whose highest finite
-gallery score is at least $t$; $\mathrm{DIR}(t)$ is the fraction of known
-queries whose highest-scoring gallery instance is both correct and at least
-$t$. The reported $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ is the largest DIR among
-thresholds whose FAR is at most $0.1$ (a conservative open-set operating
-point; unknown queries with no finite score count as correct rejections,
-known queries with no finite score count as misses).
+Counts in Table~\ref{tab:units} refer to the prior $n_Q{=}280$ snapshot (test prevalence $0.180$); the current test pool is $306$ answerable, $30\,390$ valid, $6\,160$ positive (prevalence $0.203$). The registration pool ($301$ test pairs) differs from the scored-pair subset ($255$ pairs with validity-mask cells on the prior snapshot). See Sec.~\ref{sec:annotation} for label drift.
 
-For assignment $F_1$, the Hungarian algorithm maximizes total score within
-each query-image/gallery-image block; assignments below the validation-chosen
-threshold are rejected. Correct assignments are true positives, incorrect
-accepted assignments are false positives, and unmatched known queries are
-false negatives. Thus $F_1=2TP/(2TP+FP+FN)$; unmatched unknown queries are
-correct rejections. Unscorable pairs count as predicted negative for pairwise
-and assignment $F_1$ and rank last for retrieval. A known query with no finite
-score is a miss, while an unknown query with no finite score is not a false
-alarm.
+\subsection{Unchanged damage under different acquisition conditions}
 
-Every metric is reported against its chance level, because two are far from
-zero (current test pool, \texttt{chance\_nq305.json}: $200$ random matrices): pairwise $F_1$ has a best-constant-predictor floor
-$2p/(1+p) = 0.337$ at prevalence $0.203$, Rank-5 chance $0.778{\pm}0.019$, mAP $0.382$; Rank-1
-$0.336{\pm}0.025$ and
-$\mathrm{DIR}@\mathrm{FAR}$ $0.038{\pm}0.014$, assignment-$F_1$ $0.345$. Prior-pool values were $0.305/0.767/0.336/0.038$. We call $2p/(1+p)$
-a floor, not coin-flip chance: it is the score of predicting every pair
-positive, and it changes when
-the evaluated pair pool changes. Confidence resampling uses walls rather than
-queries because queries from one wall share capture conditions. With 11 test
-walls, no numeric interval is attached; wall-level intervals await a larger
-dataset and release of the per-pair score matrices (Sec.~\ref{sec:validity}).
+The primary evaluation uses real photographs acquired during one continuous walk-around per wall. Within this short acquisition period, crack morphology is treated as approximately unchanged. Differences between observations arise mainly from viewpoint, camera distance, scale, field of view, illumination, and partial visibility. This scenario tests whether a method can associate different photographic observations of the same defect despite acquisition variation. It also includes distinct cracks from the same wall, which act as competing candidates, and queries with no matching identity in their eligible galleries. Validation and test walls are disjoint. Methods use their existing configurations and pretrained weights where applicable, without fine-tuning on \textsc{CrackID}. Decision thresholds are calibrated on validation walls and then applied to test walls. Shared crack masks and instance extraction provide a common input representation across methods; the extraction rules are described in Section~\ref{sec:method}. Because the photographs come from a single visit, this evaluation establishes within-visit correspondence performance. It does not directly establish robustness across separate inspections or under naturally occurring damage progression.
+
+\subsection{Controlled appearance change and damage progression}
+
+A complementary synthetic revisit experiment separates changes in photographic appearance from changes in crack structure. Ten source photographs from five walls are used with one random seed. Synthetic queries are compared with the real reference instances from their respective walls. Both conditions apply the same modest affine transformation, using a scale factor of 1.08, a rotation of $6^{\circ}$, and a tilt parameter of $4^{\circ}$. In the appearance-change condition, crack structure is retained while image appearance is modified through Gaussian blur, noise, and contrast and brightness changes. This condition extends the assessment of acquisition variation under controlled transformations. In the damage-growth condition, a single tip of the largest crack component is extended, modifying its extent while preserving its original identity. This condition provides a limited test of whether an evolved observation can still be associated with the previously recorded defect. It represents one form of simulated crack growth; it does not reproduce the full range of widening, branching, deformation, or environmental changes encountered between real inspections. The synthetic experiment compares OSNet with wall context against \hybrid{}. \hybrid{} combines geometric alignment with skeleton comparison through fallback and blending, and is distinct from the \ours{} reference used in the primary benchmark. The two experiments therefore evaluate different geometric configurations and should be interpreted separately. With one seed and five source walls, the synthetic results are preliminary point estimates rather than evidence of real longitudinal performance.
+
+\subsection{Decision rules and handling of unavailable scores}
+
+Thresholded pairwise classification accepts a query--gallery pair as a correspondence when its similarity score meets the selected threshold. For query-level identification, the highest-scoring gallery instance is accepted only when its score meets that threshold; otherwise, the query is rejected. Correspondence assignment is also evaluated independently within each query-image/gallery-image block. The Hungarian algorithm maximises total similarity under a one-to-one constraint, after which assignments below the validation-selected threshold are rejected. This constraint applies to instances within an image pair. It does not impose a one-to-one relationship between reports and tickets: several observations may belong to the same persistent defect record. Pairs for which a method cannot produce a finite score are retained in evaluation. They count as predicted negatives for pairwise and assignment classification and rank below scored candidates for retrieval. A known query without a finite candidate score is a missed association. An unknown query without a finite score produces no false association. For interpretation in ticket management, an unavailable score must nevertheless be distinguished from a supported non-match. Registration failure or insufficient visual evidence indicates an unresolved association, which may require review; it does not establish that a new ticket should be created.
+
+For assignment $F_1$, correct accepted assignments are true positives, incorrect accepted assignments are false positives, and unmatched known instances are false negatives. Thus $F_1=2TP/(2TP+FP+FN)$; unmatched unknown queries are correct rejections. Unscorable pairs count as predicted negative for pairwise and assignment $F_1$ and rank last for retrieval. A known query with no finite score is a miss, while an unknown query with no finite score is not a false alarm.
+
+\subsection{Evaluation metrics and reference baselines}
+
+Candidate retrieval is evaluated over known queries using Rank-1, Rank-5, and mean average precision. These metrics measure whether observations of the correct identity appear near the top of the candidate list.
+
+Pairwise identity decisions are evaluated using precision, recall, and $F_1$ over valid query--gallery pairs. We distinguish the oracle test threshold, reported as $F_1^{*}$, from the validation-calibrated threshold, reported as $F_1^{@v}$. The oracle result describes an optimistic performance reference; the validation-calibrated result evaluates a decision threshold selected without using test labels.
+
+Assignment accuracy, reported as $F_1^a$, evaluates accepted correspondences within image pairs. Correct accepted assignments are true positives, incorrect accepted assignments are false positives, and unmatched known instances are false negatives.
+
+Identification with rejection is evaluated through detection and identification rate, DIR, and false-alarm rate, FAR. At threshold $t$, DIR is the proportion of known queries whose highest-scoring candidate is correct and accepted. FAR is the proportion of unknown queries for which a candidate is incorrectly accepted. Incorrect associations of known queries reduce DIR but are not included in the unknown-query FAR.
+
+DIR@FAR$=0.1$ summarises performance at a constrained operating point on the test curve. It is distinct from performance at the fixed validation-calibrated threshold and does not guarantee that the same false-alarm rate will hold in deployment.
+
+Coverage is reported as the proportion of valid pairs receiving a finite score. Reporting coverage alongside association accuracy prevents a method that answers only a subset of cases from being interpreted as providing complete support for ticket association.
+
+Metrics are interpreted against appropriate reference baselines, including random-ranking performance and the pairwise $F_1$ obtained by predicting every pair as a correspondence. The latter equals $2p/(1+p)$, where $p$ is the positive-pair prevalence, and is a constant-predictor reference rather than a guaranteed lower bound. Counts, prevalence, and reference values must correspond to the same frozen evaluation snapshot. Results obtained from different snapshots are reported separately.
+
+Every metric is reported against its chance level, because two are far from zero (current test pool, \texttt{chance\_nq305.json}: $200$ random matrices): pairwise $F_1$ has a best-constant-predictor floor $2p/(1+p) = 0.337$ at prevalence $0.203$, Rank-5 chance $0.778{\pm}0.019$, mAP $0.382$; Rank-1 $0.336{\pm}0.025$ and $\mathrm{DIR}@\mathrm{FAR}$ $0.038{\pm}0.014$, assignment-$F_1$ $0.345$. Prior-pool values were $0.305/0.767/0.336/0.038$. We call $2p/(1+p)$ a floor, not coin-flip chance: it is the score of predicting every pair positive, and it changes when the evaluated pair pool changes. Confidence resampling uses walls rather than queries because queries from one wall share capture conditions. With 11 test walls, no numeric interval is attached; wall-level intervals await a larger dataset and release of the per-pair score matrices (Sec.~\ref{sec:validity}).

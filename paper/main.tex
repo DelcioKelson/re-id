@@ -29,24 +29,11 @@ Nuno da Costa, Ricardo Rodrigues, and Duarte Fernandes }
 \maketitle
 
 \begin{abstract}
-Ticket management systems turn photographs into tracked defect records:
-a re-photographed crack must match its record or be filed as new. This work,
-developed within R2UTechnologies, studies within-visit crack re-identification
-under viewpoint and scale change. We benchmark ten zero-shot crop matchers from four
-families on \textsc{CrackID}, a within-visit wall-crack benchmark. Ranking separates
-them (Rank-1 $0.370$--$0.613$; chance $0.336$), but on the thresholded same-crack-or-not decision
-that a ticket record requires, all remain within $+0.037$ of the $0.337$ chance floor. Adding wall context
-raises OSNet's open-set rate from $0.168$ to $0.404$, yet erasing the crack retains
-$0.393$: context retrieves on location, not crack appearance. A geometric reference
-that registers on wall texture with cracks masked and Chamfer-matches projected masks
-reaches an open-set rate of $0.768$ at $48\%$ coverage, against $0.384$ for the best
-crop method; a coverage-only control scores $0.000$. All accuracy rows are point estimates
-with no wall-level intervals. Ordering a gallery and deciding
-an identity are different capabilities, and the cue that works is location.
+Building ticket management systems must determine whether a newly reported defect corresponds to an existing ticket or requires a new one. Repeated reports of the same physical incident, such as a crack in a wall photographed from different viewpoints, can generate multiple tickets, fragmenting the incident history and duplicating inspection and repair work. Reliable visual association is therefore essential for linking reports to the correct ticket. We study this association problem through crack re-identification and introduce CRACKID, a dataset containing 140 photographs of 17 walls and 212 crack identities. We evaluate ten zero-shot crop-based matchers from four method families using retrieval, thresholded identity decisions, and open-set identification, with explicit reference levels. Although retrieval performance varies across methods, thresholded same-crack decisions remain close to the best-constant-predictor baseline. Context and crack-erasure controls indicate that wall location contributes more strongly than local crack appearance. A geometric reference baseline registers photographs using wall texture and matches projected crack masks, achieving an open-set identification rate of 0.768 at a false-alarm rate of 0.1 while scoring 48\% of query--gallery pairs (prior $n_Q{=}280$ snapshot; crop rows are the $n_Q{=}306$ rerun and are not directly comparable). Its limited coverage, failures on smooth walls, and shared annotation provenance constrain this result. These findings establish a dataset and benchmark task for the visual association step needed to consolidate duplicate defect tickets, while leaving real cross-visit performance and end-to-end ticket reduction for future evaluation.
 \end{abstract}
 
 \begin{IEEEkeywords}
-crack re-identification, dataset, benchmark, ticket management, structural
+crack re-identification, dataset, benchmark, building maintenance, structural
 inspection, homography, geometric alignment, annotation quality
 \end{IEEEkeywords}
 

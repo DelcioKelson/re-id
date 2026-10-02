@@ -26,14 +26,14 @@ keypoint matching~\cite{lowe2004sift,rublee2011orb}, learned correspondence
 (SuperGlue~\cite{sarlin2020superglue}, LoFTR~\cite{sun2021loftr}), and
 region embeddings~\cite{dosovitskiy2021vit,touvron2021deit,radford2021clip,zhou2019osnet,oquab2024dinov2}
 apply directly to crack crops, and our benchmark measures all of them
-zero-shot, without CrackID fine-tuning.
+zero-shot, without \textsc{CrackID} fine-tuning.
 We cite LightGlue~\cite{lindenberger2023lightglue} and place
 recognition (NetVLAD~\cite{arandjelovic2016netvlad}) as the natural retrieval
-front end, but benchmark neither given compute and scope limits and the
+front end, but we benchmark neither given compute and scope limits and the
 within-visit focus; they remain future baselines, not claimed
 comparisons. The YOLOv8 row uses the \texttt{yolov8n.pt} detector backbone
 (layer $9$) as an embedding~\cite{jocher2023ultralytics}, version-pinned in
-code, not a fine-tuned crack model.
+code, not a fine-tuned crack model. It is evaluated zero-shot, without \textsc{CrackID} fine-tuning.
 Vehicle-damage assessment already re-identifies damage across claims in
 curated settings~\cite{maiano2023antifraud}, a task the open-set protocol
 here mirrors; the rest of that literature treats damage detection and severity

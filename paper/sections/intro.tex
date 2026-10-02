@@ -1,77 +1,20 @@
 \section{Introduction}
 
-Ticket management systems convert photographs into tracked defect
-records: a re-photographed defect must eventually be \emph{re-identified},
-matched to its record, or given a new one. This work was developed in the
-context of ticket management within R2UTechnologies, where each defect report
-opens an issue ticket that later photographs must be linked to. This paper first studies
-within-visit re-identification under viewpoint change. Wall cracks are a
-common and difficult case, because the same crack is re-photographed from
-different distances, angles, and lighting, and grows between visits.
+Building ticket management systems organise reports of physical defects into records that support inspection, prioritisation, intervention, and follow-up. A ticket should maintain the history of a particular incident, bringing together its observations and the actions taken to address it. However, the same damage may be reported repeatedly by different users or during successive inspections. For example, several photographs of a crack in the same wall may lead to separate tickets, even though they refer to a single physical defect. This redundancy can fragment the incident history, duplicate assessment work, and make it difficult to determine whether an intervention remains pending or whether the damage has progressed.
 
-Crack analysis is a mature \emph{detection} and \emph{segmentation} task, and
-its datasets, CrackSeg9k~\cite{kulkarni2022crackseg9k} and
-OmniCrack30k~\cite{benz2024omnicrack30k}, carry no cross-observation identity
-labels, because the task they serve needs none. We know of no benchmark for
-crack \emph{re-identification}; the natural approach, crop-and-match as in
-person and vehicle re-ID~\cite{zhou2019osnet,qian2024reidtrends}, assumes a
-crack has stable, locally distinctive appearance, and whether it does has
-never been measured. We introduce \textsc{CrackID}, 140 photographs, 17
-walls, 212 crack identities, to make that re-identification measurement
-(Fig.~\ref{fig:ceiling}). Capture is one continuous walk-around per wall, so
-what is measured is \emph{within-visit} viewpoint and scale correspondence,
-a hypothesized upper bound on multi-visit performance, not a measurement of
-it; we add a synthetic revisit
-protocol as a controlled secondary check (Sec.~\ref{sec:hybridbench}).
-That check uses a distinct \hybrid{} pipeline: it extends the
-Table~\ref{tab:main} \ours{} pure registration-plus-Chamfer baseline with a
-skeleton-comparison fallback and per-pair blending ($\tau{=}8.0$\,px), so its
-reversal does not directly contradict Table~\ref{tab:main}.
+Therefore, addressing this problem requires associating each newly reported observation with the appropriate existing ticket, while allowing a new ticket to be created when the observation concerns a previously unrecorded defect.
+
+Photographic evidence makes this association a visual re-identification problem: the system must determine whether two observations represent the same physical damage. Two distinct scenarios are common in building inspections. In the first scenario, the damage retains essentially the same physical morphology as in previous observations, but the photographs differ in viewpoint, camera distance, field of view, illumination, resolution, and partial visibility, which can substantially alter the recorded appearance of an unchanged crack. In the second scenario, the damage already has a registered ticket but has physically evolved since the previous observation. A crack may extend, widen, branch, or develop additional connected segments, changing its morphology, geometry and photometrics. Here, re-identification must preserve the identity of the incident while recognising that its condition has changed. This scenario requires distinguishing changes in the damage itself from changes caused by photographic acquisition. In both scenarios, an incorrect association may either create a duplicate ticket for the progressing defect or attach the observation to a different incident.
+
+Existing crack-analysis methods primarily address detection and segmentation: they identify the presence of cracks and delineate their extent within individual images. Datasets such as CrackSeg9k~\cite{kulkarni2022crackseg9k} and OmniCrack30k~\cite{benz2024omnicrack30k} support these tasks but do not provide cross-observation identity labels. Consequently, successful detection does not establish whether an observed crack corresponds to one already documented in a ticket. Appearance-based matching approaches, including those developed for person and object re-identification~\cite{zhou2019osnet,qian2024reidtrends}, offer candidate methods for this association. Their applicability to cracks nevertheless requires evaluation, particularly when different defects have similar local appearances or when the same defect is observed under changing acquisition conditions or physical progression.
+
+We introduce \textsc{CrackID}, a dataset for evaluating whether different photographic observations correspond to the same wall crack, supporting the visual association required by building ticket management. The real dataset addresses changes in acquisition conditions within a single inspection visit. A complementary synthetic protocol provides a preliminary assessment of appearance variation and damage progression; performance across real successive inspections remains to be established.
+
+Our benchmark compares ten matching methods without training them on \textsc{CrackID}. Evaluation distinguishes retrieving the correct candidate from deciding whether two observations represent the same crack, and includes cases in which no corresponding record exists. This distinction is essential for ticket management: placing an existing record near the top of a candidate list is insufficient to justify attaching a new report to it. Experiments with surrounding wall context and crack-erased images further examine whether matching depends on the crack itself or on its location. A geometric reference baseline makes location explicit by registering photographs using wall texture and comparing projected crack masks. The results motivate the use of spatial context alongside local appearance, while registration failures and shared annotation provenance limit the conclusions that can be drawn.
+
+The study is guided by three research questions. RQ1: Can the evaluated methods associate observations of the same defect under varying image acquisition conditions? RQ2: How do wall context and geometric alignment contribute to defect re-identification? RQ3: How do two selected approaches perform under synthetic changes in appearance and crack growth? The first two questions are investigated using real photographs acquired within a single inspection visit. The third provides an exploratory assessment under controlled synthetic transformations. Together, these questions examine the visual association component needed to link new reports to existing defect tickets, while leaving performance across real successive inspections and the reduction of duplicate tickets for future evaluation.
 
 \smallskip
-\noindent{Appearance buys almost nothing on the decision.} On ranking
-the ten zero-shot matchers separate (Rank-1 $0.370$ to $0.613$; chance
-$0.336{\pm}0.025$); on pairwise $F_1$, the \emph{same-crack-or-not} decision a
-record makes at a threshold, new rows land between $+0.000$ and $+0.037$ above
-the $0.337$ best-constant floor ($F_1^{*}$ $0.337$--$0.374$),
-and at a
-validation-calibrated threshold all nine new rows sit at or below the floor ($0.331$--$0.338$).
-With no wall-level intervals, no fine ranking is claimed.
+\noindent\textbf{Contributions:} (i)~the \textsc{CrackID} crack re-identification dataset with cross-observation identity labels and an explicit account of annotation provenance (Sec.~\ref{sec:annotation}); (ii)~a benchmark evaluation of ten matching methods that separates candidate retrieval, same-defect decisions, and identification when no corresponding record exists (Sec.~\ref{sec:protocol}, \ref{sec:ceiling}); (iii)~context controls and a geometric reference baseline for examining the roles of crack appearance, wall location, and registration coverage (Sec.~\ref{sec:method}, \ref{sec:controls}, \ref{sec:coverage}); (iv)~a preliminary synthetic revisit evaluation that explores appearance variation and damage progression beyond the real dataset's within-visit scope (Sec.~\ref{sec:hybridbench}).
 
-Two controls say where the difficulty is not (prior $n_Q{=}280$ snapshot,
-pending rerun). Giving an embedder the surrounding wall raises OSNet's open-set rate from $0.168$ to
-$0.404$; \emph{erasing the crack} from that view costs almost none of it
-($0.393$). Such a method retrieves on the wall, and the cue that works, even
-implicitly, is \emph{location}.
-
-A geometric baseline makes location explicit (prior snapshot, not numerically
-comparable to the rerun). Registering on non-crack texture, projecting crack masks into a common frame, and
-Chamfer-matching under global assignment reaches $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ against $0.384$ (best new crop, SuperGlue) and
-$0.404$ (best prior context), answering $48\%$ of pairs; a \coverage{}
-control scores $0.000$ on the same metric, so the open-set gap is matching,
-not alignment coverage. This is a conditional, provenance-limited result, not a deployment-ready
-system: two test walls have zero registration success, and the annotation
-and baseline both use homography-based alignment. The resulting geometric
-advantage is therefore a hypothesis about this benchmark, not an
-independently established identity effect.
-
-The revisit check reverses the ranking story. The real data are one continuous walk-around per wall, minutes apart, not separate
-visits. Under the small-warp synthetic protocol (affine $1.08{\times}$,
-$6^{\circ}$, $4^{\circ}$; one seed; five walls), OSNet$+$context
-beats the \hybrid{} at R@1 ($0.826/0.671$ versus $0.275/0.274$) and open-set
-rate ($0.739/0.663$ versus $0.343/0.342$) for growth/appearance change; the
-\hybrid{}'s small assignment-$F_1$ advantage is not evidence that geometry
-solves real multi-visit re-identification.
-
-\smallskip
-\noindent\textbf{Contributions:} (i)~\textsc{CrackID} with an explicit
-annotation-provenance report, $45\%$ of identities formed by an automatic
-merge, reported rather than assumed (Sec.~\ref{sec:annotation});
-(ii)~a ten-method zero-shot benchmark against stated chance levels, with
-crop$+$context and crack-erased controls (Sec.~\ref{sec:ceiling});
-(iii)~a small single-seed synthetic revisit checkpoint isolating appearance change from damage
-evolution, the only multi-visit evidence this paper has
-(Sec.~\ref{sec:hybridbench});
-(iv)~a geometric reference baseline (\ours{}) with coverage-aware metrics,
-unanswerable queries, and an admission gate, kept distinct from the synthetic
-\hybrid{} variant (Sec.~\ref{sec:method}, \ref{sec:protocol}, \ref{sec:results}).
+The remainder of this paper is organised as follows. Section~II reviews related work. Section~III describes the \textsc{CrackID} dataset acquisition and annotation, and Section~IV defines the benchmark protocol and evaluation metrics. Section~V presents the geometric reference baseline. Section~VI reports the crop-baseline benchmark and the wall-context controls (the appearance ceiling). Section~VII compares geometry against appearance, analyses registration coverage and failures, ablates the geometric design, and reports the synthetic revisit experiments. Section~VIII discusses validity, limitations, and future research, including real cross-visit data and integration into ticket lifecycle evaluation. Section~IX concludes the paper.
