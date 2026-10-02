@@ -1,9 +1,10 @@
-\section{CrackID}
+\section{Data Acquisition}
 \label{sec:dataset}
 
-\subsection{Capture and composition}
-We photographed 17 exterior walls at one site over four half-days with two
-consumer handsets, yielding 140 photographs at $4080\times3072$. The walls
+\subsection{Acquisition and composition}
+The benchmarked snapshot contains 140 photographs of 17 exterior walls acquired at one
+site over four half-days with two consumer handsets, at $3072\times4080$.
+The walls
 span two surface families that behave very differently under keypoint
 matching: stippled render (densely textured) and smooth painted plaster,
 where the crack is frequently the only structure in frame. Walls split
@@ -13,15 +14,17 @@ by identities visible in two or more photographs, since only these form a
 query with an answer: 18 in validation, 19 in test. Each wall was captured
 in one continuous walk-around (consecutive frames a median of $3$\,s apart),
 so the dataset measures viewpoint and scale correspondence within
-one visit, an upper bound on multi-visit performance, not yet a measurement
+one visit, a hypothesized upper bound on multi-visit performance, not yet a measurement
 of it.
 
 \smallskip
-\noindent{The adjacent frame is always an answer.} For $100\%$ of the
-$280$ answerable test queries, the nearest correct gallery entry is the
-adjacent frame. Ranking numbers are therefore near-duplicate retrieval;
-Sec.~\ref{sec:results} sweeps the exclusion gap to show the structure is not
-what produces the result.
+\noindent\emph{Adjacent-frame retrieval.} For $100\%$ of the
+$280$ answerable test queries in the prior snapshot, the nearest correct gallery entry is the
+adjacent frame (gap-sweep recount TBD for $n_Q{=}305$). Ranking therefore rewards short-baseline correspondence;
+Sec.~\ref{sec:results} sweeps the exclusion gap (answerable queries
+$280{\to}205{\to}149{\to}105$) and reports that Rank-1 stays flat while the
+pool and prevalence change with it, so the sweep characterises robustness,
+not proof that duplicates are irrelevant.
 
 \subsection{Annotation, and why it needs auditing}
 \label{sec:annotation}
@@ -35,7 +38,28 @@ its extent rather than assume its correctness: $95/212$ identities
 ($45\%$) were formed by a merge (48\% on test), bridging a median maximum
 gap of $228$ px; the adjusted Rand index against the pre-merge labeling is
 $0.080$, meaning the merge restructured the partition rather than refining
-it. We release the instrumentation for an audited error rate (per-identity
-provenance, a stratified sample with contact sheets, Wilson scoring) rather
-than the audit itself; the verdicts are not yet filled in, so we claim no
-sampled error rate.
+it. The triage is complete: every one of the 1,023 clicks no component
+claimed was reviewed against the imagery --- 916 sit on visible cracks the
+segmenter missed rather than labelling mistakes, leaving 107 clicks
+($10.5\%$, 95\% CI $[8.7\%, 12.5\%]$) naming no crack
+(dataset\texttt{/}labels\texttt{/}\_unresolved.json). The 2,095 clicks resolve
+to 1,051 connected components; ``points'' below means clicks, not components.
+Single-annotator;
+agreement unmeasured, so the merge risk above is bounded by reporting,
+not removed. Counts in this section and Table~\ref{tab:units} refer to the
+frozen benchmark snapshot (legacy directory \texttt{banchmark\_out/}, historic
+spelling retained for reproducibility); \texttt{dataset/labels/} has
+since been re-edited (walls 18--19 added, audit in progress) and its raw
+identity/point totals no longer match exactly. The snapshot, its
+\texttt{result.txt}, \texttt{chance.json}, \texttt{pair\_outcomes.json}, and
+\texttt{viewpoint.json} are the version of record for all accuracy rows.
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figs/dataset_examples.pdf}
+\caption{Examples from real \textsc{CrackID} captures. Top: the same annotated
+identity in non-adjacent frames of one walk-around. Bottom: the two surface
+families, stippled render and smooth painted plaster. The identity labels
+inherit the dataset's homography-based propagation and are illustrative, not
+an independent annotation audit.}
+\label{fig:dataset-examples}
+\end{figure*}

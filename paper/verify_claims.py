@@ -276,78 +276,88 @@ print("\n[2b] Counting units (protocol table)")
 # differ (301 vs 255 on test) and conflating them is the error this table was
 # added to stop, so both are checked below.
 sys.path.insert(0, ROOT)
-from benchmark import Dataset, valid_mask  # noqa: E402
+try:
+    from benchmark import Dataset, valid_mask  # noqa: E402
+    _has_benchmark = True
+except ModuleNotFoundError as _e:
+    print(f"  SKIP  [2b]/[2c] need benchmark imports (missing {_e.name}); "
+          f"install requirements to re-derive mask-dependent units")
+    _has_benchmark = False
 
-_data = Dataset(J('dataset'))
-_units, _cells = {}, {}
-for _name, _walls in (("val", sp['val']), ("test", sp['test'])):
-    _q, _g = _data.query_gallery(set(_walls))
-    _V = valid_mask(_q, _g)
-    _qid = np.array([r.identity or "" for r in _q])
-    _gid = np.array([r.identity or "" for r in _g])
-    _R = (_qid[:, None] == _gid[None, :]) & (_qid[:, None] != "")
-    _by = defaultdict(int)
-    for _i, _j in zip(*np.nonzero(_V)):
-        _by[frozenset((_q[_i].image_id, _g[_j].image_id))] += 1
-    _cells[_name] = (_V, _by)
-    _units[_name] = dict(answerable=int((_R & _V).any(axis=1).sum()),
-                         positives=int((_R & _V).sum()),
-                         valid=int(_V.sum()),
-                         same_wall_pairs=sum(len(wph[w]) * (len(wph[w]) - 1) // 2
-                                             for w in _walls),
-                         scored_pairs=len(_by))
-for _name, _want in (("val", (439, 26012, 89118, 394, 341)),
-                    ("test", (280, 5722, 31822, 301, 255))):
-    for _key, _w in zip(("answerable", "positives", "valid",
-                         "same_wall_pairs", "scored_pairs"), _want):
-        check(f"{_name} {_key}", _units[_name][_key], _w, tol=0)
+if _has_benchmark:
+    _data = Dataset(J('dataset'))
+    _units, _cells = {}, {}
+    for _name, _walls in (("val", sp['val']), ("test", sp['test'])):
+        _q, _g = _data.query_gallery(set(_walls))
+        _V = valid_mask(_q, _g)
+        _qid = np.array([r.identity or "" for r in _q])
+        _gid = np.array([r.identity or "" for r in _g])
+        _R = (_qid[:, None] == _gid[None, :]) & (_qid[:, None] != "")
+        _by = defaultdict(int)
+        for _i, _j in zip(*np.nonzero(_V)):
+            _by[frozenset((_q[_i].image_id, _g[_j].image_id))] += 1
+        _cells[_name] = (_V, _by)
+        _units[_name] = dict(answerable=int((_R & _V).any(axis=1).sum()),
+                             positives=int((_R & _V).sum()),
+                             valid=int(_V.sum()),
+                             same_wall_pairs=sum(len(wph[w]) * (len(wph[w]) - 1) // 2
+                                                 for w in _walls),
+                             scored_pairs=len(_by))
+    for _name, _want in (("val", (439, 26012, 89118, 394, 341)),
+                        ("test", (280, 5722, 31822, 301, 255))):
+        for _key, _w in zip(("answerable", "positives", "valid",
+                             "same_wall_pairs", "scored_pairs"), _want):
+            check(f"{_name} {_key}", _units[_name][_key], _w, tol=0)
 
-# Sec. V-B attributes part of the post-calibration collapse to prevalence
-# shift. Both prevalence numbers and both floors are re-derived here, because
-# the argument is a reader-visible one: it is legible straight off Table I, and
-# a reviewer will check the arithmetic without running anything.
-for _name, _prev, _fl in (("val", 0.292, 0.452), ("test", 0.180, 0.305)):
-    _p = _units[_name]["positives"] / _units[_name]["valid"]
-    check(f"{_name} pair prevalence", _p, _prev, tol=5e-4)
-    check(f"{_name} pairwise-F1 floor 2p/(1+p)", 2 * _p / (1 + _p), _fl, tol=1e-3)
+    # Sec. V-B attributes part of the post-calibration collapse to prevalence
+    # shift. Both prevalence numbers and both floors are re-derived here, because
+    # the argument is a reader-visible one: it is legible straight off Table I, and
+    # a reviewer will check the arithmetic without running anything.
+    for _name, _prev, _fl in (("val", 0.292, 0.452), ("test", 0.180, 0.305)):
+        _p = _units[_name]["positives"] / _units[_name]["valid"]
+        check(f"{_name} pair prevalence", _p, _prev, tol=5e-4)
+        check(f"{_name} pairwise-F1 floor 2p/(1+p)", 2 * _p / (1 + _p), _fl, tol=1e-3)
 
-print("\n[2c] The corrected positive-pair claim (Sec. VI-A)")
-# The paper used to say "118 positive pairs" and attribute the near-total
-# ceiling to merges. 118 is not any unit the protocol produces. The real figure
-# is 5,722 positive query-gallery pairs, and the merge claim must be made about
-# THAT population, in both the cell unit the paper quotes and the identity-pair
-# unit the argument is really about.
-_cV, _cby = _cells['test']
-_cq, _cg = _data.query_gallery(set(sp['test']))
-_cqid = np.array([r.identity or "" for r in _cq])
-_cgid = np.array([r.identity or "" for r in _cg])
-_pos = ((_cqid[:, None] == _cgid[None, :]) & (_cqid[:, None] != "")) & _cV
-_cl = json.load(open(J('dataset/labels/_changelog.json')))
-_merged = {}
-for _w, _info in _cl.items():
-    for _i, _meta in _info.get('identities', {}).items():
-        _merged[_i] = len(_meta.get('absorbed_prefill_ids', [])) > 1
-_mq = np.array([[_merged.get(x, False) for x in _cgid] for _ in range(len(_cq))])
-_mg = np.array([[_merged.get(x, False) for x in _cqid] for _ in range(len(_cg))]).T
-_any_merged = (_mq | _mg) & _pos
-_both_un = (~_mq & ~_mg) & _pos
-_idpairs = {(_cqid[i], _cgid[j]) for i, j in zip(*np.nonzero(_pos))}
-check("positive query-gallery pairs (test)", int(_pos.sum()), 5722, tol=0)
-check("  ... involving a merged identity (cells)", int(_any_merged.sum()), 5718, tol=0)
-check("  ... as a fraction", int(_any_merged.sum()) / int(_pos.sum()), 0.999, tol=5e-4)
-check("  ... both sides unmerged (cells)", int(_both_un.sum()), 4, tol=0)
-check("distinct positive identity pairs", len(_idpairs), 19, tol=0)
-check("  ... spanning how many identities (unmerged only)",
-      len({x for p in {( _cqid[i], _cgid[j]) for i, j in zip(*np.nonzero(_both_un))}
-           for x in p}), 2, tol=0)
-# ... and the registration-rate check that follows from it, in image-pair units
-_regU = {frozenset(k.split('|')): bool(v)
-         for k, v in json.load(open(J('banchmark_out/pair_outcomes.json')))['registered'].items()}
-for _lbl, _mask, _n in (("merged", _any_merged, 83), ("unmerged", _both_un, 1)):
-    _imgs = {frozenset((_cq[i].image_id, _cg[j].image_id))
-             for i, j in zip(*np.nonzero(_mask))}
-    check(f"image pairs holding a {_lbl} positive", len(_imgs), _n, tol=0)
-    check(f"  ... that registered", sum(_regU.get(p, False) for p in _imgs), _n, tol=0)
+    print("\n[2c] The corrected positive-pair claim (Sec. VI-A)")
+    # The paper used to say "118 positive pairs" and attribute the near-total
+    # ceiling to merges. 118 is not any unit the protocol produces. The real figure
+    # is 5,722 positive query-gallery pairs, and the merge claim must be made about
+    # THAT population, in both the cell unit the paper quotes and the identity-pair
+    # unit the argument is really about.
+    # NOTE: these counts refer to the benchmarked snapshot. If dataset/labels/
+    # has been re-edited since (walls 18-19, audit), this block fails until the
+    # benchmark is re-run; that failure is the version pin working, not noise.
+    _cV, _cby = _cells['test']
+    _cq, _cg = _data.query_gallery(set(sp['test']))
+    _cqid = np.array([r.identity or "" for r in _cq])
+    _cgid = np.array([r.identity or "" for r in _cg])
+    _pos = ((_cqid[:, None] == _cgid[None, :]) & (_cqid[:, None] != "")) & _cV
+    _cl = json.load(open(J('dataset/labels/_changelog.json')))
+    _merged = {}
+    for _w, _info in _cl.items():
+        for _i, _meta in _info.get('identities', {}).items():
+            _merged[_i] = len(_meta.get('absorbed_prefill_ids', [])) > 1
+    _mq = np.array([[_merged.get(x, False) for x in _cgid] for _ in range(len(_cq))])
+    _mg = np.array([[_merged.get(x, False) for x in _cqid] for _ in range(len(_cg))]).T
+    _any_merged = (_mq | _mg) & _pos
+    _both_un = (~_mq & ~_mg) & _pos
+    _idpairs = {(_cqid[i], _cgid[j]) for i, j in zip(*np.nonzero(_pos))}
+    check("positive query-gallery pairs (test)", int(_pos.sum()), 5722, tol=0)
+    check("  ... involving a merged identity (cells)", int(_any_merged.sum()), 5718, tol=0)
+    check("  ... as a fraction", int(_any_merged.sum()) / int(_pos.sum()), 0.999, tol=5e-4)
+    check("  ... both sides unmerged (cells)", int(_both_un.sum()), 4, tol=0)
+    check("distinct positive identity pairs", len(_idpairs), 19, tol=0)
+    check("  ... spanning how many identities (unmerged only)",
+          len({x for p in {( _cqid[i], _cgid[j]) for i, j in zip(*np.nonzero(_both_un))}
+               for x in p}), 2, tol=0)
+    # ... and the registration-rate check that follows from it, in image-pair units
+    _regU = {frozenset(k.split('|')): bool(v)
+             for k, v in json.load(open(J('banchmark_out/pair_outcomes.json')))['registered'].items()}
+    for _lbl, _mask, _n in (("merged", _any_merged, 83), ("unmerged", _both_un, 1)):
+        _imgs = {frozenset((_cq[i].image_id, _cg[j].image_id))
+                 for i, j in zip(*np.nonzero(_mask))}
+        check(f"image pairs holding a {_lbl} positive", len(_imgs), _n, tol=0)
+        check(f"  ... that registered", sum(_regU.get(p, False) for p in _imgs), _n, tol=0)
 
 
 print("\n[3] Registration coverage and the gate (Sec. VI-D, VI-G)")
@@ -373,13 +383,16 @@ check("captures rejected at gate 10", 74 - 53, 21, tol=0)
 # The paper quotes both, plus the per-pair density, because quoting any one of
 # them alone misleads -- and the direction matters: the validity mask is not
 # symmetric, so these are counted on unordered image pairs.
-_in_reg = sum(_c for _p, _c in _cby.items() if _regU.get(_p, False))
-_regd = [_c for _p, _c in _cby.items() if _regU.get(_p, False)]
-_faild = [_c for _p, _c in _cby.items() if _p in _regU and not _regU[_p]]
-check("valid pairs inside registered image pairs", _in_reg, 15328, tol=0)
-check("  ... as a fraction of all valid pairs", _in_reg / int(_cV.sum()), 0.482, tol=5e-3)
-check("valid cells per registered image pair", float(np.mean(_regd)), 160, tol=0.5)
-check("valid cells per failed image pair", float(np.mean(_faild)), 104, tol=0.5)
+if _has_benchmark:
+    _in_reg = sum(_c for _p, _c in _cby.items() if _regU.get(_p, False))
+    _regd = [_c for _p, _c in _cby.items() if _regU.get(_p, False)]
+    _faild = [_c for _p, _c in _cby.items() if _p in _regU and not _regU[_p]]
+    check("valid pairs inside registered image pairs", _in_reg, 15328, tol=0)
+    check("  ... as a fraction of all valid pairs", _in_reg / int(_cV.sum()), 0.482, tol=5e-3)
+    check("valid cells per registered image pair", float(np.mean(_regd)), 160, tol=0.5)
+    check("valid cells per failed image pair", float(np.mean(_faild)), 104, tol=0.5)
+else:
+    print("  SKIP  density checks need benchmark mask (see [2b])")
 
 print("\n[4] Viewpoint covariate (Sec. VI-E, Fig. 3)")
 vp = json.load(open(J('banchmark_out/viewpoint.json')))['pairs']
@@ -461,9 +474,14 @@ for wall, info in cl.items():
                 gaps['test' if wall in sp['test'] else 'val'].append(meta['max_merge_gap'])
 check("identities total", tot, 212, tol=0)
 check("identities formed by merge", merged, 95, tol=0)
-check("  ... as fraction", merged / tot, 0.45, tol=0.005)
-check("median max merge gap (test, px)", float(np.median(gaps['test'])), 228.2, tol=0.2)
-check("median max merge gap (val, px)", float(np.median(gaps['val'])), 285.6, tol=0.2)
+check("  ... as fraction", merged / tot if tot else float('nan'), 0.45, tol=0.005)
+if gaps['test'] and gaps['val']:
+    check("median max merge gap (test, px)", float(np.median(gaps['test'])), 228.2, tol=0.2)
+    check("median max merge gap (val, px)", float(np.median(gaps['val'])), 285.6, tol=0.2)
+else:
+    print(f"  FAIL  merge-gap lists empty (test {len(gaps['test'])}, val {len(gaps['val'])}); "
+          f"rebuilt changelog lost max_merge_gap -- re-run prefill/rebuild with gap computation")
+    fails.append("merge gaps missing (changelog drift)")
 # per-split merge counts and gap tails quoted in Sec. IV-C
 per = defaultdict(lambda: [0, 0])
 for wall, info in cl.items():
@@ -473,19 +491,32 @@ for wall, info in cl.items():
         if len(meta.get('absorbed_prefill_ids', [])) > 1:
             per[sp_][0] += 1
 check("test identities merged", per['test'][0], 70, tol=0)
-check("test merge rate", per['test'][0] / per['test'][1], 0.48, tol=0.005)
+check("test merge rate", per['test'][0] / per['test'][1] if per['test'][1] else float('nan'), 0.48, tol=0.005)
 check("val identities merged", per['val'][0], 25, tol=0)
-check("val merge rate", per['val'][0] / per['val'][1], 0.38, tol=0.005)
-check("p90 bridged gap (test, px)", float(np.percentile(gaps['test'], 90)), 307.6, tol=1.0)
-check("p90 bridged gap (val, px)", float(np.percentile(gaps['val'], 90)), 316.9, tol=1.0)
-check("max bridged gap (test, px)", float(np.max(gaps['test'])), 318.7, tol=0.2)
-check("max bridged gap (val, px)", float(np.max(gaps['val'])), 320.0, tol=0.2)
+check("val merge rate", per['val'][0] / per['val'][1] if per['val'][1] else float('nan'), 0.38, tol=0.005)
+if gaps['test'] and gaps['val']:
+    check("p90 bridged gap (test, px)", float(np.percentile(gaps['test'], 90)), 307.6, tol=1.0)
+    check("p90 bridged gap (val, px)", float(np.percentile(gaps['val'], 90)), 316.9, tol=1.0)
+    check("max bridged gap (test, px)", float(np.max(gaps['test'])), 318.7, tol=0.2)
+    check("max bridged gap (val, px)", float(np.max(gaps['val'])), 320.0, tol=0.2)
+else:
+    print("  SKIP  gap-tail checks need non-empty merge-gap lists (see above)")
 check("triage-flagged identities",
       len(json.load(open(J('dataset/labels/_triage.json')))), 57, tol=0)
-# the audit that is deliberately NOT claimed must remain absent
+# the audit that is deliberately NOT claimed must remain unfilled:
+# _audit_0.json may exist as an empty sampling template, but no verdict may
+# be filled in (a filled verdict would let the paper and repo drift apart on
+# sampled error rate / agreement). Count filled verdicts, not files.
 import glob as _g
-n_audit = len(_g.glob(J('dataset/labels/_audit_*.json')))
-check("filled audit files (paper claims none)", n_audit, 0, tol=0)
+_n_filled = 0
+for _p in _g.glob(J('dataset/labels/_audit_*.json')):
+    try:
+        _d = json.load(open(_p))
+        _items = _d.get('items', []) if isinstance(_d, dict) else []
+        _n_filled += sum(1 for _it in _items if str(_it.get('verdict', '')).strip())
+    except Exception:
+        _n_filled += 1  # unreadable audit file fails closed
+check("filled audit verdicts (paper claims none)", _n_filled, 0, tol=0)
 
 print("\n[7] Capture separation (Sec. IV-B)")
 rows = list(csv.DictReader(open(J('dataset/wall_map.csv'))))

@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -293,6 +294,30 @@ def fig_viewpoint():
     plt.close(fig)
 
 
+def fig_dataset_examples():
+    """Representative crops from labeled real captures, not new measurements."""
+    examples = [
+        ("wall01_s1_0001", (1425, 1452), "Same identity, frame 0001"),
+        ("wall01_s1_0009", (1536, 1532), "Same identity, frame 0009"),
+        ("wall01_s1_0001", (1425, 1452), "Stippled render"),
+        ("wall10_s1_0001", (1447, 1873), "Smooth painted plaster"),
+    ]
+    fig, axes = plt.subplots(2, 2, figsize=(7.16, 5.0))
+    for ax, (image_id, (cx, cy), title) in zip(axes.flat, examples):
+        path = os.path.join(ROOT, "dataset", "images", image_id + ".jpg")
+        image = Image.open(path).convert("RGB")
+        width, height = 1400, 1600
+        box = (max(0, cx - width // 2), max(0, cy - height // 2),
+               min(image.width, cx + width // 2), min(image.height, cy + height // 2))
+        ax.imshow(image.crop(box))
+        ax.set_title(title, fontsize=8)
+        ax.axis("off")
+    fig.tight_layout(pad=0.6)
+    fig.savefig(os.path.join(FIGS, "dataset_examples.pdf"))
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_ceiling(); fig_tradeoff(); fig_coverage(); fig_gate(); fig_viewpoint()
+    fig_dataset_examples()
     print("figures written to", FIGS)

@@ -16,7 +16,7 @@ question of width or extent, and no dataset supports method comparison on the
 association decision itself. Those systems therefore solve measurement
 after correspondence has already been supplied; they do not decide whether
 a newly observed crack is the same physical defect as a gallery crack under
-an open-set protocol. Our benchmark targets that missing association
+an open-set protocol. The benchmark targets that missing association
 decision, while its real capture scope remains within one walk-around
 rather than a true longitudinal study.
 
@@ -25,19 +25,27 @@ identification~\cite{liao2014openset} is the formal setting we adopt;
 keypoint matching~\cite{lowe2004sift,rublee2011orb}, learned correspondence
 (SuperGlue~\cite{sarlin2020superglue}, LoFTR~\cite{sun2021loftr}), and
 region embeddings~\cite{dosovitskiy2021vit,touvron2021deit,radford2021clip,zhou2019osnet,oquab2024dinov2}
-apply directly to crack crops, and our benchmark measures all of them.
+apply directly to crack crops, and our benchmark measures all of them
+zero-shot, without CrackID fine-tuning.
+We cite LightGlue~\cite{lindenberger2023lightglue} and place
+recognition (NetVLAD~\cite{arandjelovic2016netvlad}) as the natural retrieval
+front end, but benchmark neither given compute and scope limits and the
+within-visit focus; they remain future baselines, not claimed
+comparisons. The YOLOv8 row uses the \texttt{yolov8n.pt} detector backbone
+(layer $9$) as an embedding~\cite{jocher2023ultralytics}, version-pinned in
+code, not a fine-tuned crack model.
 Vehicle-damage assessment already re-identifies damage across claims in
-curated settings~\cite{maiano2023antifraud}, a task our open-set protocol
-mirrors; the rest of that literature treats damage detection and severity
+curated settings~\cite{maiano2023antifraud}, a task the open-set protocol
+here mirrors; the rest of that literature treats damage detection and severity
 rating rather than association~\cite{hasan2025review,perez2024assessment,mallios2023multiview}.
-Our results suggest the crop
-scope is itself the limiting choice. The move our baseline makes, aligning
+Whether the crop scope is itself the limiting choice for cracks is the
+question the benchmark is built to answer. The move the baseline makes, aligning
 two captures and then reasoning about what is present in one and absent in
 the other, is change
 detection~\cite{sakurada2015changedetection,alcantarilla2018street}; planar
 registration is
 classical~\cite{hartley2004mvg,fischler1987ransac,barath2019magsac} with
-photometric alignment (ECC~\cite{evangelidis2008ecc}) as the fallback. Our
-contribution is not a new estimator but the observation that the alignment
+photometric alignment (ECC~\cite{evangelidis2008ecc}) as the fallback. The
+contribution here is not a new estimator but the observation that the alignment
 target and the matching target should be \emph{disjoint}: the homography is
-driven by the wall precisely because the crack is what we seek to identify.
+driven by the wall precisely because the crack is what is to be identified.

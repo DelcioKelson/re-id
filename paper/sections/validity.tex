@@ -1,75 +1,70 @@
-\section{Threats to Validity}
+\section{Validity, Limitations, and Future Work}
 \label{sec:validity}
 
-We state the limits in the body because they bound the central claims.
+This benchmark establishes a first measurable formulation of crack
+re-identification; several directions remain open and represent natural
+extensions of the present work.
 
 \smallskip
-\noindent\textbf{The effective sample is 19 identities.} The test split's
-$280$ queries come from $19$ identities visible in two or more photographs
-across $11$ walls; queries from one wall share material, illumination, and
-one camera pass, so query count is not sample size. We resample walls and
-report the leave-one-wall-out spread in Rank-1. The same resampling
-discipline applies to the open-set headline: $\mathrm{DIR}@\mathrm{FAR}{=}0.1$
-of $0.768$ is a point estimate at one operating point on the same sample, so
-the abstract compares it to baselines as a one-number structure, an open-set
-gap of roughly $0.34$ to $0.36$ over the best crop and best context methods,
-and claims nothing about the precise spread between resampled walls.
-This benchmark supports a structural claim about the formulation, but not
-fine-grained ranking among baselines. We do not attach a numeric
-wall-resampled interval to the abstract point estimates because the score
-matrices needed to recompute it are not part of the released artifacts; the
-effective sample and wall-level bimodality should therefore be read as a
-limitation, not as hidden precision.
+\noindent\textbf{Scaling to multi-wall and multi-visit datasets.}
+The test split covers $19$ matchable identities across $11$ walls, which is sufficient
+to establish the structural pattern (thresholded decisions near the floor;
+open-set benefit of explicit alignment) but not to rank individual methods with
+statistical confidence; all accuracy rows are point estimates with no
+wall-level intervals. A larger dataset --- more walls, more surface
+families, and more annotators --- would allow wall-level confidence intervals
+to be reported and method rankings to be interpreted reliably. More
+importantly, the current benchmark captures one continuous walk-around per
+wall; a second capture session at deliberately varied distances and lighting
+would convert the within-visit measurement into a genuine cross-visit
+benchmark. That real revisit data is the most valuable next step for
+assessing the re-identification component of operational ticket management
+backends.
 
 \smallskip
-\noindent\textbf{Scope is controlled, and the control found something.} The
-method reads full photographs; the baselines read crops, dictated by design,
-since homography needs wall context. Two controls (Sec.~\ref{sec:controls})
-separate identity cue from field of view, and scope does not account for the
-open-set gap ($0.404$ best context against $0.768$). But the crack-erased
-control is uncomfortable: inpainting the crack costs only $0.011$ of that
-$0.404$, so a context-scope number is partly background-matching, which we
-expect to weaken on real revisits. Ranking numbers are additionally
-near-duplicate (the adjacent frame answers all $280$ queries,
-Sec.~\ref{sec:dataset}); the gap sweep shows the trend is flat, with power
-falling to $105$ answerable queries by gap $3$.
+\noindent\textbf{Annotation quality and provenance-free labelling.}
+Annotation quality was actively managed: a single human annotator placed
+and reviewed all 2,095 clicks from homography-propagated prefill until
+zero provisional points remained, and every one of the 1,023 clicks no
+component claimed was subsequently triaged against the imagery --- 916
+(89.5\%) sit on visible cracks the segmenter missed rather than labelling
+mistakes, leaving 107 clicks (10.5\%, 95\% CI [8.7\%, 12.5\%]) naming no
+crack. Single-annotator; agreement unmeasured. The reported geometric
+advantage must therefore be read as provenance-conditioned until a small,
+manually verified subset labeled entirely without
+homography propagation quantifies how much is independent of annotation
+provenance. Releasing the
+per-pair score matrices alongside the dataset would additionally allow
+third parties to run sensitivity analyses on how much false-positive mass
+would be needed to manufacture an open-set gap of the observed magnitude,
+and to compute wall-clustered intervals and threshold-free AP/AUROC.
 
 \smallskip
-\noindent\textbf{The annotation and baseline are circularly coupled.}
-Identities were seeded by propagating one click point between consecutive
-photographs through an ORB homography (Sec.~\ref{sec:annotation}), and the
-geometric baseline's whole mechanism is homography registration. Of the
-$5\,722$ positive (same-crack) query--gallery pairs on test
-(Table~\ref{tab:units}), $5\,718$ ($99.9\%$) involve an identity formed by a
-merge; only $4$ pairs, spanning $2$ identities, join two identities that were
-never merged. Thus the clean subgroup needed to test whether geometry helps
-independently of annotation provenance does not exist at useful power. The
-two reported checks are limited: the procedures are not identical, and
-merged versus unmerged positives register at the same observed rate
-($100\%$ both ways: $83/83$ and $1/1$ of the image pairs that carry one), but
-the latter cannot test whether a biased homography
-would register differently from an unbiased one, because both alignments
-are related procedures. Nor did we run a sensitivity analysis quantifying
-how much false-positive mass or registration selection would be required to
-manufacture an open-set gap of that size; the saved score matrices needed for
-that analysis are not released. Accordingly, the geometric advantage
-remains unresolved with respect to circularity, rather than being
-demonstrated independent of it. The decisive follow-up is a small, manually
-verified identity subset labeled without homography propagation, reported
-even if underpowered, together with a bias-sensitivity curve.
+\noindent\textbf{Closing the registration coverage gap.}
+The geometric baseline currently answers $48\%$ of query pairs and scores
+zero on smooth-plaster walls. Future work should explore surface-adaptive
+registration strategies --- including learned local features, direct
+alignment on photometric gradients, or sparse depth from consumer
+devices --- that could push coverage toward full-set evaluation.
+A learned front-end replacing SIFT would also decouple the geometry
+pipeline from the homography-based annotation provenance.
 
 \smallskip
-\noindent\textbf{Annotations are instrumented, not audited.} The human
-verdicts that would turn the provenance of Sec.~\ref{sec:annotation} into a
-sampled error rate with a confidence interval have not been collected; the
-$45\%$ merge rate is reported, and relative comparison is robust to it since
-the merge policy hits all methods identically. All captures come from one
-site over four half-days, two handsets and two surface families; smooth
-plaster produces the categorical SIFT failure noted in
-Sec.~\ref{sec:coverage}; cracks are located by a learned segmenter whose
-errors propagate into Chamfer agreement unquantified. What would convert
-the within-visit benchmark into a cross-visit measurement is a real second
-capture session at marked distances and angles; we have not run one. The
-synthetic revisit protocol is therefore a controlled check, not a
-substitute for multi-visit data, and the paper does not claim cross-visit
-performance.
+\noindent\textbf{Learning to re-identify from geometry-derived supervision.}
+The geometric baseline is a deliberate non-learned reference; it is not a
+deployment target. A natural next step is to use the registration pipeline
+as a teacher to generate pseudo-labels for training a learned matcher, or
+to fine-tune a foundation-model backbone on crack pairs with homography-
+derived correspondence. This would let the system inherit the
+location-based advantage while remaining applicable to pairs the registration
+pipeline cannot answer.
+
+\smallskip
+\noindent\textbf{Integration into ticket lifecycle evaluation.}
+End-to-end evaluation in a ticket management context requires measuring not
+just retrieval accuracy but downstream impact: how often does a
+mis-identification open a duplicate ticket, and how often does a false match
+suppress a new defect? Future work should define task-level metrics
+(duplicate rate, missed-new-defect rate) and evaluate the full pipeline ---
+segmentation, re-identification, and ticket assignment --- in a closed-loop
+simulation that reflects real inspection workflows.

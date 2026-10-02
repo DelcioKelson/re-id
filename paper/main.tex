@@ -12,10 +12,12 @@
 
 \newcommand{\best}[1]{\textbf{#1}}
 \newcommand{\ours}{\textsc{Reg+Chamfer}}
+\newcommand{\hybrid}{\textsc{Hybrid-Skel}}
+\newcommand{\coverage}{\textsc{Coverage-only}}
 
 \begin{document}
 
-\title{CrackID: A Benchmark for Crack Re-Identification,\\
+\title{CrackID: A Within-Visit Benchmark for Crack Re-Identification,\\
 and the Limits of Appearance Matching}
 
 \author{\IEEEauthorblockN{D\'elcio Ferramenta, C\'atia Loureiro, Ant\'onio Silva,
@@ -29,28 +31,29 @@ Nuno da Costa, Ricardo Rodrigues, and Duarte Fernandes }
 
 \begin{abstract}
 Maintenance systems turn photographs into tracked defect records:
-A crack re-photographed later must match its record or be filed as new.
-Crack \emph{detection} is mature, but no benchmark for crack
-\emph{re-identification} is known to us. We introduce \textsc{CrackID}: 140 photographs of
-17 walls with 212 crack identities, captured in one continuous walk-around per
-wall, so it measures within-visit viewpoint and scale robustness, not
-cross-visit re-identification. Every metric is reported against its chance
-level, with an annotation-quality report ($45\%$ of identities from an
-automatic merge). We benchmark ten crop-based matchers from four families.
-Ranking metrics separate them (Rank-1 $0.352$--$0.654$; chance $0.336$), but
-on the thresholded same-crack decision none exceeds the $0.305$ pairwise-$F_1$
-floor by more than $0.054$. Two controls localize the difficulty: adding wall
-context raises OSNet's open-set rate from $0.168$ to $0.404$, yet inpainting
-the crack out of that view retains $0.393$: context methods retrieve on
-location, not crack appearance. A geometric reference baseline that registers
-on wall texture with cracks masked, then Chamfer-matches projected crack
-masks, reaches $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ against $0.429$
-for the best crop method; a coverage-only control scores $0.000$. It
-answers only $48\%$ of pairs, fails on two smooth-plaster walls, and
-is entangled with the homography-based provenance of our annotations; on a
-synthetic revisit check, OSNet$+$context outperforms it in ranking and
-open-set rate. All results are point estimates on $19$ identities across $11$
-walls; we claim the pattern, not the digits.
+a re-photographed crack must match its record or be filed as new.
+Crack \emph{detection} is mature, but we know of no benchmark for crack
+\emph{re-identification}. We introduce \textsc{CrackID}: 140 photographs of
+17 walls with 212 crack identities, each wall captured in one continuous
+walk-around, so the benchmark measures within-visit viewpoint and scale
+robustness, not cross-visit re-identification. Every metric is reported
+against its chance level. We benchmark ten zero-shot crop matchers from four
+families. Ranking separates them (Rank-1 $0.370$--$0.613$ on the $n_Q{=}305$
+rerun; prior chance $0.336$ TBD),
+but on the thresholded same-crack decision none exceeds the prior $0.305$
+pairwise-$F_1$ floor by more than $0.069$ (new $F_1^{*}$ $0.337$--$0.374$;
+floors TBD). Adding wall context raises OSNet's
+open-set rate from $0.168$ to $0.404$ (prior snapshot), yet inpainting the crack out retains
+$0.393$: context retrieves on location, not crack appearance. A geometric
+reference that registers on wall texture with cracks masked and Chamfer-matches
+projected masks reaches $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ against
+$0.384$ for the best new crop method (SuperGlue) and $0.000$ for a coverage-only control,
+answering $48\%$ of pairs (geometry/coverage prior snapshot, not numerically
+comparable to the rerun). It fails on two smooth-plaster walls and shares
+homography-based provenance with the annotations, so the advantage is
+provenance-conditioned. On a small single-seed synthetic revisit check,
+OSNet$+$context outperforms geometry in ranking and open-set rate. All rows
+are point estimates on $19$ test identities; we claim the pattern, not the digits.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -62,8 +65,8 @@ inspection, homography, geometric alignment, annotation quality
 \input{sections/related}
 \input{sections/dataset}
 \input{sections/protocol}
-\input{sections/ceiling}
 \input{sections/method}
+\input{sections/ceiling}
 \input{sections/results}
 \input{sections/validity}
 \input{sections/conclusion}
