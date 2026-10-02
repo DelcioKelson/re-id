@@ -1,70 +1,42 @@
-\section{Validity, Limitations, and Future Work}
+\section{Future Work}
 \label{sec:validity}
 
-This benchmark establishes a first measurable formulation of crack
-re-identification; several directions remain open and represent natural
-extensions of the present work.
+This work establishes a first measurable formulation of within-visit crack
+re-identification and a geometric reference baseline. The results are point
+estimates on a small, wall-clustered sample with single-annotator labels and
+partial registration coverage, so each finding below is paired with the
+concrete step that would confirm or extend it.
 
-\smallskip
-\noindent\textbf{Scaling to multi-wall and multi-visit datasets.}
-The test split covers tens of matchable identities across $11$ walls ($19$ on the prior snapshot; recount pending on current labels), which is sufficient
-to establish the structural pattern (thresholded decisions at or below the floor;
-open-set benefit of explicit alignment) but not to rank individual methods with
-statistical confidence; all accuracy rows are point estimates with no
-wall-level intervals. A larger dataset --- more walls, more surface
-families, and more annotators --- would allow wall-level confidence intervals
-to be reported and method rankings to be interpreted reliably. More
-importantly, the current benchmark captures one continuous walk-around per
-wall; a second capture session at deliberately varied distances and lighting
-would convert the within-visit measurement into a genuine cross-visit
-benchmark. That real revisit data is the most valuable next step for
-assessing the re-identification component of operational ticket management
-backends.
+\begin{enumerate}
+\item \textbf{Scale to multi-wall, multi-visit data.} Collect more walls, surface
+families, and annotators to support wall-level confidence intervals and reliable
+method ranking. Most importantly, add a second capture session at deliberately
+varied distances and lighting to convert the within-visit measurement into a
+genuine cross-visit benchmark for ticket management backends.
 
-\smallskip
-\noindent\textbf{Annotation quality and provenance-free labelling.}
-Annotation quality was actively managed: a single human annotator placed
-and reviewed all 2,095 clicks from homography-propagated prefill until
-zero provisional points remained, and every one of the 1,023 clicks no
-component claimed was subsequently triaged against the imagery --- 916
-(89.5\%) sit on visible cracks the segmenter missed rather than labelling
-mistakes, leaving 107 clicks (10.5\%, 95\% CI [8.7\%, 12.5\%]) naming no
-crack. Single-annotator; agreement unmeasured. The reported geometric
-advantage must therefore be read as provenance-conditioned until a small,
-manually verified subset labeled entirely without
-homography propagation quantifies how much is independent of annotation
-provenance. Releasing the
-per-pair score matrices alongside the dataset would additionally allow
-third parties to run sensitivity analyses on how much false-positive mass
-would be needed to manufacture an open-set gap of the observed magnitude,
-and to compute wall-clustered intervals and threshold-free AP/AUROC.
+\item \textbf{Add provenance-free annotation.} All clicks were human-validated by a
+single annotator with full triage of unclaimed points, but agreement is unmeasured
+and the geometric advantage remains provenance-conditioned. A small subset labeled
+entirely without homography propagation, plus released per-pair score matrices for
+sensitivity analysis, wall-clustered intervals, and threshold-free AP/AUROC, would
+quantify how much of the open-set gap is independent of annotation provenance.
 
-\smallskip
-\noindent\textbf{Closing the registration coverage gap.}
-The geometric baseline currently answers $48\%$ of query pairs and scores
-zero on smooth-plaster walls. Future work should explore surface-adaptive
-registration strategies --- including learned local features, direct
-alignment on photometric gradients, or sparse depth from consumer
-devices --- that could push coverage toward full-set evaluation.
-A learned front-end replacing SIFT would also decouple the geometry
-pipeline from the homography-based annotation provenance.
+\item \textbf{Close the registration coverage gap.} The baseline answers $48\%$ of
+pairs and scores zero on smooth-plaster walls. Surface-adaptive registration ---
+learned local features, direct photometric alignment, or sparse depth from consumer
+devices --- would push coverage toward full-set evaluation and further decouple the
+geometry pipeline from homography-based provenance.
 
-\smallskip
-\noindent\textbf{Learning to re-identify from geometry-derived supervision.}
-The geometric baseline is a deliberate non-learned reference; it is not a
-deployment target. A natural next step is to use the registration pipeline
-as a teacher to generate pseudo-labels for training a learned matcher, or
-to fine-tune a foundation-model backbone on crack pairs with homography-
-derived correspondence. This would let the system inherit the
-location-based advantage while remaining applicable to pairs the registration
-pipeline cannot answer.
+\item \textbf{Learn from geometry-derived supervision.} The baseline is a non-learned
+reference, not a deployment target. Using the registration pipeline as a teacher for
+pseudo-labels, or fine-tuning a foundation-model backbone on homography-derived
+correspondence, would retain the location-based advantage on pairs registration
+cannot answer.
 
-\smallskip
-\noindent\textbf{Integration into ticket lifecycle evaluation.}
-End-to-end evaluation in a ticket management context requires measuring not
-just retrieval accuracy but downstream impact: how often does a
-mis-identification open a duplicate ticket, and how often does a false match
-suppress a new defect? Future work should define task-level metrics
-(duplicate rate, missed-new-defect rate) and evaluate the full pipeline ---
-segmentation, re-identification, and ticket assignment --- in a closed-loop
-simulation that reflects real inspection workflows.
+\item \textbf{Evaluate the ticket lifecycle.} Define task-level metrics --- duplicate
+rate and missed-new-defect rate --- and evaluate segmentation, re-identification, and
+ticket assignment jointly in a closed-loop simulation of real inspection workflows.
+\end{enumerate}
+
+Together, these steps turn the present within-visit reference into a deployable
+multi-visit re-identification component for operational ticket management.
