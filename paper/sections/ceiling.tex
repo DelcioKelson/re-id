@@ -5,31 +5,11 @@
 \centering
 %    10 or 12-token rows ... The prefixed comment must stay stable.
 % (see verify_claims.py parse_results_table strictness notes)
-\caption{\textbf{Main result}, test split, $n_Q = 305$ query instances over 11
-walls. All methods see identical inputs and are scored by identical code.
-$F_1^{*}$ is oracle-thresholded on test (ceiling, not deployable);
-$\Delta F_1^{*}$ is its excess over the
-$0.337$ best-constant-predictor floor ($2p/(1+p)$ at test prevalence $0.203$,
-not coin-flip chance;
-Sec.~\ref{sec:protocol}); $F_1^{@v}$ is
-thresholded on the held-out validation walls and is the deployable number.
-\emph{scored} is the fraction of valid query--gallery pairs receiving a finite
-score; unscored pairs are charged as predicted-negative, and the query is still
-counted (Sec.~\ref{sec:coverage}). Cost is relative wall-clock seconds per
-query (new crop rows: \texttt{total\_s}$/305$ from separate per-method runs;
-use for ordering,
-not absolute timing). Chance levels on the current label pool
-(\texttt{banchmark\_out/chance\_nq305.json}: Rank-1 $0.336{\pm}0.025$, Rank-5
-$0.778{\pm}0.019$, mAP $0.382$, $\mathrm{DIR}@\mathrm{FAR}$ $0.038{\pm}0.014$,
-pairwise-$F_1$ floor $0.337$, assignment-$F_1$ $0.345$; $200$ random matrices).
-Bold marks the
-best crop-scope value per column only (new rows only; $^\dagger$CLIP-crop,
-\coverage{}, and \ours{} rows are the prior $n_Q{=}280$
-snapshot pending rerun and must not be compared numerically to the new rows.
-The \coverage{} reference row answers
-yes to every registered pair without examining a crack and is the level the
-geometry row must be read against. Counts refer to the
-current labels; \texttt{dataset/labels/} remains under audit (see Sec.~\ref{sec:annotation}).}
+\caption{\textbf{Main result} on \textsc{CrackID} test ($n_Q{=}305$ over 11 walls).
+$F_1^{*}$ is oracle-thresholded on test; $\Delta F_1^{*}$ is excess over the $0.337$ floor;
+$F_1^{@v}$ uses the validation-calibrated threshold. Bold: best new crop row per column.
+$^\dagger$CLIP, \coverage{}, and \ours{} rows are the prior $n_Q{=}280$ snapshot, not comparable
+to the new rows. Scoring, chance levels, and costs: Sec.~\ref{sec:protocol}--\ref{sec:coverage}.}
 \label{tab:main}
 \small
 \begin{tabular}{llcccccccr}

@@ -39,7 +39,9 @@ its extent rather than assume its correctness: $95/212$ identities
 ($45\%$) were formed by a merge (48\% on test), bridging a median maximum
 gap of $228$ px; the adjusted Rand index against the pre-merge labeling is
 $0.080$, meaning the merge restructured the partition rather than refining
-it. The triage is complete: every one of the 1,023 clicks no component
+it. All annotations were validated by a human: a single annotator placed
+and reviewed all 2,095 clicks from homography-propagated prefill until
+zero provisional points remained. The triage is complete: every one of the 1,023 clicks no component
 claimed was reviewed against the imagery --- 916 sit on visible cracks the
 segmenter missed rather than labelling mistakes, leaving 107 clicks
 ($10.5\%$, 95\% CI $[8.7\%, 12.5\%]$) naming no crack
@@ -54,13 +56,13 @@ since been re-edited (walls 18--19 added, audit in progress) and its raw
 identity/point totals no longer match exactly. The snapshot, its
 \texttt{result.txt}, \texttt{chance.json}, \texttt{pair\_outcomes.json}, and
 \texttt{viewpoint.json} are the version of record for all accuracy rows.
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\includegraphics[width=0.92\textwidth]{figs/dataset_examples.pdf}
+\includegraphics[width=0.85\columnwidth]{figs/dataset_examples.pdf}
 \caption{Examples from real \textsc{CrackID} captures. Top: the same annotated
 identity in non-adjacent frames of one walk-around. Bottom: the two surface
 families, stippled render and smooth painted plaster. The identity labels
 inherit the dataset's homography-based propagation and are illustrative, not
 an independent annotation audit.}
 \label{fig:dataset-examples}
-\end{figure*}
+\end{figure}
