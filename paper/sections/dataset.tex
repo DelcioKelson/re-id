@@ -1,6 +1,12 @@
 \section{Data Acquisition}
 
+
+
 \label{sec:dataset}
+
+
+
+
 
 
 
@@ -8,35 +14,71 @@
 
 
 
-The \textsc{CrackID} frozen benchmark snapshot consists of 140 photographs of 17 exterior walls which were taken at a single location over four half-days using two consumer handheld devices (the data can be obtained through Mendeley Data~\cite{ferramenta2026crackid}). The walls have both stippled render (textured) and smooth painted plaster; in the case of the smooth plaster, the only visible features are cracks. The dataset is split into six validation walls (walls 01 to 06; 66 photos, 66 identities) and eleven test walls (walls 07 to 17; 74 photos, 146 identities). Only those identities that appear in at least two photographs are considered to be answerable queries (18 in the validation set and 19 in the test set; $n_Q{=}305$ in the test set and $439$ in the validation set). Additionally, two further walls (walls 18 and 19) have been included and are therefore omitted from all the figures in this paper. Each wall is recorded by a continuous walk-around, with a median time interval of 3 seconds between consecutive frames and a maximum duration of 81 seconds; it is for this reason that the data includes within-visit viewpoint and scale correspondence, which is regarded as an upper bound on multi-visit performance.
+
+
+
+
+The \textsc{CrackID} frozen benchmark snapshot consists of 140 photographs of 17 exterior walls taken at a single location over four half-days using two consumer handheld devices (the data is available through Mendeley Data~\cite{ferramenta2026crackid}). The walls have both stippled render (textured) and smooth painted plaster; for the smooth plaster, the only visible features are cracks. The dataset is split into six validation walls (walls 01 to 06; 66 photos, 66 identities) and eleven test walls (walls 07 to 17; 74 photos, 146 identities). We consider only identities that appear in at least two photographs as answerable queries (18 in the validation set and 19 in the test set; $n_Q{=}305$ in the test set and $439$ in the validation set). Additionally, we included two further walls (walls 18 and 19) and therefore omit them from all figures in this paper. Each wall is recorded by a continuous walk-around, with a median interval of 3 seconds between consecutive frames and a maximum duration of 81 seconds; as a result, the data includes within-visit viewpoint and scale correspondence, which is regarded as an upper bound on multi-visit performance.
+
+
+
+
 
 
 
 \smallskip
 
-Adjacent-frame retrieval. In the case of the 305 test queries which did have an answer, we use the adjacent frame as the starting point for the retrieval process. As the gaps shown in Section~\ref{sec:coverage} (ranging from 305 down to 205, then to 149 and finally to 105 for the gaps numbered 0 to 3) make clear, Rank-1 is still achieved as the number of items decreases. This result shows that the method is robust in the face of short-baseline variations rather than indicating a lack of relevance.
+
+
+Adjacent-frame retrieval. For the 305 test queries thathave an answer, we use the adjacent frame as the starting point for the retrieval process. As the gaps shown in Section~\ref{sec:coverage} (ranging from 305 down to 205, then to 149 and finally to 105 for the gaps numbered 0 to 3) make clear, Rank-1 is still achieved as the number of items decreases. This result shows that the method is robust to short-baseline variations rather than indicating a lack of relevance.
+
+
+
+
 
 
 
 \subsection{Annotation, and why it needs auditing}
 
+
+
 \label{sec:annotation}
 
 
 
-The ORB homography method operates one-to-one, so for each crack, a single click passes from one frame to the next, and the fragment then combines the segments that constitute the individual physical crack. The greatest risk of an incorrect merge is at this stage, such as changing a hard negative into a free positive. Although the number of merges is provided, their accuracy is not. More precisely, 95 of the 212 identities (45\%; 70 out of 146, 48\% in the test set) result from merges, with median bridged gaps of 228 pixels in the test set and 286 pixels in the validation set. One annotator examined all clicks and thoroughly triaged the unclaimed points (107 out of 1,023 were classified as no crack; full details are in the supplement). Single-annotator triage reduces but does not eliminate merge risk. The figures refer to the frozen snapshot (Table~\ref{tab:units}); the live \texttt{dataset/labels/} directory has since been updated (walls 18 and 19 have been added and the changelog has been rebuilt without the gap fields). It will not display these figures until you run the benchmark again.
+
+
+
+
+The ORB homography method operates one-to-one, so for each crack, a single click passes from one frame to the next, and the fragment then combines the segments that constitute the individual physical crack. The greatest risk of an incorrect merge is at this stage, such as changing a hard negative into a free positive. Although the number of merges is provided, their accuracy is not. More precisely, 95 of the 212 identities (45\%; 70 out of 146, 48\% in the test set) result from merges, with median bridged gaps of 228 pixels in the test set and 286 pixels in the validation set. One annotator examined all clicks and thoroughly triaged the unclaimed points (107 out of 1,023 were classified as no crack; full details are in the supplement). Single-annotator triage reduces but does not eliminate merge risk. The figures refer to the frozen snapshot (Table~\ref{tab:units}); the live \texttt{dataset/labels/} directory has since been updated (walls 18 and 19 have been added and the changelog has been rebuilt without the gap fields). It will not display these figures until you rerun the benchmark.
+
+
+
+
 
 
 
 \begin{figure}[t]
 
+
+
 \centering
+
+
 
 \includegraphics[width=0.85\columnwidth]{figs/dataset_examples.pdf}
 
-The images shown here are real CrackID images; the top one shows a single identity spanning non-adjacent frames, while the bottom one shows the stippled render alongside the smooth plaster. The labels were obtained via homography propagation and have not been independently audited.
+
+
+The images shown here are real CrackID images; the top one shows a single identity spanning non-adjacent frames, while the bottom one shows the stippled render alongside the smooth plaster. We obtained the labels via homography propagation and have not independently audited them.
+
+
 
 \label{fig:dataset-examples}
 
+
+
 \end{figure}
+
+
 

@@ -2,15 +2,31 @@
 
 
 
-Building ticket management systems organizes reports of physical defects into records that support inspection, prioritization, intervention, and follow-up. A ticket should maintain the history of one incident. Still, the same crack may be photographed repeatedly by different users or inspections, spawning duplicate tickets that fragment history and duplicate assessment work.
 
 
 
-To address this, each new observation must be linked to the existing ticket, or a new ticket must be created for any damage that has not been recorded.
+
+When ticket management systems are built, reports of physical defects are arranged into records which can be used for inspection, prioritization, intervention, and follow-up. Each ticket should contain the history of a single incident; yet the same crack may be photographed more than once by different users during various inspections, leading to the creation of duplicate tickets that disrupt the history and result in duplicate assessment work.
 
 
 
-This is a problem of visual re-identification in terms of photographic evidence. There are two cases to consider: (i) the morphology remaining unchanged even when the viewpoint, distance, field of view, illumination or partial visibility varies; and (ii) physical damage that has changed (by extending, widening or branching) yet whose identity must still be retained in the face of such changes, in order to distinguish between damage that has changed and damage that has been acquired. An error in either of these cases results in a duplicate or in the wrong attribution of the observation.
+
+
+
+
+To address this, each new observation must be linked to the existing ticket, or a new ticket must be created for any damage not yet recorded.
+
+
+
+
+
+
+
+This is a visual re-identification problem for photographic evidence. There are two cases to consider: (i) the morphology remaining unchanged even when the viewpoint, distance, field of view, illumination, or partial visibility varies; and (ii) physical damage that has changed (by extending, widening, or branching) yet whose identity must still be retained in the face of such changes, to distinguish between damage that has changed and damage that has been acquired. An error in either case results in a duplicate or misattribution of the observation.
+
+
+
+
 
 
 
@@ -18,19 +34,39 @@ Current methods for detecting cracks focus on detection and segmentation within 
 
 
 
-We have developed \textsc{CrackID} in order to determine whether the photographs show the same wall crack: it involves 140 photos of 17 walls taken at one time (6 for validation and 11 for testing; there are 19 test identities that can be matched, with $n_Q{=}305$). The real photos account for variations in how the images were acquired during a single visit; a synthetic approach is used initially to investigate changes in appearance and growth. Improvement in performance across visits using real photos is something that will have to be left for future work. The accuracy figures given are point estimates based on a small sample of walls clustered together.
 
 
 
-The benchmark involves testing ten matchers in a zero-shot manner on \textsc{CrackID}, with the candidate retrieval being separated from the thresholded decisions regarding whether cracks are the same and with open-set identification involving rejection: merely ranking a record highly does not mean that a report should be attached to it. The use of context together with crack-erased control samples separates the signals indicating cracks from those indicating wall position, and a geometric baseline is used to detect walls and to compare the projected masks.
+
+We developed \textsc{CrackID} to determine whether photographs show the same wall crack: it includes 140 photos of 17 walls taken at one time (6 for validation and 11 for testing; 19 test identities can be matched, with $n_Q{=}305$). Real photos account for variations in how images were acquired during a single visit; we initially use a synthetic approach to investigate changes in appearance and growth. Improving performance across visits using real photos will have to be left to future work. The accuracy figures are point estimates based on a small sample of clustered walls.
 
 
 
-The study looks at RQ1 (the association under acquisition change), RQ2 (the roles of context and geometric alignment), and RQ3 (behaviour under synthetic appearance/growth change); for RQ1 and RQ2 real single-visit photos are used while RQ3 is an exploratory synthetic study. The aspects of duplicate reduction at the ticket level and cross-visit evaluation will be dealt with in future work.
+
+
+
+
+The benchmark evaluates ten different matchers in a zero-shot setup on \textsc{CrackID}, separating the process of retrieving candidates from the thresholding step involved in deciding whether cracks are the same, and makes use of open-set identification with rejection: merely ranking a record highly does not mean that a report should be attached to it. By combining context with crack-erased control samples, it is possible to distinguish signals that indicate cracks from those that indicate wall position, and a geometric baseline is used to detect walls and to compare the projected masks.
+
+
+
+
+
+
+
+The study examines RQ1 (the association under acquisition change), RQ2 (the roles of context and geometric alignment), and RQ3 (behavior under synthetic appearance/growth change); for RQ1 and RQ2, real single-visit photos are used, while RQ3 is an exploratory synthetic study. We will address duplicate reduction at the ticket level and cross-visit evaluation in future work.
+
+
+
+
 
 
 
 \smallskip
 
+
+
 \textbf{Contributions:} (i)~the \textsc{CrackID} method together with cross-observation identities and information about the source of the annotations (Section~\ref{sec:annotation}); (ii)~a benchmark that divides the tasks among retrieval, making same-defect decisions, and open-set identification (Sections~\ref{sec:protocol} and~\ref{sec:ceiling}); (iii)~the use of context controls and a geometric reference together with an analysis of coverage (Sections~\ref{sec:method}, \ref{sec:controls}, and~\ref{sec:coverage}); (iv)~an initial synthetic revisit probe (Section~\ref{sec:hybridbench}).
+
+
 

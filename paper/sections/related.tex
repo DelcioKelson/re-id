@@ -2,9 +2,19 @@
 
 
 
-The detection and segmentation of cracks is the focus of crack analysis~\cite{zou2012cracktree,liu2019deepcrack,eisenbach2017gaps}; the datasets used in this area also deal with single images and the consolidation studies follow the same scope~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k}, and multi-view pipelines combine one inspection into a surface or a segmentation~\cite{benz2025crackstructures} without establishing instance correspondence. Structural-health monitoring compares cracks over time with related equipment~\cite{parente2022monitoring,harb2025multitemporal,sun2025perspective,nec2019guide}, but the identity of the cracks is \emph{given by construction} (using a fixed camera and a marked location): instead of measuring a known crack they decide on associations under an open-set protocol, which is our aim.
+
+
+
+
+The detection and segmentation of cracks is the focus of crack analysis~\cite{zou2012cracktree,liu2019deepcrack,eisenbach2017gaps}; the datasets used in this area also deal with single images, and the consolidation studies follow the same scope~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k}, and multi-view pipelines combine one inspection into a surface or a segmentation~\cite{benz2025crackstructures} without establishing instance correspondence. Structural-health monitoring compares cracks over time with related equipment~\cite{parente2022monitoring,harb2025multitemporal,sun2025perspective,nec2019guide}, but the identity of the cracks is \emph{given by construction} (using a fixed camera and a marked location): instead of measuring a known crack, they decide on associations under an open-set protocol, which is our aim.
+
+
+
+
 
 
 
 The setting we use is object re-identification~\cite{qian2024reidtrends} together with open-set identification~\cite{liao2014openset}; keypoint matching methods such as SIFT~\cite{lowe2004sift} and ORB~\cite{rublee2011orb}, learned correspondences (including SuperGlue~\cite{sarlin2020superglue} and LoFTR~\cite{sun2021loftr}), and region embeddings~\cite{dosovitskiy2021vit,touvron2021deit,radford2021clip,zhou2019osnet,oquab2024dinov2} can all be applied to crack detection, with all of them being evaluated here in a zero-shot manner without any \textsc{CrackID} fine-tuning (for the YOLOv8 row: layer-$9$ features from \texttt{yolov8n.pt}~\cite{jocher2023ultralytics}; LightGlue~\cite{lindenberger2023lightglue} and NetVLAD~\cite{arandjelovic2016netvlad} are left as possible retrieval methods for future work). Vehicle-damage re-identification across claims~\cite{maiano2023antifraud} follows the same open-set protocol as ours; the other work in this area focuses on detection and severity rather than on association~\cite{hasan2025review,perez2024assessment,mallios2023multiview}. The process of aligning the images and then reasoning about presence and absence constitutes change detection~\cite{sakurada2015changedetection,alcantarilla2018street} using classical planar registration~\cite{hartley2004mvg,fischler1987ransac,barath2019magsac} and an ECC fallback~\cite{evangelidis2008ecc}; our key point is that the alignment and matching targets should be \emph{disjoint}, the homography being determined by the wall since it is the crack that is to be identified.
+
+
 

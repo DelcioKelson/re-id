@@ -1,28 +1,64 @@
 \section{A Geometric Reference Baseline}
 \label{sec:method}
 
-The baseline test examines whether the location of cracks on the wall is associated with the model: it aligns the wall surfaces to a common frame and then compares the projected crack masks. It makes the assumption of a roughly planar wall and does not use any \textsc{CrackID} training. The shared UNet++ masks (which were trained on public crack data only; none of the walls in the training set were from \textsc{CrackID}) use instance extraction at rates of 200 px and 5 px in order to maintain consistency of the inputs across the different methods (the full segmenter settings are given in the code). The masks are taken as given and their error is not measured.
+The baseline tests whether crack locations on the wall drive the
+association: it aligns wall surfaces to a common frame and then compares
+the projected crack masks. It assumes a roughly planar wall and uses no
+\textsc{CrackID} training. The shared UNet++ masks (trained on public
+crack data only; no \textsc{CrackID} wall appears in their training set)
+use instance extraction at 200,px and 5,px to keep inputs consistent
+across methods (full segmenter settings are in the code). Masks are taken
+as given, and their error is not measured.
 
 \subsection{Registration using wall texture}
 
-For $I_a,I_b$, a homography $H$ ($x'{\sim}Hx$) is estimated from surrounding wall texture with detected cracks dilated and excluded, so alignment is driven by surface features independently of the identity under test. This independence is conditional on the masks and stage, not guaranteed per pair. Full detector settings (SIFT with CLAHE contrast enhancement~\cite{zuiderveld1994clahe}/ratio/robust estimation) are in code.
+For $I_a, I_b$, a homography $H$ ($x’ {\sim} Hx$) is estimated from the
+surrounding wall texture with detected cracks dilated and excluded, so
+alignment is driven by surface features independently of the identity
+under test. This independence is conditional on the masks and the stage
+that succeeds, not guaranteed per pair. Full detector settings (SIFT with
+CLAHE contrast enhancement~\cite{zuiderveld1994clahe}, ratio test, robust
+estimation) are in the code.
 
 \subsection{Registration cascade and validity checks}
 
-Background features are generally provided by textured rendering, whereas smooth plaster is not. A three-stage cascade is employed: first, masked SIFT; if too few keypoints remain, then unmasked-SIFT is used as a fallback (this is flagged on a per-pair basis since the crack helps with alignment); and as a final fallback, ECC photometric methods are applied. The candidate images pass plausibility tests (ensuring there are no mirrored or folded quads and that the scale is within the interval [1/16,16]); the stage that survives for each pair is recorded and the inlier RMSE from that stage determines the comparison tolerance. Pairs that are not scored are considered cases of lack of evidence, not evidence that the defects are different.
+Textured render generally provides background features, whereas smooth
+plaster does not. A three-stage cascade is employed: first masked SIFT;
+if too few keypoints remain, unmasked SIFT as a fallback (flagged
+per pair, since the crack then aids alignment); and finally ECC
+photometric alignment. Candidates pass plausibility tests (no mirrored or
+folded quads; scale within $[1/16, 16]$); the surviving stage is recorded
+per pair, and its inlier RMSE sets the comparison tolerance. Unscored
+pairs count as lack of evidence, not evidence of different defects.
 
 \subsection{Crack projection and geometric comparison}
 \label{sec:chamfer}
 
-Accepted registrations project instances from $I_a$ into $I_b$ for comparison by symmetric mean Chamfer distance, which tolerates small misalignments that would collapse IoU on narrow cracks. Let $d(p,b){=}\min_{q\in b}\|p{-}q\|_2$:
+Accepted registrations project instances from $I_a$ into $I_b$ for
+comparison by symmetric mean Chamfer distance, which tolerates the small
+misalignments that would collapse IoU on narrow cracks. Let
+$d(p, b) {=} \min_{q \in b} |p {-} q|2$:
 \begin{equation}
-D(a,b) = \tfrac{1}{2}\!\left[
-\frac{1}{|a|}\sum_{p \in a} d(p, b) \;+\;
+D(a,b) = \tfrac{1}{2}!\left[
+\frac{1}{|a|}\sum{p \in a} d(p, b) ;+;
 \frac{1}{|b|}\sum_{q \in b} d(q, a)\right],
 \label{eq:chamfer}
 \end{equation}
-The early rejection of distant candidates is considered, and chamfer coverage (the fraction within tolerance $\tau$ of the per-pair RMSE, clamped within the range $[2,16]$ pixels, with the default value at 6 pixels; \hybrid{} uses 8.0 pixels) is assessed separately as its scale-free counterpart (see Sec.~\ref{sec:chamferablation}).
+Early rejection of distant candidates applies. Chamfer coverage (the
+fraction within tolerance $\tau$ of the per-pair RMSE, clamped to
+$[2, 16]$ pixels, default 6 pixels; \hybrid{} uses 8.0 pixels) is
+evaluated separately as its scale-free counterpart (see
+Sec.~\ref{sec:chamferablation}).
 
 \subsection{Correspondence decisions and limits of spatial evidence}
 
-For each image pair a one-to-one assignment is made according to the Hungarian method~\cite{kuhn1955hungarian} together with a validation threshold (this is the same for all the methods); pairs that are not scored are given a value of $-\infty$ (this is the predicted negative and corresponds to ranking last as described in Sec.~\ref{sec:protocol}). An aligned projection onto a wall that is visibly empty is considered a \textbf{licensed negative}—that is, evidence of absence which is stronger than a low embedding similarity—while missed detections, areas outside the frame, and registration failures remain unresolved. The \ours{} method focuses on damage that is unchanged; the one that deals with progression uses \hybrid{}. The performance depends on surface-dependent failures and on the homography-based annotation provenance.
+For each image pair, a one-to-one assignment follows the Hungarian
+method~\cite{kuhn1955hungarian} with the validation threshold shared by
+all methods; unscored pairs take value $-\infty$ (predicted negative,
+ranked last, as in Sec.~\ref{sec:protocol}). An aligned projection onto
+visibly empty wall is a \textbf{licensed negative}—evidence of absence,
+stronger than low embedding similarity—while missed detections,
+out-of-frame areas, and registration failures stay unresolved. The
+\ours{} reference targets unchanged damage; progression uses \hybrid{}.
+Performance depends on surface-dependent failures and on the
+homography-based annotation provenance.

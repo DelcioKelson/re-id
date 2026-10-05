@@ -2,7 +2,19 @@
 
 
 
+
+
+
+
 \label{sec:ceiling}
+
+
+
+
+
+
+
+
 
 
 
@@ -14,12 +26,25 @@
 
 
 
+
+
+
+
 \centering
 
+
+
 % Each row contains 10 or 12 tokens. The preceding comment for each row must remain unchanged.
+
 % (see verify_claims.py parse_results_table strictness notes)
 
+
+
 \caption{\textbf{Main result} on \textsc{CrackID} test (11 walls; frozen snapshot, $n_Q{=}305$). $F_1^{*}$ is computed using an oracle threshold on the test set; $\Delta F_1^{*}$ represents the excess over the full-pool floor. $F_1^{@v}$ is calculated using the validation-calibrated threshold. Bold font indicates the best crop row in each column. The geometric row is based on a subset of size $0.48$ with a floor of $0.544$. Therefore, its $\Delta F_1^{*}$ is not directly comparable to that of the crop rows; see Sec.~\ref{sec:coverage}. For details on scoring, chance levels, and computational costs, refer to Sec.~\ref{sec:protocol} through Sec.~\ref{sec:coverage}. The metric s/query is defined as total\_s$/305$ on a single workstation (relative timings only).}
+
+
+
+
 
 
 
@@ -27,7 +52,15 @@
 
 
 
+
+
+
+
 \small
+
+
+
+
 
 
 
@@ -35,7 +68,15 @@
 
 
 
+
+
+
+
 \toprule
+
+
+
+
 
 
 
@@ -43,11 +84,23 @@ Method & Family & R@1 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & $\Delta F_1^{*}$ & $F_
 
 
 
+
+
+
+
 \midrule
 
 
 
+
+
+
+
 \rowcolor{black!8}
+
+
+
+
 
 
 
@@ -55,7 +108,15 @@ Method & Family & R@1 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & $\Delta F_1^{*}$ & $F_
 
 
 
+
+
+
+
 \rowcolor{black!8}
+
+
+
+
 
 
 
@@ -63,7 +124,15 @@ Method & Family & R@1 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & $\Delta F_1^{*}$ & $F_
 
 
 
+
+
+
+
 \midrule
+
+
+
+
 
 
 
@@ -71,7 +140,15 @@ Method & Family & R@1 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & $\Delta F_1^{*}$ & $F_
 
 
 
+
+
+
+
 ORB~\cite{rublee2011orb}            & keypoint   & 0.370 & 0.372 & 0.043 & 0.337 & 0.032 & 0.337 & 1.00 & 0.077 \\
+
+
+
+
 
 
 
@@ -79,7 +156,15 @@ SIFT~\cite{lowe2004sift}            & keypoint   & 0.420 & 0.408 & 0.049 & 0.343
 
 
 
+
+
+
+
 SuperGlue~\cite{sarlin2020superglue}& learned    & 0.518 & 0.434 & \best{0.384} & 0.357 & 0.052 & 0.337 & 1.00 & 5.196 \\
+
+
+
+
 
 
 
@@ -87,7 +172,15 @@ LoFTR~\cite{sun2021loftr}           & learned    & 0.512 & 0.424 & 0.285 & 0.357
 
 
 
+
+
+
+
 YOLOv8 backbone~\cite{jocher2023ultralytics} & embedding  & 0.525 & 0.439 & 0.134 & \best{0.374} & \best{0.069} & 0.338 & 1.00 & 0.016 \\
+
+
+
+
 
 
 
@@ -95,7 +188,15 @@ ViT-B/16~\cite{dosovitskiy2021vit}  & embedding  & \best{0.613} & 0.487 & 0.259 
 
 
 
+
+
+
+
 DeiT-S~\cite{touvron2021deit}       & embedding  & 0.570 & 0.479 & 0.223 & 0.337 & 0.032 & 0.337 & 1.00 & 0.008 \\
+
+
+
+
 
 
 
@@ -103,7 +204,15 @@ CLIP ViT-B/32~\cite{radford2021clip}& embedding  & 0.604 & 0.471 & 0.143 & 0.307
 
 
 
+
+
+
+
 DINOv2~\cite{oquab2024dinov2}      & embedding  & 0.567 & 0.459 & 0.272 & 0.337 & 0.032 & 0.331 & 1.00 & 0.011 \\
+
+
+
+
 
 
 
@@ -111,11 +220,23 @@ OSNet~\cite{zhou2019osnet}          & re-ID      & 0.603 & \best{0.497} & 0.154 
 
 
 
+
+
+
+
 \midrule
 
 
 
+
+
+
+
 \rowcolor{black!5}
+
+
+
+
 
 
 
@@ -123,7 +244,15 @@ OSNet~\cite{zhou2019osnet}          & re-ID      & 0.603 & \best{0.497} & 0.154 
 
 
 
+
+
+
+
 \rowcolor{black!5}
+
+
+
+
 
 
 
@@ -131,11 +260,23 @@ OSNet~\cite{zhou2019osnet}          & re-ID      & 0.603 & \best{0.497} & 0.154 
 
 
 
+
+
+
+
 \bottomrule
 
 
 
+
+
+
+
 \end{tabular}
+
+
+
+
 
 
 
@@ -147,7 +288,19 @@ OSNet~\cite{zhou2019osnet}          & re-ID      & 0.603 & \best{0.497} & 0.154 
 
 
 
+
+
+
+
+
+
+
+
 \subsection{Setup}
+
+
+
+
 
 
 
@@ -155,7 +308,19 @@ OSNet~\cite{zhou2019osnet}          & re-ID      & 0.603 & \best{0.497} & 0.154 
 
 
 
-The ten methods are assessed using crack-centred crops and a common validity mask: SIFT and ORB together with RANSAC inliers, SuperGlue and LoFTR using pretrained indoor settings, five embedding-based methods, and re-ID OSNet (using cosine similarity, with all being zero-shot on \textsc{CrackID}); YOLOv8 makes use of the layer-9 \texttt{yolov8n.pt} features. The full input sizes and checkpoints are given in the code repository. For the context controls, OSNet and CLIP are used with a fixed backbone: \texttt{@ctx1} increases the size of the instance box by $1{\times}$ in each direction, and \texttt{@ctx1@nocrack} fills in the crack in the same view in order to isolate the wall context. The \ours{} method aligns the walls and then compares the projected masks (as described in Sec.~\ref{sec:method}); the \coverage{} control assigns a constant score to the registered pairs without examining the cracks. In the synthetic protocol, OSNet with context is compared to the different \hybrid{} configuration. LightGlue and NetVLAD are regarded as future retrieval baselines.
+
+
+
+
+The ten methods are assessed using crack-centered crops and a common validity mask: SIFT and ORB together with RANSAC inliers, SuperGlue and LoFTR using pretrained indoor settings, five embedding-based methods, and re-ID OSNet (using cosine similarity, with all being zero-shot on \textsc{CrackID}); YOLOv8 makes use of the layer-9 \texttt{yolov8n.pt} features. The full input sizes and checkpoints are given in the code repository. For the context controls, OSNet and CLIP are used with a fixed backbone: \texttt{@ctx1} increases the size of the instance box by $1{\times}$ in each direction, and \texttt{@ctx1@nocrack} fills in the crack in the same view to isolate the wall context. The \ours{} method aligns the walls and then compares the projected masks (as described in Sec.~\ref{sec:method}); the \coverage{} control assigns a constant score to the registered pairs without examining the cracks. In the synthetic protocol, we compare OSNet with context against the different \hybrid{} configurations. LightGlue and NetVLAD are regarded as future retrieval baselines.
+
+
+
+
+
+
+
+
 
 
 
@@ -167,7 +332,19 @@ The ten methods are assessed using crack-centred crops and a common validity mas
 
 
 
-The primary benchmark results, as shown in Table~\ref{tab:main} (11 walls; frozen snapshot; $n_Q{=}305$ answerable test queries), show that the Rank-1 performance varies between $0.370$ and $0.613$ (ViT-B/16 obtains the highest score; OSNet achieves the best mAP at $0.497$; SuperGlue gives the best crop DIR@FAR$=0.1$ at $0.384$). Yet the oracle $F_1^{*}$ is in the range from $0.337$ to $0.374$ and the validation-calibrated $F_1^{@v}$ lies between $0.331$ and $0.338$, which shows that good ranking performance does not imply accurate decision-making. The small range of the validation-calibrated $F_1$ indicates difficulties in transferring a decision threshold across the walls. With 19 matchable test identities, no fine-grained ranking among the crop rows is claimed. All the values reported are point estimates.
+
+
+
+
+The primary benchmark results, as shown in Table~\ref{tab:main} (11 walls; frozen snapshot; $n_Q{=}305$ answerable test queries), show that the Rank-1 performance varies between $0.370$ and $0.613$ (ViT-B/16 obtains the highest score; OSNet achieves the best mAP at $0.497$; SuperGlue gives the best crop DIR@FAR$=0.1$ at $0.384$). Yet the oracle $F_1^{*}$ is in the range from $0.337$ to $0.374$ and the validation-calibrated $F_1^{@v}$ lies between $0.331$ and $0.338$, which shows that good ranking performance does not imply accurate decision-making. The small range of the validation-calibrated $F_1$ indicates difficulty transferring a decision threshold across walls. With 19 matchable test identities, we do not claim fine-grained ranking among the crop rows. All the values reported are point estimates.
+
+
+
+
+
+
+
+
 
 
 
@@ -179,11 +356,27 @@ The primary benchmark results, as shown in Table~\ref{tab:main} (11 walls; froze
 
 
 
+
+
+
+
 \label{sec:controls}
 
 
 
-Contextual information has a positive effect on both ranking and open-set performance, yet even when it is removed the majority of this benefit is still retained: OSNet's Rank-1 score rises from 0.603 to 0.775 (it reaches 0.711 when the context is removed), DIR@FAR increases from 0.154 to 0.404 (it is 0.393 when the context is removed), and CLIP's open-set performance improves from 0.143 to 0.311 (it amounts to 0.286 when the context is removed). The two views that have the context removed outperform all the methods which use tight crops, indicating that the wall location is the main clue. The pairwise $F_1^{*}$ remains within a narrow range (from 0.307 to 0.361) for the base, context, and erased views, while open-set performance improves by +0.250 for OSNet. Nevertheless, although the methods examined are capable of retrieving within-visit observations, reliable automatic identity decisions are still not possible. A ranked list may be of some help to an operator, but acceptance will need more evidence.
+
+
+
+
+Contextual information has a positive effect on both ranking and open-set performance, yet even when it is removed the majority of this benefit is still retained: OSNet's Rank-1 score rises from 0.603 to 0.775 (it reaches 0.711 when the context is removed), DIR@FAR increases from 0.154 to 0.404 (it is 0.393 when the context is removed), and CLIP's open-set performance improves from 0.143 to 0.311 (it amounts to 0.286 when the context is removed). The two views with the context removed outperform all methods thatuse tight crops, indicating that tall location is the main clue. The pairwise $F_1^{*}$ remains within a narrow range (from 0.307 to 0.361) for the base, context, and erased views, while open-set performance improves by +0.250 for OSNet. Nevertheless, although the methods examined can retrieve within-visit observations, reliable automatic identity decisions are still not possible. A ranked list may help an operator, but acceptance will need more evidence.
+
+
+
+
+
+
+
+
 
 
 
@@ -195,7 +388,15 @@ Contextual information has a positive effect on both ranking and open-set perfor
 
 
 
+
+
+
+
 \centering
+
+
+
+
 
 
 
@@ -203,7 +404,15 @@ Contextual information has a positive effect on both ranking and open-set perfor
 
 
 
+
+
+
+
 \caption{The appearance ceiling: pairwise $F_1^{*}$ stays narrow while ranking spreads. Geometry (red) leaves the band but is in the $0.48$ pool (own floor $0.544$). Table~\ref{tab:main} takes precedence.}
+
+
+
+
 
 
 
@@ -211,7 +420,15 @@ Contextual information has a positive effect on both ranking and open-set perfor
 
 
 
+
+
+
+
 \end{figure}
+
+
+
+
 
 
 
