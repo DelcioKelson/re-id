@@ -14,7 +14,7 @@ The \textsc{CrackID} frozen benchmark snapshot consists of 140 photographs of 17
 
 \smallskip
 
-Adjacent-frame retrieval. In the case of the 305 test queries which did have an answer, we use the adjacent frame as the starting point for the retrieval process. As the gaps shown in Section~\ref{sec:results} (ranging from 305 down to 205, then to 149 and finally to 105 for the gaps numbered 0 to 3) make clear, Rank-1 is still achieved as the number of items decreases. This result shows that the method is robust in the face of short-baseline variations rather than indicating a lack of relevance.
+Adjacent-frame retrieval. In the case of the 305 test queries which did have an answer, we use the adjacent frame as the starting point for the retrieval process. As the gaps shown in Section~\ref{sec:coverage} (ranging from 305 down to 205, then to 149 and finally to 105 for the gaps numbered 0 to 3) make clear, Rank-1 is still achieved as the number of items decreases. This result shows that the method is robust in the face of short-baseline variations rather than indicating a lack of relevance.
 
 
 
@@ -24,7 +24,7 @@ Adjacent-frame retrieval. In the case of the 305 test queries which did have an 
 
 
 
-The ORB homography method operates one-to-one, so for each crack, a single click passes from one frame to the next, and the fragment then combines the segments that constitute the individual physical crack. The greatest risk of an incorrect merge is at this stage, such as changing a hard negative into a free positive. Although the number of merges is provided, their accuracy is not. More precisely, 95 of the 212 identities (45%; 70 out of 146, 48% in the test set) result from merges, with median bridged gaps of 228 pixels in the test set and 286 pixels in the validation set. One annotator examined all clicks and thoroughly triaged the unclaimed points (107 out of 1,023 were classified as no crack; full details are in the suAlthoughas a result of the rep reduces inter-annotator agreementortindoesproceeliminate it entirelyy eliminated. The figures refer to the frozen snapshot (Table~\ref{tab:units}); the live \texttt{dataset/labels/} directory has since been updated (rows 18 and 19 have been added and the changelog has been rebuilt without the gap fields). It will not display these figures until you run the benchmark again.
+The ORB homography method operates one-to-one, so for each crack, a single click passes from one frame to the next, and the fragment then combines the segments that constitute the individual physical crack. The greatest risk of an incorrect merge is at this stage, such as changing a hard negative into a free positive. Although the number of merges is provided, their accuracy is not. More precisely, 95 of the 212 identities (45\%; 70 out of 146, 48\% in the test set) result from merges, with median bridged gaps of 228 pixels in the test set and 286 pixels in the validation set. One annotator examined all clicks and thoroughly triaged the unclaimed points (107 out of 1,023 were classified as no crack; full details are in the supplement). Single-annotator triage reduces but does not eliminate merge risk. The figures refer to the frozen snapshot (Table~\ref{tab:units}); the live \texttt{dataset/labels/} directory has since been updated (walls 18 and 19 have been added and the changelog has been rebuilt without the gap fields). It will not display these figures until you run the benchmark again.
 
 
 
