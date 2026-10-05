@@ -1,434 +1,102 @@
 \section{The Appearance Ceiling}
 
-
-
-
-
-
-
 \label{sec:ceiling}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 \begin{table*}[t]
 
-
-
-
-
-
-
 \centering
 
-
-
-% Each row contains 10 or 12 tokens. The preceding comment for each row must remain unchanged.
-
-% (see verify_claims.py parse_results_table strictness notes)
-
-
-
-\caption{\textbf{Main result} on \textsc{CrackID} test (11 walls; frozen snapshot, $n_Q{=}305$). $F_1^{*}$ is computed using an oracle threshold on the test set; $\Delta F_1^{*}$ represents the excess over the full-pool floor. $F_1^{@v}$ is calculated using the validation-calibrated threshold. Bold font indicates the best crop row in each column. The geometric row is based on a subset of size $0.48$ with a floor of $0.544$. Therefore, its $\Delta F_1^{*}$ is not directly comparable to that of the crop rows; see Sec.~\ref{sec:coverage}. For details on scoring, chance levels, and computational costs, refer to Sec.~\ref{sec:protocol} through Sec.~\ref{sec:coverage}. The metric s/query is defined as total\_s$/305$ on a single workstation (relative timings only).}
-
-
-
-
-
-
+\caption{Main result on \textsc{CrackID} test (11 walls, frozen snapshot, $n_{Q}{=}305$). $F_{1}^{*}$ uses an oracle test threshold; $\Delta F_{1}^{*}$ is excess over the full-pool floor; $F_{1}^{@v}$ uses the validation threshold. Bold is the best crop per column. Geometry covers 0.48 with floor 0.544, so its $\Delta F_{1}^{*}$ is not comparable to crop rows (Sec.~\ref{sec:coverage}). s/query is total-s$/305$ on one workstation (relative times only).}
 
 \label{tab:main}
 
+\footnotesize\setlength{\tabcolsep}{3pt}
 
-
-
-
-
-
-\small
-
-
-
-
-
-
-
-\begin{tabular}{llcccccccr}
-
-
-
-
-
-
+\begin{tabular}{llcccccccc}
 
 \toprule
 
+Method & Family & R@1 & mAP & DIR & $F_{1}^{*}$ & $\Delta F_{1}^{*}$ & $F_{1}^{@v}$ & cov. & s/q \\
 
-
-
-
-
-
-Method & Family & R@1 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & $\Delta F_1^{*}$ & $F_1^{@v}$ & scored & s/query \\
-
-
-
-
-
-
+& & & & {\scriptsize @FAR$=0.1$} & & & & & \\
 
 \midrule
 
-
-
-
-
-
-
-\rowcolor{black!8}
-
-
-
-
-
-
-
-\multicolumn{10}{l}{\emph{Reference level (same $0.48$ pool as geometry)}} \\
-
-
-
-
-
-
-
-\rowcolor{black!8}
-
-
-
-
-
-
+\multicolumn{10}{l}{\textit{Reference level (same 0.48 pool as geometry)}} \\
 
 \coverage{} & geometry & 0.515 & 0.533 & 0.000 & 0.544 & 0.239 & 0.544 & 0.48 & --- \\
 
+\midrule
 
+\multicolumn{10}{l}{\textit{Crop scope}} \\
 
+ORB~\cite{rublee2011orb} & keypoint & 0.370 & 0.372 & 0.043 & 0.337 & 0.032 & 0.337 & 1.00 & 0.077 \\
 
+SIFT~\cite{lowe2004sift} & keypoint & 0.420 & 0.408 & 0.049 & 0.343 & 0.038 & 0.337 & 1.00 & 0.155 \\
 
+SuperGlue~\cite{sarlin2020superglue} & learned & 0.518 & 0.434 & \best{0.384} & 0.357 & 0.052 & 0.337 & 1.00 & 5.196 \\
 
+LoFTR~\cite{sun2021loftr} & learned & 0.512 & 0.424 & 0.285 & 0.357 & 0.052 & 0.337 & 1.00 & 7.190 \\
+
+YOLOv8 backbone~\cite{jocher2023ultralytics} & embedding & 0.525 & 0.439 & 0.134 & \best{0.374} & \best{0.069} & 0.338 & 1.00 & 0.016 \\
+
+ViT-B/16~\cite{dosovitskiy2021vit} & embedding & \best{0.613} & 0.487 & 0.259 & 0.344 & 0.039 & 0.336 & 1.00 & 0.021 \\
+
+DeiT-S~\cite{touvron2021deit} & embedding & 0.570 & 0.479 & 0.223 & 0.337 & 0.032 & 0.337 & 1.00 & 0.008 \\
+
+CLIP ViT-B/32~\cite{radford2021clip} & embedding & 0.604 & 0.471 & 0.143 & 0.307 & 0.002 & 0.306 & 1.00 & 0.050 \\
+
+DINOv2~\cite{oquab2024dinov2} & embedding & 0.567 & 0.459 & 0.272 & 0.337 & 0.032 & 0.331 & 1.00 & 0.011 \\
+
+OSNet~\cite{zhou2019osnet} & re-ID & 0.603 & \best{0.497} & 0.154 & 0.338 & 0.033 & 0.337 & 1.00 & 0.006 \\
 
 \midrule
 
-
-
-
-
-
-
-\multicolumn{10}{l}{\emph{Crop scope}} \\
-
-
-
-
-
-
-
-ORB~\cite{rublee2011orb}            & keypoint   & 0.370 & 0.372 & 0.043 & 0.337 & 0.032 & 0.337 & 1.00 & 0.077 \\
-
-
-
-
-
-
-
-SIFT~\cite{lowe2004sift}            & keypoint   & 0.420 & 0.408 & 0.049 & 0.343 & 0.038 & 0.337 & 1.00 & 0.155 \\
-
-
-
-
-
-
-
-SuperGlue~\cite{sarlin2020superglue}& learned    & 0.518 & 0.434 & \best{0.384} & 0.357 & 0.052 & 0.337 & 1.00 & 5.196 \\
-
-
-
-
-
-
-
-LoFTR~\cite{sun2021loftr}           & learned    & 0.512 & 0.424 & 0.285 & 0.357 & 0.052 & 0.337 & 1.00 & 7.190 \\
-
-
-
-
-
-
-
-YOLOv8 backbone~\cite{jocher2023ultralytics} & embedding  & 0.525 & 0.439 & 0.134 & \best{0.374} & \best{0.069} & 0.338 & 1.00 & 0.016 \\
-
-
-
-
-
-
-
-ViT-B/16~\cite{dosovitskiy2021vit}  & embedding  & \best{0.613} & 0.487 & 0.259 & 0.344 & 0.039 & 0.336 & 1.00 & 0.021 \\
-
-
-
-
-
-
-
-DeiT-S~\cite{touvron2021deit}       & embedding  & 0.570 & 0.479 & 0.223 & 0.337 & 0.032 & 0.337 & 1.00 & 0.008 \\
-
-
-
-
-
-
-
-CLIP ViT-B/32~\cite{radford2021clip}& embedding  & 0.604 & 0.471 & 0.143 & 0.307 & 0.002 & 0.306 & 1.00 & 0.050 \\
-
-
-
-
-
-
-
-DINOv2~\cite{oquab2024dinov2}      & embedding  & 0.567 & 0.459 & 0.272 & 0.337 & 0.032 & 0.331 & 1.00 & 0.011 \\
-
-
-
-
-
-
-
-OSNet~\cite{zhou2019osnet}          & re-ID      & 0.603 & \best{0.497} & 0.154 & 0.338 & 0.033 & 0.337 & 1.00 & 0.006 \\
-
-
-
-
-
-
-
-\midrule
-
-
-
-
-
-
-
-\rowcolor{black!5}
-
-
-
-
-
-
-
-\multicolumn{10}{l}{\emph{Full-image scope}} \\
-
-
-
-
-
-
-
-\rowcolor{black!5}
-
-
-
-
-
-
+\multicolumn{10}{l}{\textit{Full-image scope}} \\
 
 \ours{} (reference) & geometry & 0.952 & 0.886 & 0.768 & 0.656 & --- & 0.582 & 0.48 & 27.92 \\
 
-
-
-
-
-
-
 \bottomrule
 
-
-
-
-
-
-
 \end{tabular}
-
-
-
-
-
-
 
 \end{table*}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 \subsection{Setup}
-
-
-
-
-
-
 
 \label{sec:setup}
 
-
-
-
-
-
-
-The ten methods are assessed using crack-centered crops and a common validity mask: SIFT and ORB together with RANSAC inliers, SuperGlue and LoFTR using pretrained indoor settings, five embedding-based methods, and re-ID OSNet (using cosine similarity, with all being zero-shot on \textsc{CrackID}); YOLOv8 makes use of the layer-9 \texttt{yolov8n.pt} features. The full input sizes and checkpoints are given in the code repository. For the context controls, OSNet and CLIP are used with a fixed backbone: \texttt{@ctx1} increases the size of the instance box by $1{\times}$ in each direction, and \texttt{@ctx1@nocrack} fills in the crack in the same view to isolate the wall context. The \ours{} method aligns the walls and then compares the projected masks (as described in Sec.~\ref{sec:method}); the \coverage{} control assigns a constant score to the registered pairs without examining the cracks. In the synthetic protocol, we compare OSNet with context against the different \hybrid{} configurations. LightGlue and NetVLAD are regarded as future retrieval baselines.
-
-
-
-
-
-
-
-
-
-
-
-
+The following ten methods employ crack-centred crops together with a common validity mask: SIFT and ORB combined with Random Sample Consensus (RANSAC) inliers, SuperGlue and LoFTR using pre-trained indoor weights, five embedding methods, and re-ID OSNet with cosine similarity, all of which are applied in a zero-shot manner on \textsc{CrackID}; YOLOv8 makes use of the layer-9 \texttt{yolov8n.pt} features. The input sizes and checkpoints are available in the code. For context control, fixed backbones (OSNet, CLIP) are used: \texttt{@ctx1} increases the size of the instance box by $1\times$ in each direction; \texttt{@ctx1@nocrack} fills in the crack in order to isolate the wall context. \ours{} first aligns the walls and then compares the projected masks (as described in Sec.~\ref{sec:method}); \coverage{} continuously evaluates the registered pairs without examining the cracks. The synthetic tests compare OSNet with context against the \hybrid{} variants.
 
 
 
 \subsection{Result: appearance buys almost nothing on the decision}
 
-
-
-
-
-
-
-The primary benchmark results, as shown in Table~\ref{tab:main} (11 walls; frozen snapshot; $n_Q{=}305$ answerable test queries), show that the Rank-1 performance varies between $0.370$ and $0.613$ (ViT-B/16 obtains the highest score; OSNet achieves the best mAP at $0.497$; SuperGlue gives the best crop DIR@FAR$=0.1$ at $0.384$). Yet the oracle $F_1^{*}$ is in the range from $0.337$ to $0.374$ and the validation-calibrated $F_1^{@v}$ lies between $0.331$ and $0.338$, which shows that good ranking performance does not imply accurate decision-making. The small range of the validation-calibrated $F_1$ indicates difficulty transferring a decision threshold across walls. With 19 matchable test identities, we do not claim fine-grained ranking among the crop rows. All the values reported are point estimates.
-
-
-
-
-
-
-
-
-
-
-
-
+Table~\ref{tab:main} (11 walls, frozen snapshot, $n_{Q}{=}305$) displays a Rank-1 score ranging from $0.370$ to $0.613$ (with the best result being that of ViT-B/16; the highest mAP is achieved by OSNet at $0.497$; and the best crop performance with DIR at a FAR of $0.1$ is $0.384$ for SuperGlue), although the oracle $F_{1}^{*}$ lies between $0.337$ and $0.374$ and the validation-calibrated $F_{1}^{@v}$ is in the range $0.331$ to $0.338$: therefore, a high ranking does not mean that decisions have been made. The small range of the $F_{1}^{@v}$ values indicates a poor transfer of thresholds across the walls. Since there are 19 matchable test identities, we do not claim to have any fine-grained crop ranking. All the values given are point estimates.
 
 
 
 \subsection{Is it the crack, or the wall behind it?}
 
-
-
-
-
-
-
 \label{sec:controls}
 
-
-
-
-
-
-
-Contextual information has a positive effect on both ranking and open-set performance, yet even when it is removed the majority of this benefit is still retained: OSNet's Rank-1 score rises from 0.603 to 0.775 (it reaches 0.711 when the context is removed), DIR@FAR increases from 0.154 to 0.404 (it is 0.393 when the context is removed), and CLIP's open-set performance improves from 0.143 to 0.311 (it amounts to 0.286 when the context is removed). The two views with the context removed outperform all methods thatuse tight crops, indicating that tall location is the main clue. The pairwise $F_1^{*}$ remains within a narrow range (from 0.307 to 0.361) for the base, context, and erased views, while open-set performance improves by +0.250 for OSNet. Nevertheless, although the methods examined can retrieve within-visit observations, reliable automatic identity decisions are still not possible. A ranked list may help an operator, but acceptance will need more evidence.
-
-
-
-
-
-
-
-
-
-
-
-
+Context contributes to both ranking and open-set performance, but the majority of the improvement is lost when the crack is removed: for OSNet the Rank-1 score rises from $0.603$ to $0.775$ (down to $0.711$ when the crack is erased), the DIR at FAR$=0.1$ goes from $0.154$ to $0.404$ (down to $0.393$ when erased); for CLIP it goes from $0.143$ to $0.311$ (down to $0.286$ when erased). The erased views outperform all the tight crops, suggesting that wall location is the cue. The pairwise $F_{1}^{*}$ remains between $0.307$ and $0.361$ for the base, context, and erased views, although open-set performance improves by +0.250 for OSNet. Within-visit retrieval does work, but reliable automatic decisions do not; ranked lists might help the operators, though more evidence is needed regarding acceptance (Fig.~\ref{fig:ceiling}).
 
 
 
 \begin{figure}[t]
 
-
-
-
-
-
-
 \centering
 
+\includegraphics[width=0.9\columnwidth]{figs/ceiling.pdf}
 
-
-
-
-
-
-\includegraphics[width=\columnwidth]{figs/ceiling.pdf}
-
-
-
-
-
-
-
-\caption{The appearance ceiling: pairwise $F_1^{*}$ stays narrow while ranking spreads. Geometry (red) leaves the band but is in the $0.48$ pool (own floor $0.544$). Table~\ref{tab:main} takes precedence.}
-
-
-
-
-
-
+\caption{Appearance ceiling: pairwise $F_{1}^{*}$ stays narrow while ranking spreads. Geometry (red) leaves the band but uses the 0.48 pool with floor 0.544 (Table~\ref{tab:main}).}
 
 \label{fig:ceiling}
 
-
-
-
-
-
-
 \end{figure}
-
-
-
-
-
-
 

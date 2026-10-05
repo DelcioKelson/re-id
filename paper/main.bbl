@@ -24,7 +24,7 @@
 \bibitem{kulkarni2022crackseg9k}
 S.~Kulkarni, S.~Singh, D.~Balakrishnan, S.~Sharma, S.~Devunuri, and S.~C.~R.
   Korlapati, ``{CrackSeg9k}: A collection and benchmark for crack segmentation
-  datasets and frameworks,'' 2022.
+  datasets and frameworks,'' arXiv:2208.13054 [cs.CV], 2022.
 
 \bibitem{benz2024omnicrack30k}
 C.~Benz and V.~Rodehorst, ``{OmniCrack30k}: A benchmark for crack segmentation
@@ -77,7 +77,8 @@ S.~Harb, P.~Achanccaray, M.~Maboudi, and M.~Gerke, ``Multi-temporal crack
 
 \bibitem{sun2025perspective}
 X.~Sun and P.~Chang, ``Robust perspective correction for real-world crack
-  evolution tracking in image-based structural health monitoring,'' 2025.
+  evolution tracking in image-based structural health monitoring,''
+  arXiv:2506.22437 [cs.CV], 2025.
 
 \bibitem{nec2019guide}
 {NEC Corporation}, ``Photographing guide device,'' US Patent 12{,}223{,}639 B2
@@ -85,7 +86,7 @@ X.~Sun and P.~Chang, ``Robust perspective correction for real-world crack
 
 \bibitem{liao2014openset}
 S.~Liao, Z.~Mo, Y.~Hu, and S.~Z. Li, ``Open-set person re-identification,''
-  arXiv preprint arXiv:1408.0872, 2014.
+  arXiv:1408.0872 [cs.CV], 2014.
 
 \bibitem{lowe2004sift}
 D.~G. Lowe, ``Distinctive image features from scale-invariant keypoints,''
@@ -130,7 +131,7 @@ M.~Oquab, T.~Darcet, T.~Moutakanni \emph{et~al.}, ``{DINOv2}: Learning robust
   Research}, 2024.
 
 \bibitem{jocher2023ultralytics}
-G.~Jocher, A.~Chaurasia, and J.~Qiu, ``{Ultralytics YOLOv8},''
+G.~Jocher, A.~Chaurasia, and J.~Qiu, ``{Ultralytics YOLOv8},'' Available:
   \url{https://github.com/ultralytics/ultralytics}, 2023.
 
 \bibitem{lindenberger2023lightglue}
@@ -198,7 +199,7 @@ G.~D. Evangelidis and E.~Z. Psarakis, ``Parametric image alignment using
   Analysis and Machine Intelligence}, vol.~30, no.~10, pp. 1858--1865, 2008.
 
 \bibitem{ferramenta2026crackid}
-D.~Ferramenta, ``{CrackID},'' Mendeley Data, Version 1,
+D.~Ferramenta, ``{CrackID},'' Mendeley Data, Version 1, Available:
   \url{https://doi.org/10.17632/t749fc4x44.1}, 2026.
 
 \bibitem{zuiderveld1994clahe}

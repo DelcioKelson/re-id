@@ -1,184 +1,66 @@
 \section{Benchmark Protocol}
 
-
-
 \label{sec:protocol}
 
-
-
-
-
-
-
-The benchmark assesses visual association by verifying, in the case of a new crack observation, whether it matches one of the previously recorded defects or is part of the reference set. This is so because the annotated identities act as a stand-in for the real permanent defect records, the measure thus indicating the accuracy of association rather than that of duplicate-ticket reduction or overall workflow performance.
-
-
-
-
+The benchmark assesses visual association by determining, for a new crack observation, whether it matches one of the recorded defects; since annotated identities serve as a stand-in for permanent defect records, the scores indicate the accuracy of the association rather than the reduction of duplicates at the ticket level.
 
 
 
 \subsection{Task formulation and candidate records}
 
+A wall is one physical wall; an identity links observations of the same crack (Sec.~\ref{sec:annotation}). A query is one crack instance; its gallery holds other instances from photos of the same known wall. Cross-wall search is excluded. A query is \textit{known} if its gallery contains the identity, it is \textit{unknown}. Each method scores query--gallery pairs for ranking, thresholded decisions, and identification with rejection. Pairs are the unit for pairs; image pairs for registration/assignment. The Hungarian one-to-one constraint applies per image pair only.
 
 
 
-
-
-
-A single physical wall is what is meant by a wall; an identity refers to the association of observations concerning the same crack (as described in Sec.~\ref{sec:annotation}). A query relates to a single crack instance; its gallery consists of other instances from photographs of the same wall, on the condition that the wall is known. This approach does not include cross-wall search. A query is considered known if its gallery contains the same identity; if not, it is unknown. Each method gives scores to the query–gallery pairs in order to carry out ranking, thresholding decisions, and identification with rejection. The unit used in the case of pairs is a query–gallery pair; an image pair is the unit for registration or assignment. The Hungarian one-to-one constraint applies only to each image pair; more than one observation can refer to the same defect record.
-
-
-
-
-
-
-
-The numbers of the tests and how common they are are presented in Table~\ref{tab:units} for the frozen benchmark snapshot (this covers 6 validation walls, namely walls numbered 01 to 06; 11 test walls, namely walls numbered 07 to 17; the walls labeled wall18 and wall19, which were added later, are omitted from all the figures). Registration is performed for all 301 pairs of test images that are identical in wall; 255 of these result in scored pairs with validity-mask cells (for further details, refer to Sec.~\ref{sec:coverage}).
-
-
-
-
+Counts for the frozen snapshot (6 validation walls 01--06; 11 test walls 07--17; walls 18--19 excluded) are in Table~\ref{tab:units}. Registration covers all 301 same-wall test image pairs; 255 yield scored pairs with validity-mask cells (Sec.~\ref{sec:coverage}).
 
 
 
 \begin{table}[t]
 
-
-
 \centering
 
+\footnotesize\setlength{\tabcolsep}{4pt}
 
-
-\small
-
-
-
-\caption{Counting units for every metric (frozen snapshot, $n_Q{=}305$ test).}
-
-
+\caption{Counting units per metric (frozen snapshot, $n_{Q}{=}305$ test).}
 
 \label{tab:units}
 
-
-
 \begin{tabular}{lrr}
-
-
 
 \toprule
 
-
-
  & Validation & Test \\
-
-
 
 \midrule
 
-
-
 Walls / photographs / identities & 6 / 66 / 66 & 11 / 74 / 146 \\
-
-
 
 Identities in $\geq 2$ photographs & 18 & 19 \\
 
-
-
 Answerable queries & 439 & 305 \\
-
-
 
 Positive query--gallery pairs & 26\,012 & 5\,722 \\
 
-
-
 Valid query--gallery pairs & 89\,118 & 31\,822 \\
-
-
 
 Same-wall image pairs & 394 & 301 \\
 
-
-
 Scored image pairs (with valid cells) & 341 & 255 \\
-
-
 
 \bottomrule
 
-
-
 \end{tabular}
-
-
 
 \end{table}
 
 
 
+\subsection{Test conditions, decisions, and metrics}
+
+The primary test involves actual walk-arounds for each wall, assuming that the morphology remains unaltered; the only variations considered are viewpoint, distance, scale, lighting, and visibility, along with same-wall distractors and unknown queries. The validation and test walls are entirely separate. All the methods are used exactly as they are on the shared masks without any tuning of \textsc{CrackID} (see Sec.~\ref{sec:method}); the thresholds determined on the validation set are applied to the test set, considering only within-visit correspondence. A synthetic check is carried out to distinguish between photometric effects (condition B: blur/noise/contrast with unchanged structure) and growth effects (condition A: one tip extended) using ten photos taken from five walls with a single seed and a common warp (the parameters are available with the code), and this is done by comparing OSNet with context to \hybrid{} ($\tau{=}8.0$~px), which is different from \ours{}: this is only a preliminary check.
 
 
 
-
-\subsection{Unchanged damage under different acquisition conditions}
-
-
-
-
-
-
-
-The main evaluation involves real walk-around inspections on a per-wall basis, with morphology assumed essentially unchanged and differences arising from viewpoint, distance, scale, lighting, and visibility, along with same-wall distractors and unknown queries. The validation and test phases do not share walls. Each method is used as-is, without fine-tuning with \textsc{CrackID} on shared masks (Sec.~\ref{sec:method}); thresholds are set on the validation data and then applied to the test data. This establishes within-visit correspondence, but it does not address cross-visit or progression robustness.
-
-
-
-
-
-
-
-\subsection{Controlled appearance change and damage progression}
-
-
-
-
-
-
-
-A synthetic reanalysis separates brightness variations from those caused by structural growth by using ten photographs from five walls, along with one initial seed, and applying the same slight affine warp in each case. In condition B, the appearance is degraded (with blur, noise, and changes in contrast or brightness) even though the structure remains unchanged; in condition A, one end of the largest component is extended. The code specifies all parameters. The study compares OSNet with context to the \hybrid{} method (which combines geometric alignment with a fallback/blend based on the skeleton, $\tau{=}8.0$\, px), which differs from the main \ours{} reference. Because we use only one seed and five walls, the results are preliminary checks, not longitudinal evidence.
-
-
-
-
-
-
-
-\subsection{Decision rules and handling of unavailable scores}
-
-
-
-
-
-
-
-When a pair meets the threshold, it is accepted; at the query level, if the threshold is met, then only the top entry from the gallery is accepted; otherwise no acceptance occurs; in the case of assignment, the Hungarian algorithm is applied to each image block and any assignments below the validation threshold are discarded. Unscorable pairs are retained: for the pairwise and assignment F1 scores, a predicted negative is used, and in retrieval the pair is given the last rank. Thus, it is possible to distinguish between failing to find a known query and correctly rejecting an unknown query and a supported non-match; since a registration failure is not resolved and may need further examination, it should not be treated as evidence of a new defect. For the assignment F1 score, which equals 2TP divided by (2TP + FP + FN), correctly accepted assignments are true positives, incorrectly accepted assignments are false positives, and known instances that are not matched are false negatives.
-
-
-
-
-
-
-
-\subsection{Evaluation metrics and reference baselines}
-
-
-
-
-
-
-
-We assess the existing queries using Rank-1, Rank-5, and mAP; pairwise decisions are made on the basis of precision, recall and the $F_1$ measure, with the oracle $F_1^{*}$ being separated from the validation-calibrated $F_1^{@v}$. We employ $F_1^a$ when dealing with assignments. In the case of identification involving rejection, DIR (based on known accepted-correct examples) and FAR (for unknown accepted cases) are used; the constrained operating point is given by DIR@FAR$=0.1$, which is different from that achieved with a fixed threshold. Coverage is the proportion of scored pairs and is presented together with accuracy. The references consist of random ranking and the best-constant pairwise $F_1$ of $2p/(1{+}p)$ (0.305 at the test prevalence of 0.180; 0.544 on the 0.48 geometric subset; 0.452 at the validation prevalence of 0.292); the complete chance levels are given in Table~\ref{tab:main}. We resample under the shared capture conditions; since there are 11 test walls and 19 matchable identities, we give only point estimates together with wall-level intervals, and we will publish the score matrix in our future work (Sec.~\ref{sec:validity}).
-
-
+Decisions: any pairs that exceed the threshold are accepted; for each query only the highest-ranking gallery entry that is above the threshold is accepted; for each image block the Hungarian assignment is used with those below the threshold being dropped. Unscorable pairs are retained (they are predicted to be negative for $F_{1}$ and are given the last rank in retrieval); a registration failure is defined as the absence of evidence, not as evidence of a new defect. The metrics used are Rank-1 and mean Average Precision (mAP); the pairwise $F_{1}$ is compared with the oracle $F_{1}^{*}$ versus the validation $F_{1}^{@v}$; the assignment $F_{1}^{a}$ is equal to $2\mathrm{TP}/(2\mathrm{TP}{+}\mathrm{FP}{+}\mathrm{FN})$; the open-set detection and identification rate (DIR) and false alarm rate (FAR) are reported with the DIR given at a FAR of 0.1; together with coverage (the fraction that is scored). The references include random ranking and the best-constant $F_{1}$ $2p/(1{+}p)$ (0.305 at a prevalence of 0.180; 0.544 on the 0.48 geometric subset; 0.452 in the validation at 0.292); the full chance levels are given in Table~\ref{tab:main}. Since there are 11 walls and 19 matchable identities we provide the point estimates (Sec.~\ref{sec:validity}).
 

@@ -4,61 +4,56 @@
 The baseline tests whether crack locations on the wall drive the
 association: it aligns wall surfaces to a common frame and then compares
 the projected crack masks. It assumes a roughly planar wall and uses no
-\textsc{CrackID} training. The shared UNet++ masks (trained on public
-crack data only; no \textsc{CrackID} wall appears in their training set)
-use instance extraction at 200,px and 5,px to keep inputs consistent
-across methods (full segmenter settings are in the code). Masks are taken
+\textsc{CrackID} training. The shared masks (trained on public
+crack data only; no \textsc{CrackID} wall in training) use instance extraction at 200~px and 5~px to keep inputs consistent
+across methods. Masks are taken
 as given, and their error is not measured.
 
 \subsection{Registration using wall texture}
 
-For $I_a, I_b$, a homography $H$ ($x’ {\sim} Hx$) is estimated from the
+For $I_a, I_b$, a homography $H$ ($x’\sim Hx$) is estimated from the
 surrounding wall texture with detected cracks dilated and excluded, so
 alignment is driven by surface features independently of the identity
-under test. This independence is conditional on the masks and the stage
-that succeeds, not guaranteed per pair. Full detector settings (SIFT with
-CLAHE contrast enhancement~\cite{zuiderveld1994clahe}, ratio test, robust
-estimation) are in the code.
+under test. This independence is conditional on the masks and the succeeding stage, not guaranteed per pair. Full detector settings (Scale-Invariant Feature Transform (SIFT) with Contrast Limited Adaptive Histogram Equalization (CLAHE)~\cite{zuiderveld1994clahe}, ratio test, robust
+estimation) are archived with the code.
 
 \subsection{Registration cascade and validity checks}
 
 Textured render generally provides background features, whereas smooth
-plaster does not. A three-stage cascade is employed: first masked SIFT;
-if too few keypoints remain, unmasked SIFT as a fallback (flagged
-per pair, since the crack then aids alignment); and finally ECC
+plaster does not. A three-stage cascade is used: masked SIFT;
+if too few keypoints remain, unmasked SIFT as fallback (flagged
+per pair, since the crack then aids alignment); finally, Enhanced Correlation Coefficient (ECC)
 photometric alignment. Candidates pass plausibility tests (no mirrored or
 folded quads; scale within $[1/16, 16]$); the surviving stage is recorded
-per pair, and its inlier RMSE sets the comparison tolerance. Unscored
+per pair, and its inlier root-mean-square error (RMSE) sets the comparison tolerance. Unscored
 pairs count as lack of evidence, not evidence of different defects.
 
 \subsection{Crack projection and geometric comparison}
 \label{sec:chamfer}
 
 Accepted registrations project instances from $I_a$ into $I_b$ for
-comparison by symmetric mean Chamfer distance, which tolerates the small
-misalignments that would collapse IoU on narrow cracks. Let
-$d(p, b) {=} \min_{q \in b} |p {-} q|2$:
+comparison by symmetric mean Chamfer distance in \eqref{eq:chamfer}, which tolerates the small
+misalignments that collapse intersection over union (IoU) on narrow cracks. Let $a,b$ be crack point sets and
+$d(p, b)=\min_{q \in b}\lVert p-q\rVert_2$:
 \begin{equation}
-D(a,b) = \tfrac{1}{2}!\left[
-\frac{1}{|a|}\sum{p \in a} d(p, b) ;+;
-\frac{1}{|b|}\sum_{q \in b} d(q, a)\right],
+D(a,b)=\frac{1}{2}\left[\frac{1}{|a|}\sum_{p \in a} d(p, b)+
+\frac{1}{|b|}\sum_{q \in b} d(q, a)\right].
 \label{eq:chamfer}
 \end{equation}
-Early rejection of distant candidates applies. Chamfer coverage (the
-fraction within tolerance $\tau$ of the per-pair RMSE, clamped to
-$[2, 16]$ pixels, default 6 pixels; \hybrid{} uses 8.0 pixels) is
+Early rejection of distant candidates applies. Chamfer coverage (fraction within tolerance $\tau$ of the per-pair RMSE, clamped to
+$[2, 16]$~pixels, default $6$~pixels; \hybrid{} uses $8.0$~pixels) is
 evaluated separately as its scale-free counterpart (see
 Sec.~\ref{sec:chamferablation}).
 
 \subsection{Correspondence decisions and limits of spatial evidence}
 
-For each image pair, a one-to-one assignment follows the Hungarian
+For each image pair, one-to-one assignment follows the Hungarian
 method~\cite{kuhn1955hungarian} with the validation threshold shared by
 all methods; unscored pairs take value $-\infty$ (predicted negative,
 ranked last, as in Sec.~\ref{sec:protocol}). An aligned projection onto
-visibly empty wall is a \textbf{licensed negative}—evidence of absence,
+visibly empty wall is a \textit{licensed negative}—evidence of absence,
 stronger than low embedding similarity—while missed detections,
 out-of-frame areas, and registration failures stay unresolved. The
 \ours{} reference targets unchanged damage; progression uses \hybrid{}.
-Performance depends on surface-dependent failures and on the
+Performance depends on surface-dependent failures and on
 homography-based annotation provenance.

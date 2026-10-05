@@ -1,72 +1,22 @@
-\section{Validity, Limitations, and Future Work}
-
-
+\section{Limitations and Future Work}
 
 \label{sec:validity}
 
-
-
-
-
-
-
-This study provides the first measurable approach to re-identifying cracks in a single visit and establishes a geometric reference standard. Because the results are based on a small sample of wall-clustered data with annotations from a single annotator and only partial registration coverage, each finding below is accompanied by the specific step needed to verify or build on it.
-
-
-
-
-
-
+The study carries out the first measurable test of re-identifying a crack in a single visit by means of a geometric reference. The results are derived from a small number of clustered walls, labels provided by a single annotator, and partial registration coverage. Each of the points listed here corresponds to a finding together with a step for verifying it.
 
 \begin{enumerate}
 
+\item \textbf{Scale to more walls and visits.} Collect data from more walls, different surface types, and additional annotators to improve the confidence intervals and the reliability of the rankings. Most importantly, include a second session using different distances and lighting conditions to establish a genuine cross-visit benchmark.
 
+\item \textbf{Add provenance-free annotation.} One annotator reviewed all clicks and handled the unclaimed points; agreement was not assessed, and the geometric advantage depends on provenance. To detect the gap independent of provenance, it would be useful to create a small set of labels without using homography and to share score matrices on a per-pair basis for sensitivity, wall-clustered intervals, and threshold-free AP/AUROC.
 
-\item \textbf{Scale the system to handle data from multiple walls and multiple visits.} Gather information from more walls, more surface families, and more annotators to establish confidence intervals at the wall level and to enable reliable ranking of the methods. Most importantly, include a second capture session at deliberately different distances and lighting conditions to turn the within-visit measurement into a true cross-visit benchmark for ticket management backends.
+\item \textbf{Close the coverage gap.} The baseline covers 48% of the pairs (97 out of 301 image pairs; 15,328 out of 31,822 valid cells) and is ineffective when dealing with smooth plaster. By using surface-adaptive registration methods such as learned local features, direct photometric alignment, or sparse depth obtained from consumer devices, a more thorough evaluation could be achieved, and the separate geometry could be better distinguished from the homography-based provenance.
 
+\item \textbf{Learn from geometric supervision.} The baseline is an untrained reference and not a system that has been put into operation. The location benefit could be obtained by using pseudo-labels from the registration process or by fine-tuning a foundation model on homography correspondences, without needing to perform per-pair registration.
 
-
-
-
-
-
-\item \textbf{Add annotation that does not depend on provenance.} Although a single annotator verified each click and also triaged any unclaimed points, we have not measured agreement, and the geometric advantage still depends on provenance. By including a small subset of labels obtained entirely without using homography propagation, together with the release of per-pair score matrices for use in sensitivity analysis and for wall-clustered intervals and threshold-free AP/AUROC, it would be possible to determine how much of the gap in the open-set case is independent of the provenance of the annotation.
-
-
-
-
-
-
-
-\item  \textbf{Close the gap in registration coverage.} The baseline responds to 48 percent of the pairs (97 out of 301 image pairs; 15,328 out of 31,822 valid cells) and gives a score of zero on smooth-plaster walls. Registration that is adaptive to the surface—this involving the learning of local features, direct photometric alignment, or sparse depth obtained from consumer devices—would move coverage towards complete evaluation and also further separate the A geometry pipeline based on homography-based provenance.
-
-
-
-
-
-
-
-\item \textbf{Learn from supervision derived from geometry.} The baseline is not a system that has been deployed but rather a reference that is not learned. If the registration pipeline generates pseudo-labels, or if a foundation-model backbone is fine-tuned using homography-derived correspondences, the location-based advantage will be retained in pair registration.
-
-
-
-
-
-
-
-Assess the ticket lifecycle by defining task-level metrics—specifically the duplicate rate and the missed-new-defect rate—and then examine the effects of segmentation, re-identification, and joint ticket assignment in a closed-loop simulation of actual inspection procedures.
-
-
+\item \textbf{Assess the ticket lifecycle.} Define task metrics such as the duplicate rate and the missed-new-defect rate, and also test segmentation, re-identification, and joint ticket assignment in a closed-loop simulation of real inspections.
 
 \end{enumerate}
 
-
-
-
-
-
-
-Taken together, these steps convert the current within-visit reference into a deployable A component which can be used for re-identification across multiple visits to handle operational tickets.
-
-
+Together, these steps will turn the within-visit reference into a multi-visit re-identification component that can be used operationally for tickets.
 

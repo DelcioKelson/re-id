@@ -1,60 +1,114 @@
-\documentclass[conference]{IEEEtran}
-\IEEEoverridecommandlockouts
+\documentclass[conference,a4paper]{IEEEtran}
+
+
 
 \usepackage{cite}
+
 \usepackage{amsmath,amssymb}
+
 \usepackage{graphicx}
+
 \usepackage{booktabs}
+
 \usepackage{multirow}
+
 \usepackage{url}
-\usepackage[table]{xcolor}
+
+\usepackage{xcolor}
+
 \usepackage[hidelinks]{hyperref}
 
+
+
 \newcommand{\best}[1]{\textbf{#1}}
+
 \newcommand{\ours}{\textsc{Reg+Chamfer}}
+
 \newcommand{\hybrid}{\textsc{Hybrid-Skel}}
+
 \newcommand{\coverage}{\textsc{Coverage-only}}
+
+
 
 \begin{document}
 
+
+
 \title{Benchmark for Crack Re-Identification in Ticket Management Systems}
 
-\author{\IEEEauthorblockN{D\'elcio Ferramenta, C\'atia Loureiro, Ant\'onio Silva,
-Beatriz Miranda,\\ Paulo Brito, Nuno da Costa, Ricardo Rodrigues, Duarte Fernandes}
-\IEEEauthorblockA{\textit{DTx Colab} \\
-\textit{Universidade do Minho, Campus de Azur\'em}\\
-Braga, Portugal}}
+
+
+\author{\IEEEauthorblockN{D\'elcio Ferramenta, C\'atia Loureiro, Ant\'onio Silva, Beatriz Miranda,\\
+
+Paulo Brito, Nuno da Costa, Ricardo Rodrigues, Duarte Fernandes}
+
+\IEEEauthorblockA{DTx CoLAB / University of Minho, Campus de Azur\'em,\\
+
+Guimar\~aes, Portugal\\
+
+delcio.ferramenta@dtxcolab.pt}}
+
+
 
 \maketitle
 
+
+
 \begin{abstract}
-Building ticket management systems must determine whether a newly reported defect corresponds to an existing ticket or requires a new one. Repeated reports of the same crack from different viewpoints fragment history and duplicate work. We study this association as crack re-identification and introduce \textsc{CrackID} (140 photographs, 17 walls, 212 identities in the frozen benchmark snapshot: 6 validation walls and 11 test walls with 19 matchable test identities). We evaluate ten zero-shot crop-based matchers from four families under retrieval, thresholded decisions, and open-set identification. Retrieval varies (Rank-1 $0.370$--$0.613$), but validation-calibrated pairwise decisions cluster in a narrow band just above the best-constant floor ($F_1^{@v}$ $0.331$--$0.338$ against a $0.305$ floor; oracle $F_1^{*}$ $0.337$--$0.374$). Context and crack-erasure controls implicate wall location over crack appearance. A geometric baseline registering wall texture with cracks masked out and matching projected masks reaches $0.768$ detection-and-identification rate at $0.1$ false alarms on $48\%$ of pairs, against $0.384$ for the best crop method, $0.404$ for the best context control, and $0.000$ for a coverage-only control. All figures are point estimates on a small wall-clustered sample with single-annotator homography-propagated labels, so the open-set advantage is provenance-conditioned and ranking is short-baseline within-visit correspondence. This establishes a dataset and benchmark for the visual association step, leaving cross-visit performance and ticket reduction for future work.
+
+When using a ticket management system, it is important to decide if a newly reported defect matches an existing ticket or should be logged as a new one. If the same crack is reported more than once from different angles, the record history can become fragmented, and the assessment work may be repeated. We call this process crack re-identification (re-ID) and have introduced \textsc{CrackID}. The frozen benchmark snapshot includes 140 photographs, 17 walls, and 212 identities, with 6 validation walls and 11 test walls, including 19 matchable test identities. We evaluate ten zero-shot crop-based matchers from four families using retrieval, thresholded pairwise decisions, and open-set identification with rejection. Retrieval performance varies, with Rank-1 scores ranging from 0.370 to 0.613. When pairwise decisions are calibrated using the validation set, all methods perform just above the best-constant baseline. The pairwise $F_{1}$ at the validation threshold $F_{1}^{@v}$ is between 0.331 and 0.338, compared to a floor of 0.305, and the oracle $F_{1}^{*}$ ranges from 0.337 to 0.374. The results show that wall location has a bigger impact than crack appearance, based on context and crack-erasure controls. A geometric reference baseline, which aligns the wall texture with cracks removed and compares the projected masks, achieves a detection and identification rate (DIR) of 0.768 at a false alarm rate (FAR) of 0.1 on the 48% alignable subset. In comparison, the best crop method achieves 0.384, the best context control 0.404, and the coverage-only control 0.000. Since all figures are point estimates from a small sample grouped by wall, and a single annotator assigned the labels using homography, the open-set advantage depends on provenance, and the ranking measures only consider within-visit correspondence. This dataset and benchmark focus on the visual association stage. Further work is needed to evaluate across visits and reduce ticket-level duplicates.
+
 \end{abstract}
 
+
+
 \begin{IEEEkeywords}
-crack re-identification, dataset, benchmark, building maintenance, structural
-inspection, homography, geometric alignment, annotation quality
+
+Annotation Quality, Benchmark, Building Maintenance, Crack Re-Identification,
+
+Geometric Alignment, Homography, Structural Inspection
+
 \end{IEEEkeywords}
 
+
+
 \input{sections/intro}
+
 \input{sections/related}
+
 \input{sections/dataset}
+
 \input{sections/protocol}
+
 \input{sections/method}
+
 \input{sections/ceiling}
+
 \input{sections/results}
+
 \input{sections/validity}
+
 \input{sections/conclusion}
+
+
 
 \section*{Acknowledgment}
 
-This work was supported by ``R2UTechnologies --- modular
-systems'' (C644876810-00000019), by ``R2UTechnologies'' Consortium, cofinanced
-by NextGenerationEU, through the Incentive System ``Agendas para a
-Inova\c{c}\~ao Empresarial'' (``Agendas for Business Innovation''), within the
-Recovery and Resilience Plan (PRR).
+
+
+This work was supported by ``R2UTechnologies --- modular systems'' (C644876810-00000019), by ``R2UTechnologies'' Consortium, cofinanced by NextGenerationEU, through the Incentive System ``Agendas para a Inova\c{c}\~ao Empresarial'' (``Agendas for Business Innovation''), within the Recovery and Resilience Plan (PRR). The \textsc{CrackID} dataset is available on Mendeley Data~\cite{ferramenta2026crackid}. Code and benchmark scripts are archived with the submission and will be released on acceptance.
+
+
+
+\textit{AI disclosure:} Generative AI was used only for minor language editing. All methods, results, figures, and analyses are original, and the authors take full responsibility for their accuracy.
+
+
 
 \bibliographystyle{IEEEtran}
+
 \bibliography{refs}
 
+
+
 \end{document}
+

@@ -1,28 +1,12 @@
 \section{Conclusion}
 
+We present \textsc{CrackID} for testing crack re-ID: 140 photos from 17 walls with 212 identities in the frozen snapshot (6 validation, 11 test; walls 18--19 excluded); annotation provenance is stated (45\% merged, 48\% of test from merges) and unclaimed-click triage is complete (107 of 1,023 as no crack). All accuracies are point estimates without wall-level intervals (19 matchable test identities, $n_{Q}{=}305$); we assert the pattern, not the digits.
 
 
 
+The main result is negative and of a structural nature: when decisions have to be made, ten zero-shot matchers from four families end up between $+0.032$ and $+0.069$ above the $0.305$ best-constant floor ($F_{1}^{*}$ ranging from $0.337$ to $0.374$), with validation-calibrated decisions lying between $F_{1}^{@v}$ values of $0.331$ and $0.338$. Retrieving from a gallery is different from deciding. The criterion is not merely the appearance of cracks: a geometric reference that captures the wall texture even when cracks are masked and involves Chamfer-matches being projected achieves a DIR at FAR=0.1 of 0.768 compared to 0.384 for the best crop and 0.404 for the best context on 48% of the pairs, whereas a \coverage{} control that uses the same alignment but omits the crack scores gives a score of 0.000 in the open-set (its pairwise $F_{1}$ is 0.544 on its own $0.544$ floor).
 
 
 
-We have developed a dataset that enables the testing of crack re-identification: CrackID, which includes 140 photographs taken from 17 walls and covering 212 identities in the frozen snapshot (6 of these being validation walls and 11 being test walls; walls 18 and 19 were excluded); the source of the annotations (45\% of which were merged and 48\% of which came from the test set) is stated rather than assumed, and the procedure for handling unclaimed clicks has now been completed (in 1,023 cases, 107 did not involve the naming of a crack). All of the accuracy figures are point estimates and do not feature wall-level confidence intervals (19 test identities were matchable, with $n_Q{=}305$); we are asserting the pattern, not the individual digits.
-
-
-
-
-
-
-
-The key result of the benchmark is negative and structural in nature: when a decision is required, ten of the zero-shot matchers from four different families achieve a score between $+0.032$ and $+0.069$ above the $0.305$ best-constant floor ($F_1^{*}$ ranging from $0.337$ to $0.374$), while validation-calibrated decisions cluster in a narrow band just above it ($F_1^{@v}$ ranging from $0.331$ to $0.338$). Determining a person's identity from a gallery is separate from making a decision. The problem does not lie merely in the appearance of cracks: a geometric reference baseline uses wall texture as a reference while masking the cracks. Chamfer-matches are projected achieves a $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ compared to $0.384$ for the best crop method and $0.404$ for the best context method, correctly identifying 48\% of the pairs, and a \coverage{} control that makes use of that alignment without looking at the crack itself obtains a score of $0.000$ on the open-set metric (although it has a pairwise $F_1$ of $0.544$ on its own $0.544$ floor).
-
-
-
-
-
-
-
-As far as operation is concerned, the advantage in the open-set scenario results from an aligned pair serving as a \emph{licensed negative}, that is, positive evidence of absence, since a crop embedding can only show low similarity; it is still not clear whether this benefit is independent of homography-based annotation, and it must therefore be regarded as depending on the source. Two issues remain: a real second capture session changes the benchmark from viewpoint-based to cross-visit, and adding a second annotator with a homography-free audit subset would turn single-annotator triage into a measured agreement rate. The 48\% coverage is also, on its own, a deployment shortfall, not merely a scoring issue: smooth-plaster walls can be categorically unanswerable. Finally, the small single-seed synthetic revisit checkpoint reverses the ranking referred to in the headline and gives the open-set result in favor of OSNet$+$context, while the distinct \hybrid{} pipeline retains only a slight advantage in assignment-$F_1$; the paper in question therefore offers a promising within-visit geometric reference, rather than solving the re-identification aspect for a multi-visit ticket management backend.
-
-
+In terms of operation, the open-set gain is a \emph{licensed negative}—positive evidence of absence—since the crop embeddings exhibit only low similarity; it has not been proven to be independent of homography-based annotation and must therefore be regarded as being conditioned by provenance. Two shortcomings still remain: a genuine second session is needed to make the benchmark cover a cross-visit scenario, and a second annotator is required together with a homography-free audit subset for the purpose of measuring agreement. The 48\% coverage figure is in itself a shortcoming in terms of deployment because smooth plaster can be unanswerable. Lastly, the small single-seed synthetic revisit reverses the ranking mentioned in the headline in favour of OSNet+context, with the distinct \hybrid{} method maintaining only a small lead in assignment-$F_{1}$; this represents a within-visit geometric reference and not a multi-visit ticket-backend solution.
 
