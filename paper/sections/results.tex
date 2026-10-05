@@ -1,38 +1,74 @@
 \section{Results and Discussion}
+
 \label{sec:results}
 
+
+
 \subsection{Main comparison and the open-set gap}
-Geometric Rank-1 reaches $0.952$ vs crop best $0.654$ (ViT-B/16 and OSNet tied) and mAP $0.886$ vs $0.520$ (OSNet) (\emph{scored} $0.48$ vs $1.00$). Conditioning on coverage as excess over \coverage{}, ranking gains stay large, but the open-set number is what coverage cannot explain: $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ of $0.768$ vs $0.429$ (SuperGlue), $0.404$ (best context OSNet$+$ctx1), $0.038$ chance and $0.000$ for \coverage{}. Crop similarities on self-similar hairlines rarely support rejection, while an aligned empty projection gives a licensed negative. Compute does not explain the gap (LoFTR $8.64$\,s vs OSNet $0.05$\,s per query; Reg $27.9$\,s per query, $26.0$\,s per image pair; timings relative only). RQ2 (geometric part): alignment adds identification beyond coverage alone, conditional on success, surface, and provenance. All numbers are point estimates on $19$ matchable identities.
+
+Geometric Rank-1 achieves a score of 0.952, whereas the highest score, 0.654 (which is attained by both ViT-B/16 and OSNet), and the mAP of 0.886 as compared to 0.520 (that of OSNet) (the score is 0.48 compared to 1.00). When coverage is measured in terms of the amount exceeding \coverage{}, the ranking improvements remain substantial, even though the open-set figure is one that coverage does not consider: $\mathrm{DIR}@\mathrm{FAR}{=}0.1$ is 0.768 as against 0.429 (SuperGlue), 0.404 (the best result with OSNet$+$ctx1), and 0.038 for \coverage{} itself. For self-similar hairlines, the crop similarities almost always lead to non-rejection, while an aligned empty projection yields a valid negative. The computation does not deal with the discrepancy (LoFTR takes 8.64 seconds whereas OSNet takes 0.05 seconds per query; Reg requires 27.9 seconds per query and 26.0 seconds per image pair; the timings are given only relative to each other). As for RQ2 (the geometric aspect): alignment offers identification capabilities that go beyond what coverage alone can provide, on the condition that success, surface, and provenance are taken into account. All the figures are point estimates based on 19 matchable identities.
+
+
 
 \subsection{Partial coverage, gap structure, and failures}
+
 \label{sec:coverage}
-Crop methods score $100\%$ of pairs, geometry $48\%$; unscored pairs are charged negative/rank-last. Censoring penalises ranking but subsidises pairwise $F_1$: the scorable subset keeps $100\%$ of positives but only $36.8\%$ of negatives (prevalence $0.180{\to}0.373$, floor $0.305{\to}0.544$). \coverage{}---constant on registered pairs without inspecting cracks---thus scores $0.544$ pairwise $F_1$, $0.533$ mAP and $0.515$ Rank-1: much of the ranking/pairwise margin is \emph{which pairs align}. The open-set lead ($0.768$ vs $0.000$) is the exception we lead with. Failures are wall-dependent (two test walls $0\%$; full per-wall table in supplement), so aggregates are not uniform across surfaces. All $280$ answerable queries are answered by the adjacent frame, so headline ranking is short-baseline correspondence; gap sweeps ($280{\to}105$ at gap $3$) leave Rank-1 flat on a shrinking pool rather than proving irrelevance. Registration follows image sharpness over frame gap (wall-clustered Wald $z{=}5.11$, $p{=}3.3{\times}10^{-7}$ vs $-2.78$, $p{=}5.4{\times}10^{-3}$; details in supplement); one sharpness gate ($\geq 10$) raises registration to $56.1\%$ on the filtered set at the cost of one wall, suggesting capture-quality guidance, not full-population coverage.
+
+Crop methods manage to get 100% of the pairs, while geometry only achieves 48%; unscored pairs are given a negative score and are ranked at the end. Censoring has the effect of penalising the ranking, but it also leads to an improvement in the pairwise F₁: the group that is scored keeps 100% of the positives but only 36.8% of the negatives (the prevalence increases from 0.180 to 0.373 and the floor rises from 0.305 to 0.544). Since the coverage stays the same for registered pairs in the absence of crack inspection, the coverage is 0.544 for pairwise F₁, 0.533 for mAP, and 0.515 for Rank-1: a large part of the ranking and pairwise performance therefore depends on \emph{which pairs align}. The only exception is the open-set lead (0.768 compared to 0.000). The failures are due to the wall (zero per cent in the case of the two test walls; the complete per-wall table is provided in the supplement), so the overall scores vary according to surface. The adjacent frame answers all 305 answerable queries, so the main ranking is based on short-baseline correspondence; the gap sweeps (which decrease from 305 to 105 when the gap is 3) keep Rank-1 unchanged even though the pool is shrinking, rather than meaning that the queries are irrelevant. Registration is based on image sharpness rather than on frame gap (wall-clustered Wald z = 5.11, p = 3.3×10⁻⁷ versus -2.78, p = 5.4×10⁻³; further details are given in the supplement); using a single sharpness threshold (≥10) increases registration to 56.1% on the filtered set at the expense of one wall, demonstrating that guidance based on capture quality is more appropriate than full-population coverage.
+
+
 
 \subsection{Ablations and cost}
+
 \label{sec:chamferablation}
+
 Coverage (scale-free) costs $0.240$ mAP and $0.103$ Rank-1 versus Chamfer distance, with DIR nearly unchanged ($+0.014$): the comparison rule moves ranking, not decisions. Disabling crack exclusion leaves ranking/pairwise unchanged but raises DIR by $+0.057$; masking is retained for evidence independence, not observed accuracy here. ECC adds ${\sim}+0.03$ Rank-1 / $+0.02$ mAP with DIR unchanged. Cost is $26.0$\,s per image pair ($7817.3$\,s over $301$ test pairs, i.e.\ $27.9$\,s per query; Chamfer-only thereafter), about $3{\times}$ LoFTR per query and more than two orders above the cheapest embedding; absolute timings are workstation-dependent and SuperGlue/LoFTR were timed in a separate run.
 
+
+
 \subsection{A synthetic revisit protocol}
+
 \label{sec:hybridbench}
-Ten source photographs from five walls (one seed) are warped identically with (A) single-tip growth or (B) photometric corruption, ranked against same-wall real instances (full recipe in code; warp modest vs real p90 tilt $75^{\circ}$). \hybrid{} (alignment plus skeleton fallback/blend) differs from Table~\ref{tab:main} \ours{}, so rows test controlled change, not the main configuration.
+
+Ten source photographs taken from five walls (with one seed) are distorted in the same way using either method (A) single-tip growth or (B) photometric corruption and are then compared with the actual images from those same walls (the full procedure is given in the code; the degree of distortion is small, and the p90 tilt is $75^{\circ}$). \hybrid{} differs from \ours{} as indicated in Table~\ref{tab:main}; consequently, the entries in the rows represent a controlled variation rather than the main configuration.
+
+
 
 \begin{table}[t]
+
 \centering
+
 \footnotesize
+
 \setlength{\tabcolsep}{3pt}
+
 \begin{tabular}{llcccccc}
+
 \toprule
+
 Protocol & Method & $n_q$ & R@1 & mAP & DIR@FAR$_{0.1}$ & $F_1^{@v}$ & $F_1^{a}$ \\
 \midrule
 \multirow{2}{*}{A (growth)} & \hybrid{}     & 69 & 0.275 & 0.401 & 0.343 & 0.569 & 0.646 \\
- & OSNet$+$ctx & 69 & \textbf{0.826} & \textbf{0.647} & \textbf{0.739} & 0.601 & 0.631 \\
+
+ OSNet$+$ctx & 69 & \textbf{0.826} & \textbf{0.647} & \textbf{0.739} & 0.601 & 0.631 \\
+
 \midrule
+
 \multirow{2}{*}{B (appear.)} & \hybrid{}     & 82 & 0.274 & 0.403 & 0.342 & 0.574 & 0.640 \\
- & OSNet$+$ctx & 82 & \textbf{0.671} & \textbf{0.570} & \textbf{0.663} & 0.594 & 0.609 \\
+
+ OSNet$+$ctx & 82 & \textbf{0.671} & \textbf{0.570} & \textbf{0.663} & 0.594 & 0.609 \\
+
 \bottomrule
+
 \end{tabular}
+
 \caption{\hybrid{} vs OSNet$+$ctx on synthetic revisit; $F_1$ at validation threshold. One seed, five walls, no resampling: checkpoint, not stability claim. \hybrid{} $\neq$ Table~\ref{tab:main} \ours{}.}
+
 \label{tab:hybrid}
+
 \end{table}
 
-OSNet$+$ctx dominates ranking/open-set ($0.826/0.671$ and $0.739/0.663$ vs $0.275/0.274$ and $0.343/0.342$), while \hybrid{} holds assignment $F_1^a$ ($0.646/0.640$ vs $0.631/0.609$) with pairwise $F_1^{@v}$ close ($0.569/0.574$ vs $0.601/0.594$); no assignment cell came from pure homography alone ($H\%{=}0.0$). Ordering thus reverses with metric (RQ3): the Table~\ref{tab:main} advantage does not imply multi-visit robustness, and single-seed controlled growth does not establish real progression performance.
+
+
+In the ranking/open-set cases OSNet$+$ctx does better (the figures being 0.826/0.671 and 0.739/0.663 as compared to 0.275/0.274 and 0.343/0.342), while \hybrid{} achieves a higher assignment $F_1^a$ (0.646/0.640 compared to 0.631/0.609) and the pairwise $F_1^{@v}$ values are very similar (0.569/0.574 versus 0.601/0.594); no assignment cell came from pure homography alone ($H\%{=}0.0$). Ordering thus reverses with metric (RQ3): the Table~\ref{tab:main} advantage does not imply multi-visit robustness, and single-seed controlled growth does not establish real progression performance.
+

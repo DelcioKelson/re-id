@@ -1,7 +1,7 @@
 \section{A Geometric Reference Baseline}
 \label{sec:method}
 
-The baseline tests whether crack location on the wall supports association: it aligns wall surfaces to a common frame and compares projected crack masks. It assumes an approximately planar wall and uses no \textsc{CrackID} training. Shared UNet++ masks (trained on public crack data only; no \textsc{CrackID} wall in training) with $200$\,px / $5$\,px instance extraction keep inputs consistent across methods (full segmenter settings in code). Masks are treated as given; their error is not quantified.
+The baseline test examines whether the location of cracks on the wall is associated with the model: it aligns the wall surfaces to a common frame and then compares the projected crack masks. It makes the assumption of a roughly planar wall and does not use any \textsc{CrackID} training. The shared UNet++ masks (which were trained on public crack data only; none of the walls in the training set were from \textsc{CrackID}) use instance extraction at rates of 200 px and 5 px in order to maintain consistency of the inputs across the different methods (the full segmenter settings are given in the code). The masks are taken as given and their error is not measured.
 
 \subsection{Registration using wall texture}
 
@@ -9,7 +9,7 @@ For $I_a,I_b$, a homography $H$ ($x'{\sim}Hx$) is estimated from surrounding wal
 
 \subsection{Registration cascade and validity checks}
 
-Textured render usually supplies background features; smooth plaster may not. A three-stage cascade is used: masked SIFT, unmasked-SIFT fallback if too few keypoints remain (flagged per pair since the crack then aids alignment), and ECC photometric fallback. Candidates pass plausibility checks (no mirrored/folded quads, scale within $[1/16,16]$); the surviving stage is recorded per pair and its inlier RMSE sets the comparison tolerance. Unscored pairs are unresolved lack of evidence, not proof of different defects.
+Background features are generally provided by textured rendering, whereas smooth plaster is not. A three-stage cascade is employed: first, masked SIFT; if too few keypoints remain, then unmasked-SIFT is used as a fallback (this is flagged on a per-pair basis since the crack helps with alignment); and as a final fallback, ECC photometric methods are applied. The candidate images pass plausibility tests (ensuring there are no mirrored or folded quads and that the scale is within the interval [1/16,16]); the stage that survives for each pair is recorded and the inlier RMSE from that stage determines the comparison tolerance. Pairs that are not scored are considered cases of lack of evidence, not evidence that the defects are different.
 
 \subsection{Crack projection and geometric comparison}
 \label{sec:chamfer}
@@ -21,8 +21,8 @@ D(a,b) = \tfrac{1}{2}\!\left[
 \frac{1}{|b|}\sum_{q \in b} d(q, a)\right],
 \label{eq:chamfer}
 \end{equation}
-with early rejection of distant candidates. Chamfer coverage (fraction within tolerance $\tau$ from per-pair RMSE, clamped $[2,16]$\,px, default $6$\,px; \hybrid{} fixes $8.0$\,px) is evaluated separately as the scale-free counterpart (Sec.~\ref{sec:chamferablation}).
+The early rejection of distant candidates is considered, and chamfer coverage (the fraction within tolerance $\tau$ of the per-pair RMSE, clamped within the range $[2,16]$ pixels, with the default value at 6 pixels; \hybrid{} uses 8.0 pixels) is assessed separately as its scale-free counterpart (see Sec.~\ref{sec:chamferablation}).
 
 \subsection{Correspondence decisions and limits of spatial evidence}
 
-Hungarian one-to-one assignment~\cite{kuhn1955hungarian} per image pair plus validation threshold (evaluation, identical for all methods); unscored pairs receive $-\infty$ (predicted negative / rank-last per Sec.~\ref{sec:protocol}). An aligned projection into visibly empty wall is a \textbf{licensed negative}---positive evidence of absence, stronger than low embedding similarity---while missed detections, out-of-frame regions, and registration failures stay unresolved. \ours{} targets unchanged damage; progression uses \hybrid{}. Performance is conditional on surface-dependent failures and homography-based annotation provenance.
+For each image pair a one-to-one assignment is made according to the Hungarian method~\cite{kuhn1955hungarian} together with a validation threshold (this is the same for all the methods); pairs that are not scored are given a value of $-\infty$ (this is the predicted negative and corresponds to ranking last as described in Sec.~\ref{sec:protocol}). An aligned projection onto a wall that is visibly empty is considered a \textbf{licensed negative}—that is, evidence of absence which is stronger than a low embedding similarity—while missed detections, areas outside the frame, and registration failures remain unresolved. The \ours{} method focuses on damage that is unchanged; the one that deals with progression uses \hybrid{}. The performance depends on surface-dependent failures and on the homography-based annotation provenance.
