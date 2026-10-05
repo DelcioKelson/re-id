@@ -1,18 +1,42 @@
 \section{Data Acquisition}
+
 \label{sec:dataset}
 
+
+
 \subsection{Acquisition and composition}
-The \textsc{CrackID} frozen benchmark snapshot holds 140 photographs of 17 exterior walls at one site over four half-days (two consumer handsets; archived at Mendeley Data). Walls span stippled render (textured) and smooth painted plaster (often crack-only in frame). Split: 6 validation walls wall01--wall06 (66 photos, 66 identities) and 11 test walls wall07--wall17 (74 photos, 146 identities); only identities in ${\geq}2$ photos yield answerable queries (18 val, 19 test; $n_Q{=}280$ test, $439$ val). Two walls added later (wall18--wall19) are excluded from every number in this paper. Each wall is one continuous walk-around (median $3$\,s between consecutive frames, max span $81$\,s), so the data measures within-visit viewpoint/scale correspondence, a hypothesized upper bound on multi-visit performance.
+
+
+
+The \textsc{CrackID} frozen benchmark snapshot consists of 140 photographs of 17 exterior walls which were taken at a single location over four half-days using two consumer handheld devices (the data can be obtained through Mendeley Data~\cite{ferramenta2026crackid}). The walls have both stippled render (textured) and smooth painted plaster; in the case of the smooth plaster, the only visible features are cracks. The dataset is split into six validation walls (walls 01 to 06; 66 photos, 66 identities) and eleven test walls (walls 07 to 17; 74 photos, 146 identities). Only those identities that appear in at least two photographs are considered to be answerable queries (18 in the validation set and 19 in the test set; $n_Q{=}305$ in the test set and $439$ in the validation set). Additionally, two further walls (walls 18 and 19) have been included and are therefore omitted from all the figures in this paper. Each wall is recorded by a continuous walk-around, with a median time interval of 3 seconds between consecutive frames and a maximum duration of 81 seconds; it is for this reason that the data includes within-visit viewpoint and scale correspondence, which is regarded as an upper bound on multi-visit performance.
+
+
 
 \smallskip
-\noindent\emph{Adjacent-frame retrieval.} $100\%$ of $280$ answerable test queries are answered by the adjacent frame; Sec.~\ref{sec:results} gap sweeps ($280{\to}205{\to}149{\to}105$ for gaps $0{\to}3$) find flat Rank-1 on a shrinking pool, characterising short-baseline robustness rather than proving irrelevance.
+
+Adjacent-frame retrieval. In the case of the 305 test queries which did have an answer, we use the adjacent frame as the starting point for the retrieval process. As the gaps shown in Section~\ref{sec:results} (ranging from 305 down to 205, then to 149 and finally to 105 for the gaps numbered 0 to 3) make clear, Rank-1 is still achieved as the number of items decreases. This result shows that the method is robust in the face of short-baseline variations rather than indicating a lack of relevance.
+
+
 
 \subsection{Annotation, and why it needs auditing}
+
 \label{sec:annotation}
-One click per crack is propagated across consecutive frames via ORB homography plus one-to-one assignment, then fragment merges join components of one physical crack. Merge risk concentrates here: a wrong join turns a hard negative into a free positive for \emph{every} method. We report extent, not correctness: $95/212$ identities ($45\%$; $70/146$, $48\%$ on test) come from merges, with median bridged gaps of $228$\,px (test) and $286$\,px (val). A single annotator validated all clicks with full triage of unclaimed points ($107/1\,023$ naming no crack; full counts in supplement); agreement is unmeasured, so merge risk is bounded by reporting, not removed. Counts refer to the frozen snapshot (Table~\ref{tab:units}); the live \texttt{dataset/labels/} has since been re-edited (wall18--wall19 added, changelog rebuilt without gap fields) and no longer reproduces these counts until the benchmark is re-run.
+
+
+
+The ORB homography method operates one-to-one, so for each crack, a single click passes from one frame to the next, and the fragment then combines the segments that constitute the individual physical crack. The greatest risk of an incorrect merge is at this stage, such as changing a hard negative into a free positive. Although the number of merges is provided, their accuracy is not. More precisely, 95 of the 212 identities (45%; 70 out of 146, 48% in the test set) result from merges, with median bridged gaps of 228 pixels in the test set and 286 pixels in the validation set. One annotator examined all clicks and thoroughly triaged the unclaimed points (107 out of 1,023 were classified as no crack; full details are in the suAlthoughas a result of the rep reduces inter-annotator agreementortindoesproceeliminate it entirelyy eliminated. The figures refer to the frozen snapshot (Table~\ref{tab:units}); the live \texttt{dataset/labels/} directory has since been updated (rows 18 and 19 have been added and the changelog has been rebuilt without the gap fields). It will not display these figures until you run the benchmark again.
+
+
+
 \begin{figure}[t]
+
 \centering
+
 \includegraphics[width=0.85\columnwidth]{figs/dataset_examples.pdf}
-\caption{Real \textsc{CrackID} captures. Top: one identity in non-adjacent frames. Bottom: stippled render vs smooth plaster. Labels use homography propagation; illustrative, not an independent audit.}
+
+The images shown here are real CrackID images; the top one shows a single identity spanning non-adjacent frames, while the bottom one shows the stippled render alongside the smooth plaster. The labels were obtained via homography propagation and have not been independently audited.
+
 \label{fig:dataset-examples}
+
 \end{figure}
+

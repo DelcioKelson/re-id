@@ -1,60 +1,217 @@
 \section{The Appearance Ceiling}
+
+
+
 \label{sec:ceiling}
 
+
+
+
+
+
+
 \begin{table*}[t]
+
+
+
 \centering
-%    10 or 12-token rows ... The prefixed comment must stay stable.
+
+% Each row contains 10 or 12 tokens. The preceding comment for each row must remain unchanged.
 % (see verify_claims.py parse_results_table strictness notes)
-\caption{\textbf{Main result} on \textsc{CrackID} test ($n_Q{=}280$ over 11 walls; frozen snapshot).
-$F_1^{*}$ is oracle-thresholded on test; $\Delta F_1^{*}$ is excess over the full-pool $0.305$ floor;
-$F_1^{@v}$ uses the validation-calibrated threshold. Bold: best crop row per column.
-The geometric row is scored on a $0.48$ subset whose own floor is $0.544$, so its $\Delta F_1^{*}$ is not comparable to crop rows; see Sec.~\ref{sec:coverage}.
-Scoring, chance levels, and costs: Sec.~\ref{sec:protocol}--\ref{sec:coverage}. s/query $=$ total\_s$/280$ on one workstation (relative timings only).}
+
+\caption{\textbf{Main result} on \textsc{CrackID} test (11 walls; frozen snapshot, $n_Q{=}305$). $F_1^{*}$ is computed using an oracle threshold on the test set; $\Delta F_1^{*}$ represents the excess over the full-pool floor. $F_1^{@v}$ is calculated using the validation-calibrated threshold. Bold font indicates the best crop row in each column. The geometric row is based on a subset of size $0.48$ with a floor of $0.544$. Therefore, its $\Delta F_1^{*}$ is not directly comparable to that of the crop rows; see Sec.~\ref{sec:coverage}. For details on scoring, chance levels, and computational costs, refer to Sec.~\ref{sec:protocol} through Sec.~\ref{sec:coverage}. The metric s/query is defined as total\_s$/n_Q$ on a single workstation (relative timings only).}
+
+
+
 \label{tab:main}
+
+
+
 \small
+
+
+
 \begin{tabular}{llcccccccr}
+
+
+
 \toprule
+
+
+
 Method & Family & R@1 & mAP & DIR@FAR$=$0.1 & $F_1^{*}$ & $\Delta F_1^{*}$ & $F_1^{@v}$ & scored & s/query \\
+
+
+
 \midrule
+
+
+
 \rowcolor{black!8}
+
+
+
 \multicolumn{10}{l}{\emph{Reference level (same $0.48$ pool as geometry)}} \\
+
+
+
 \rowcolor{black!8}
+
+
+
 \coverage{} & geometry & 0.515 & 0.533 & 0.000 & 0.544 & 0.239 & 0.544 & 0.48 & --- \\
+
+
+
 \midrule
+
+
+
 \multicolumn{10}{l}{\emph{Crop scope}} \\
-ORB~\cite{rublee2011orb}            & keypoint   & 0.352 & 0.364 & 0.018 & 0.305 & 0.000 & 0.305 & 1.00 & 0.038 \\
-SIFT~\cite{lowe2004sift}            & keypoint   & 0.432 & 0.417 & 0.036 & 0.313 & 0.008 & 0.305 & 1.00 & 0.086 \\
-SuperGlue~\cite{sarlin2020superglue}& learned    & 0.562 & 0.455 & \best{0.429} & 0.353 & 0.048 & 0.305 & 1.00 & 5.826 \\
-LoFTR~\cite{sun2021loftr}           & learned    & 0.549 & 0.440 & 0.336 & 0.359 & 0.054 & 0.351 & 1.00 & 8.639 \\
-YOLOv8 backbone~\cite{jocher2023ultralytics} & embedding  & 0.561 & 0.453 & 0.157 & \best{0.357} & \best{0.052} & 0.308 & 1.00 & 0.217 \\
-ViT-B/16~\cite{dosovitskiy2021vit}  & embedding  & \best{0.654} & 0.511 & 0.286 & 0.331 & 0.026 & 0.317 & 1.00 & 0.193 \\
-DeiT-S~\cite{touvron2021deit}       & embedding  & 0.621 & 0.497 & 0.250 & 0.305 & 0.000 & 0.293 & 1.00 & 0.058 \\
+
+
+
+ORB~\cite{rublee2011orb}            & keypoint   & 0.370 & 0.372 & 0.043 & 0.337 & 0.032 & 0.337 & 1.00 & 0.077 \\
+
+
+
+SIFT~\cite{lowe2004sift}            & keypoint   & 0.420 & 0.408 & 0.049 & 0.343 & 0.038 & 0.337 & 1.00 & 0.155 \\
+
+
+
+SuperGlue~\cite{sarlin2020superglue}& learned    & 0.518 & 0.434 & \best{0.384} & 0.357 & 0.052 & 0.337 & 1.00 & 5.196 \\
+
+
+
+LoFTR~\cite{sun2021loftr}           & learned    & 0.512 & 0.424 & 0.285 & 0.357 & 0.052 & 0.337 & 1.00 & 7.190 \\
+
+
+
+YOLOv8 backbone~\cite{jocher2023ultralytics} & embedding  & 0.525 & 0.439 & 0.134 & \best{0.374} & \best{0.069} & 0.338 & 1.00 & 0.016 \\
+
+
+
+ViT-B/16~\cite{dosovitskiy2021vit}  & embedding  & \best{0.613} & 0.487 & 0.259 & 0.344 & 0.039 & 0.336 & 1.00 & 0.021 \\
+
+
+
+DeiT-S~\cite{touvron2021deit}       & embedding  & 0.570 & 0.479 & 0.223 & 0.337 & 0.032 & 0.337 & 1.00 & 0.008 \\
+
+
+
 CLIP ViT-B/32~\cite{radford2021clip}& embedding  & 0.604 & 0.471 & 0.143 & 0.307 & 0.002 & 0.306 & 1.00 & 0.050 \\
-DINOv2~\cite{oquab2024dinov2}      & embedding  & 0.607 & 0.484 & 0.307 & 0.305 & 0.000 & 0.297 & 1.00 & 0.011 \\
-OSNet~\cite{zhou2019osnet}          & re-ID      & \best{0.654} & \best{0.520} & 0.168 & 0.309 & 0.004 & 0.309 & 1.00 & 0.053 \\
+
+
+
+DINOv2~\cite{oquab2024dinov2}      & embedding  & 0.567 & 0.459 & 0.272 & 0.337 & 0.032 & 0.331 & 1.00 & 0.011 \\
+
+
+
+OSNet~\cite{zhou2019osnet}          & re-ID      & 0.603 & \best{0.497} & 0.154 & 0.338 & 0.033 & 0.337 & 1.00 & 0.006 \\
+
+
+
 \midrule
+
+
+
 \rowcolor{black!5}
+
+
+
 \multicolumn{10}{l}{\emph{Full-image scope}} \\
+
+
+
 \rowcolor{black!5}
+
+
+
 \ours{} (reference) & geometry & 0.952 & 0.886 & 0.768 & 0.656 & --- & 0.582 & 0.48 & 27.92 \\
+
+
+
 \bottomrule
+
+
+
 \end{tabular}
+
+
+
 \end{table*}
 
+
+
+
+
+
+
 \subsection{Setup}
+
+
+
 \label{sec:setup}
-Ten methods operate on crack-centred crops under a shared validity mask: SIFT/ORB with RANSAC inliers, SuperGlue/LoFTR with pretrained indoor configs, five embeddings plus re-ID OSNet (cosine similarity, all zero-shot on \textsc{CrackID}; YOLOv8 is layer-$9$ \texttt{yolov8n.pt} features). Full input sizes and checkpoints are in code. Context controls use OSNet and CLIP at fixed backbone: \texttt{@ctx1} expands the instance box by $1{\times}$ per side, \texttt{@ctx1@nocrack} inpaints the crack in the same view, isolating wall context. \ours{} registers walls and compares projected masks (Sec.~\ref{sec:method}); a \coverage{} control scores registered pairs constant without inspecting cracks. The synthetic protocol compares OSNet with context against the distinct \hybrid{} configuration. LightGlue and NetVLAD are left as future retrieval baselines.
+
+
+
+The ten methods are assessed using crack-centred crops and a common validity mask: SIFT and ORB together with RANSAC inliers, SuperGlue and LoFTR using pretrained indoor settings, five embedding-based methods, and re-ID OSNet (using cosine similarity, with all being zero-shot on \textsc{CrackID}); YOLOv8 makes use of the layer-9 \texttt{yolov8n.pt} features. The full input sizes and checkpoints are given in the code repository. For the context controls, OSNet and CLIP are used with a fixed backbone: \texttt{@ctx1} increases the size of the instance box by $1{\times}$ in each direction, and \texttt{@ctx1@nocrack} fills in the crack in the same view in order to isolate the wall context. The \ours{} method aligns the walls and then compares the projected masks (as described in Sec.~\ref{sec:method}); the \coverage{} control assigns a constant score to the registered pairs without examining the cracks. In the synthetic protocol, OSNet with context is compared to the different \hybrid{} configuration. LightGlue and NetVLAD are regarded as future retrieval baselines.
+
+
+
+
+
+
 
 \subsection{Result: appearance buys almost nothing on the decision}
-Table~\ref{tab:main} summarises the primary benchmark ($n_Q{=}280$ answerable test queries over 11 walls; frozen snapshot). Rank-1 spans $0.352$--$0.654$ (ViT-B/16 and OSNet tied best; OSNet best mAP at $0.520$; SuperGlue best crop DIR@FAR$=0.1$ at $0.429$), yet oracle $F_1^{*}$ spans only $0.305$--$0.359$ ($+0.000$ to $+0.054$ over the $0.305$ floor), and validation-calibrated $F_1^{@v}$ spans $0.293$--$0.351$ with two rows below the floor (DeiT, DINOv2): ranking does not transfer to deciding. The post-calibration collapse is consistent with threshold instability on a small wall-clustered sample compounded by a validation-to-test prevalence shift ($0.292{\to}0.180$; floors $0.452{\to}0.305$); the threshold-free check (pairwise AP/AUROC) awaits the score-matrix release (Sec.~\ref{sec:validity}). With $19$ matchable test identities, no fine ranking among crop rows is claimed. All figures are point estimates.
+
+
+
+The primary benchmark results, as shown in Table~\ref{tab:main} (11 walls; frozen snapshot; $n_Q{=}305$ answerable test queries), show that the Rank-1 performance varies between $0.370$ and $0.613$ (ViT-B/16 obtains the highest score; OSNet achieves the best mAP at $0.497$; SuperGlue gives the best crop DIR@FAR$=0.1$ at $0.384$). Yet the oracle $F_1^{*}$ is in the range from $0.337$ to $0.374$ and the validation-calibrated $F_1^{@v}$ lies between $0.331$ and $0.338$, which shows that good ranking performance does not imply accurate decision-making. The small range of the validation-calibrated $F_1$ indicates difficulties in transferring a decision threshold across the walls. With 19 matchable test identities, no fine-grained ranking among the crop rows is claimed. All the values reported are point estimates.
+
+
+
+
+
+
 
 \subsection{Is it the crack, or the wall behind it?}
+
+
+
 \label{sec:controls}
-Context helps ranking and open-set but erasure keeps most of it: OSNet Rank-1 $0.654{\to}0.775$ ($0.711$ erased), DIR@FAR $0.168{\to}0.404$ ($0.393$ erased); CLIP open-set $0.143{\to}0.311$ ($0.286$ erased). Both erased views still beat every tight crop: the cue is wall location. Pairwise $F_1^{*}$ stays in the narrow band $0.307$--$0.361$ across base, context, and erased views while open-set moves $+0.236$ for OSNet, so (RQ1/RQ2) methods retrieve within-visit observations but reliable automatic identity decisions remain limited; a ranked list may assist an operator while acceptance needs further evidence.
+
+
+
+Contextual information has a positive effect on both ranking and open-set performance, yet even when it is removed the majority of this benefit is still retained: OSNet's Rank-1 score rises from 0.654 to 0.775 (it reaches 0.711 when the context is removed), DIR@FAR increases from 0.168 to 0.404 (it is 0.393 when the context is removed), and CLIP's open-set performance improves from 0.143 to 0.311 (it amounts to 0.286 when the context is removed). The two views that have the context removed outperform all the methods which use tight crops, indicating that the wall location is the main clue. The pairwise $F_1^{*}$ remains within a narrow range (from 0.307 to 0.361) for the base, context, and erased views, while open-set performance improves by +0.236 for OSNet. Nevertheless, although the methods examined are capable of retrieving within-visit observations, reliable automatic identity decisions are still not possible. A ranked list may be of some help to an operator, but acceptance will need more evidence.
+
+
+
+
+
+
 
 \begin{figure}[t]
+
+
+
 \centering
+
+
+
 \includegraphics[width=\columnwidth]{figs/ceiling.pdf}
-\caption{The appearance ceiling: pairwise $F_1^{*}$ stays at the $0.305$ floor while ranking spreads $0.30$. Geometry (red) leaves the band but on the $0.48$ pool (own floor $0.544$). Point estimates on $n_Q{=}280$; Table~\ref{tab:main} takes precedence.}
+
+
+
+\caption{The appearance ceiling: pairwise $F_1^{*}$ stays narrow while ranking spreads. Geometry (red) leaves the band but is in the $0.48$ pool (own floor $0.544$). Table~\ref{tab:main} takes precedence.}
+
+
+
 \label{fig:ceiling}
+
+
+
 \end{figure}
+
+
+
