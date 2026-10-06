@@ -2,13 +2,9 @@
 
 \label{sec:results}
 
-
-
 \subsection{Main comparison and the open-set gap}
 
-Geometry achieves a Rank-1 score of 0.952 as compared to the best crop result of 0.613 (ViT-B/16) and has an mAP of 0.886 compared to 0.497 (OSNet), its coverage being 0.48 rather than 1.00. Once the coverage is exceeded, the ranking improvements are still obtained but the open-set gains are not: at a FAR of 0.1, DIR is 0.768 as against 0.384 (SuperGlue), 0.404 (the best OSNet+ctx1), and 0.000 for coverage (the chance level being 0.038). In the case of hairlines, crop similarities almost never reject and aligned empty projections act as valid negatives. The time cost is 7.19 seconds per query (LoFTR) as against 0.006 seconds per query (OSNet); geometry takes 27.9 seconds per query and 26.0 seconds per pair (in the case of relative only; SuperGlue and LoFTR were timed separately). With respect to RQ2, alignment enables identification beyond coverage, provided that success, surface, and provenance are taken into account. The point estimates are based on 19 identities.
-
-
+Geometry attains a Rank-1 score of 0.952 as compared to the best crop result of 0.613 (ViT-B/16) and an mAP of 0.886 compared to 0.497 (OSNet), with a coverage of 0.48 rather than 1.00. After coverage has been exceeded, ranking improvements continue but open-set gains do not: at a FAR of 0.1, DIR is 0.768 as against 0.384 (SuperGlue), 0.404 (the best OSNet+ctx1), and 0.000 for coverage (the chance level being 0.038). In the case of hairline cracks, crop similarities almost never reject, and aligned empty projections function as valid negatives. The time cost is 7.19 seconds per query (LoFTR) as opposed to 0.006 seconds per query (OSNet); geometry requires 27.9 seconds per query and 26.0 seconds per pair (these times being those obtained on one workstation only; SuperGlue and LoFTR were timed in a separate run). With regard to RQ2, alignment allows identification beyond coverage, on the condition that we take into account success, surface, and provenance. The point estimates are based on 19 identities.
 
 \subsection{Coverage, failures, and ablations}
 
@@ -16,17 +12,13 @@ Geometry achieves a Rank-1 score of 0.952 as compared to the best crop result of
 
 \label{sec:chamferablation}
 
-Crops achieve 100\% of the pairs while geometry reaches 48\%. Unscored pairs receive a negative score and are assigned the lowest rank. Censoring has the effect of reducing the accuracy of the ranking but increases the pairwise $F_{1}$: the scored sets retain 100\% of the positives but only 36.8\% of the negatives (prevalence ranging from 0.180 to 0.373; floor ranging from 0.305 to 0.544). The coverage-only approach yields an $F_{1}$ of 0.544, a mAP of 0.533, and a Rank-1 of 0.515, so almost all of the ranking and pairwise performance comes down to \emph{which pairs align}; the only exception is the open-set lead (0.768 versus 0.000). The failures are dependent on the wall (being zero on two of the test walls; a per-wall table is provided with the code). All 305 queries are answered by adjacent frames, so the ranking is based on a short baseline; the gap sweeps (going from 305 down to 105 at a gap of 3) maintain Rank-1. Registration is determined by sharpness rather than by frame gap (Wald z = 5.11, p = $3.3\times10^{-7}$ versus z = -2.78, p = $5.4\times10^{-3}$); with sharpness at least 10, registration is achieved in 56.1\% of the cases when one wall is removed from the filtered set. Scale-free coverage results in a loss of 0.240 mAP and 0.103 Rank-1 when compared to Chamfer (DIR increased by +0.014). When crack exclusion is disabled, the ranking remains unchanged but the DIR increases by +0.057; masking is retained for the sake of independence. ECC contributes approximately 0.03 to Rank-1 and 0.02 to mAP. The total time is 26.0 seconds per pair (7817.3 seconds over 301 pairs; 27.9 seconds per query as given in Table~\ref{tab:main}), which is about three times slower than LoFTR and more than 100 times slower than the cheapest embedding.
-
-
+Crops achieve 100\% of the pairs while geometry reaches 48\%. Unscored pairs receive a negative score and are assigned the lowest rank. Censoring reduces ranking accuracy. Still, it increases the pairwise $F_{1}$: the scored sets retain 100\% of the positives but only 36.8\% of the negatives (prevalence ranging from 0.180 to 0.373; floor ranging from 0.305 to 0.544). The coverage-only approach yields an $F_{1}$ of 0.544, a mAP of 0.533, and a Rank-1 of 0.515, so almost all of the ranking and pairwise performance comes down to \emph{which pairs align}; the only exception is the open-set lead (0.768 versus 0.000). The failures depend on the wall (zero on two test walls; a per-wall table is provided with the code). Adjacent frames answer all 305 queries, so the ranking is based on a short baseline; the gap sweeps (going from 305 down to 105 at a gap of 3) maintain Rank-1. Registration is determined by sharpness rather than by frame gap (Wald z = 5.11, p = $3.3\times10^{-7}$ versus z = -2.78, p = $5.4\times10^{-3}$); with sharpness at least 10, registration is achieved in 56.1\% of the cases when one wall is removed from the filtered set. Scale-free coverage results in a loss of 0.240 mAP and 0.103 Rank-1 when compared to Chamfer (DIR increased by +0.014). When crack exclusion is disabled, the ranking remains unchanged, but DIR increases by +0.057; masking is retained for independence. ECC contributes approximately 0.03 to Rank-1 and 0.02 to mAP. The total time is 26.0 seconds per pair (7817.3 seconds over 301 pairs; 27.9 seconds per query as given in Table~\ref{tab:main}), which is about three times slower than LoFTR and more than 100 times slower than the cheapest embedding.
 
 \subsection{A synthetic revisit protocol}
 
 \label{sec:hybridbench}
 
-Ten source photos taken from five walls (with one seed) are subjected to the same minor warp in either case (A) under single-tip growth or (B) due to photometric corruption, and then are matched with the actual images (procedure with code; p90 tilt $75^{\circ}$). \hybrid{} differs from \ours{} as shown in Table~\ref{tab:main}. Table~\ref{tab:hybrid} provides a comparison between \hybrid{} and OSNet+ctx.
-
-
+Ten source photos taken from five walls (with one seed) are subjected to the same minor warp in either case (A) under single-tip growth or (B) due to photometric corruption, and then are matched with the actual images (procedure with code; p90 tilt $75^{\circ}$). \hybrid{} differs from \ours{} as shown in Table~\ref{tab:main}. Table~\ref{tab:hybrid} compares \hybrid{} and OSNet+ctx.
 
 \begin{table}[t]
 
@@ -34,7 +26,7 @@ Ten source photos taken from five walls (with one seed) are subjected to the sam
 
 \footnotesize\setlength{\tabcolsep}{3pt}
 
- \caption{A comparison is given between \hybrid{} and OSNet+ctx in the case of the synthetic revisit scenario, with the $F_{1}$ score at the validation threshold; there is one seed and five walls, and the difference between \hybrid{} and \ours{} is as indicated in Table~\ref{tab:main}.}
+ \caption{Synthetic revisit scenario: \hybrid{} versus OSNet+ctx, with the $F_{1}$ score at the validation threshold; one seed and five walls. \hybrid{} differs from \ours{} as in Table~\ref{tab:main}.}
 
 \label{tab:hybrid}
 
@@ -64,7 +56,4 @@ Protocol & Method & $n_{q}$ & R@1 & mAP & DIR & $F_{1}^{@v}$ & $F_{1}^{a}$ \\
 
 \end{table}
 
-
-
-For the ranking/open-set OSNet+ctx results (0.826/0.671 and 0.739/0.663 as compared to 0.275/0.274 and 0.343/0.342), the \hybrid{} method attains a higher $F_{1}^{a}$ (0.646/0.640 compared to 0.631/0.609) and its $F_{1}^{@v}$ is also similar (0.569/0.574 versus 0.601/0.594); no cell corresponds to the pure homography case (H = 0.0\%). However, the order is reversed when the metric is considered (RQ3): the table in Table~\ref{tab:main} shows no evidence of multi-visit robustness.
-
+For the ranking/open-set OSNet+ctx results (0.826/0.671 and 0.739/0.663 as compared to 0.275/0.274 and 0.343/0.342), the \hybrid{} method attains a higher $F_{1}^{a}$ (0.646/0.640 compared to 0.631/0.609) and its $F_{1}^{@v}$ is also similar (0.569/0.574 versus 0.601/0.594); no cell corresponds to the pure homography case (H = 0.0\%). However, the order is reversed when the metric is considered (RQ3): Table~\ref{tab:main} shows no evidence of multi-visit robustness.

@@ -2,27 +2,19 @@
 
 \label{sec:dataset}
 
-
-
 \subsection{Acquisition and composition}
 
-The \textsc{CrackID} frozen benchmark snapshot consists of 140 photographs of 17 exterior walls that were taken at a single site over four half-days using two consumer handheld devices (Mendeley Data~\cite{ferramenta2026crackid}; Fig.~\ref{fig:dataset-examples}). The walls are either stippled render (textured) or smooth painted plaster and the only features that are visible are cracks. The dataset is divided such that six walls are used for validation (walls 01 to 06; 66 photos, 66 identities) and eleven walls for testing (walls 07 to 17; 74 photos, 146 identities). Only those identities that appear in at least two photographs are included in the answerable queries (18 validation, 19 test; $n_{Q}{=}439$ validation and $305$ test queries). Walls 18 and 19 were added afterwards to the dataset and are therefore excluded from all the results. Each wall was photographed during a continuous walk-around (with a median time of 3 seconds between frames and a maximum of 81 seconds); the data include within-visit viewpoint and scale correspondences, which represents an upper bound on the performance that can be achieved with multiple visits.
-
-
+The \textsc{CrackID} frozen benchmark snapshot consists of 140 photographs of 17 exterior walls that were taken at a single site over four half-days using two consumer handheld devices (Mendeley Data~\cite{ferramenta2026crackid}; Fig.~\ref{fig:dataset-examples}). The walls are either stippled render (textured) or smooth painted plaster, and the only features that are visible are cracks. The dataset is divided such that six walls are used for validation (walls 01 to 06; 66 photos, 66 identities) and eleven walls for testing (walls 07 to 17; 74 photos, 146 identities). Only those identities that appear in at least two photographs are included in the answerable queries (18 validation, 19 test; $n_{Q}{=}439$ validation and $305$ test queries). Walls 18 and 19 were added afterward to the dataset and are therefore excluded from all the results. Each wall was photographed during a continuous walk-around (with a median time of 3 seconds between frames and a maximum of 81 seconds); the data include within-visit viewpoint and scale correspondences, providing an upper bound on achievable multi-visit performance.
 
 \smallskip
 
 For adjacent-frame retrieval, the gallery includes the adjacent frame for all 305 test queries for which an answer is required. The gap sweeps described in Sec.~\ref{sec:coverage} (involving 305 queries down to 205, then to 149, and finally to 105 for gaps 0–3) maintain Rank-1 as the number of items in the pool decreases, which shows that the method is robust when faced with short baselines.
 
-
-
 \subsection{Annotation, and why it needs auditing}
 
 \label{sec:annotation}
 
-The ORB homography method carries each single click from frame to frame and then combines the fragments to form physical-crack identities; the merging process is the greatest risk (since an incorrect merge can turn a hard negative into a false positive). In the frozen snapshot, 95 of the 212 identities (45\%; 70 of 146, 48\% in the test case) result from merges, with median bridged gaps of 228 pixels (test) and 286 pixels (validation). One annotator examined all the clicks and sorted the unclaimed points (107 of the 1,023 were classified as no crack; the details are archived with the code). Although single-annotator triage reduces the merge risk, it does not eliminate it. All the figures refer to the frozen snapshot (Table~\ref{tab:units}); the live \texttt{dataset/labels/} directory includes walls 18--19 and must not be combined with the frozen figures without first re-running the benchmark.
-
-
+The ORB homography method carries every single click from frame to frame and then combines the fragments to form physical-crack identities; the merging process is the greatest risk (since an incorrect merge can turn a hard negative into a false positive). In the frozen snapshot, 95 of the 212 identities (45\%; 70 of 146, 48\% in the test case) result from merges, with median bridged gaps of 228 pixels (test) and 286 pixels (validation). One annotator examined all the clicks and sorted the unclaimed points (107 of the 1,023 were classified as no crack; the details are archived with the code). Although single-annotator triage reduces the merge risk, it does not eliminate it. All the figures refer to the frozen snapshot (Table~\ref{tab:units}); the live \texttt{dataset/labels/} directory includes walls 18--19 and must not be combined with the frozen figures without first re-running the benchmark.
 
 \begin{figure}[t]
 
@@ -35,4 +27,3 @@ The ORB homography method carries each single click from frame to frame and then
 \label{fig:dataset-examples}
 
 \end{figure}
-

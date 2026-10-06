@@ -4,17 +4,11 @@
 
 The benchmark assesses visual association by determining, for a new crack observation, whether it matches one of the recorded defects; since annotated identities serve as a stand-in for permanent defect records, the scores indicate the accuracy of the association rather than the reduction of duplicates at the ticket level.
 
-
-
 \subsection{Task formulation and candidate records}
 
-A wall is one physical wall; an identity links observations of the same crack (Sec.~\ref{sec:annotation}). A query is one crack instance; its gallery holds other instances from photos of the same known wall. Cross-wall search is excluded. A query is \textit{known} if its gallery contains the identity, it is \textit{unknown}. Each method scores query--gallery pairs for ranking, thresholded decisions, and identification with rejection. Pairs are the unit for pairs; image pairs for registration/assignment. The Hungarian one-to-one constraint applies per image pair only.
-
-
+A wall is one physical wall; an identity links observations of the same crack (Sec.~\ref{sec:annotation}). A query is one crack instance; its gallery holds other instances from photos of the same known wall. Cross-wall search is excluded. A query is \textit{known} if its gallery contains the identity; otherwise, it is \textit{unknown}. Each method scores query--gallery pairs for ranking, thresholded decisions, and identification with rejection. Pairs are the unit for pairwise decisions; image pairs are the unit for registration and assignment. The Hungarian one-to-one constraint applies per image pair only.
 
 Counts for the frozen snapshot (6 validation walls 01--06; 11 test walls 07--17; walls 18--19 excluded) are in Table~\ref{tab:units}. Registration covers all 301 same-wall test image pairs; 255 yield scored pairs with validity-mask cells (Sec.~\ref{sec:coverage}).
-
-
 
 \begin{table}[t]
 
@@ -54,13 +48,8 @@ Scored image pairs (with valid cells) & 341 & 255 \\
 
 \end{table}
 
-
-
 \subsection{Test conditions, decisions, and metrics}
 
 The primary test involves actual walk-arounds for each wall, assuming that the morphology remains unaltered; the only variations considered are viewpoint, distance, scale, lighting, and visibility, along with same-wall distractors and unknown queries. The validation and test walls are entirely separate. All the methods are used exactly as they are on the shared masks without any tuning of \textsc{CrackID} (see Sec.~\ref{sec:method}); the thresholds determined on the validation set are applied to the test set, considering only within-visit correspondence. A synthetic check is carried out to distinguish between photometric effects (condition B: blur/noise/contrast with unchanged structure) and growth effects (condition A: one tip extended) using ten photos taken from five walls with a single seed and a common warp (the parameters are available with the code), and this is done by comparing OSNet with context to \hybrid{} ($\tau{=}8.0$~px), which is different from \ours{}: this is only a preliminary check.
 
-
-
-Decisions: any pairs that exceed the threshold are accepted; for each query only the highest-ranking gallery entry that is above the threshold is accepted; for each image block the Hungarian assignment is used with those below the threshold being dropped. Unscorable pairs are retained (they are predicted to be negative for $F_{1}$ and are given the last rank in retrieval); a registration failure is defined as the absence of evidence, not as evidence of a new defect. The metrics used are Rank-1 and mean Average Precision (mAP); the pairwise $F_{1}$ is compared with the oracle $F_{1}^{*}$ versus the validation $F_{1}^{@v}$; the assignment $F_{1}^{a}$ is equal to $2\mathrm{TP}/(2\mathrm{TP}{+}\mathrm{FP}{+}\mathrm{FN})$; the open-set detection and identification rate (DIR) and false alarm rate (FAR) are reported with the DIR given at a FAR of 0.1; together with coverage (the fraction that is scored). The references include random ranking and the best-constant $F_{1}$ $2p/(1{+}p)$ (0.305 at a prevalence of 0.180; 0.544 on the 0.48 geometric subset; 0.452 in the validation at 0.292); the full chance levels are given in Table~\ref{tab:main}. Since there are 11 walls and 19 matchable identities we provide the point estimates (Sec.~\ref{sec:validity}).
-
+Decisions: any pairs that exceed the threshold are accepted; for each query, only the highest-ranking gallery entry that is above the threshold is accepted; for each image block, the Hungarian assignment is used with those below the threshold being dropped. Unscorable pairs are retained (they are predicted to be negative for $F_{1}$ and are given the last rank in retrieval); a registration failure is defined as the absence of evidence, not as evidence of a new defect. The metrics used are Rank-1 and mean Average Precision (mAP); the pairwise $F_{1}$ is compared with the oracle $F_{1}^{*}$ versus the validation $F_{1}^{@v}$; the assignment $F_{1}^{a}$ is equal to $2\mathrm{TP}/(2\mathrm{TP}{+}\mathrm{FP}{+}\mathrm{FN})$; the open-set detection and identification rate (DIR) and false alarm rate (FAR) are reported with the DIR given at a FAR of 0.1; together with coverage (the fraction that is scored). The references include random ranking and the best-constant $F_{1}$ $2p/(1{+}p)$ (0.305 at a prevalence of 0.180; 0.544 on the 0.48 geometric subset; 0.452 in the validation at 0.292); the full chance levels are given in Table~\ref{tab:main}. Since there are 11 walls and 19 matchable identities, we provide the point estimates (Sec.~\ref{sec:validity}).

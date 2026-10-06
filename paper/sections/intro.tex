@@ -1,30 +1,27 @@
 \section{Introduction}
 
-Ticket management systems arrange reports of physical defects into records so that they can be inspected, prioritized, interventions carried out and followed up on. Although each ticket should contain the history of a single incident, different users may take photographs of the same crack more than once, which results in duplicate tickets that disrupt the history and lead to redundant assessment work. Whenever a new observation is made it must either be linked to the existing ticket or a new ticket had to be created for damage that has not been recorded.
+Ticket management systems record reports of physical defects so that they can be inspected, prioritized, repaired, and followed up. Ideally, each ticket holds the history of a single incident. In practice, different users may photograph the same crack more than once, producing duplicate tickets that fragment this history and cause redundant assessment work. Every new observation must therefore either be linked to an existing ticket or open a new ticket for damage that has not yet been recorded.
 
+This is a visual re-identification (re-ID) problem with two difficulties. First, the same crack must be recognized despite changes in viewpoint, distance, field of view, illumination, and partial visibility. Second, a crack may itself change---by extending, widening, or branching---and must still be matched to its earlier observations, while genuinely new damage must be distinguished from growth of known damage. Errors in either direction lead to duplicate tickets or misattributed history.
 
+Existing work on crack detection and segmentation focuses on single images. Datasets such as CrackSeg9k~\cite{kulkarni2022crackseg9k} and OmniCrack30k~\cite{benz2024omnicrack30k} contain no cross-observation identities, so observations cannot be associated with tickets. Whether techniques from person and object re-ID~\cite{zhou2019osnet,qian2024reidtrends} transfer to cracks is untested, since different defects may look alike while a single defect can vary considerably in appearance.
 
-This is about the visual re-identification (re-ID) of photographic evidence in that (i) the same shape can be recognised even though there are variations in the angle of view, distance, field of view, illumination, or partial visibility and (ii) damage which has changed (by extending, widening or branching) must still be identified, together with the need to tell the difference between damage that has grown and new damage that has appeared. Mistakes in this process lead to duplicates or misattribution.
+To study this, we introduce \textsc{CrackID}: 140 photographs of 17 walls captured during a single visit (6 walls for validation and 11 for testing, with 19 test identities available for matching and $n_{Q}{=}305$ queries). Real photographs capture the acquisition changes that occur within a visit, whereas appearance and growth changes are probed only with synthetic images. Cross-visit evaluation on real photographs and ticket-level duplicate reduction are left for future work. All accuracy figures are point estimates from a small sample grouped by wall.
 
+We assess ten zero-shot matchers using \textsc{CrackID}. The protocol divides the process into two parts: the retrieval of candidate images and the decision as to whether two observations depict the same defect, and it includes open-set identification with rejection since a high rank by itself is not enough to associate a report with a ticket. To test whether matchers recognize the crack itself or only wall location, we use crack-erased control cases together with a geometric baseline which aligns the wall images and compares the projected crack masks.
 
+Three research questions guide the study:
 
-The existing methods for detecting and segmenting cracks are concentrated on dealing with individual images. Since datasets like CrackSeg9k~\cite{kulkarni2022crackseg9k} and OmniCrack30k~\cite{benz2024omnicrack30k} do not include cross-observation identities, it is not possible to associate observations with tickets. It has not yet been tested whether techniques from person/object re-ID~\cite{zhou2019osnet,qian2024reidtrends} can be applied to cracks—given that different defects may look similar to one another and that one defect can vary considerably.
+\begin{description}
 
+  \item[\textbf{RQ1.}] Can the evaluated methods associate observations of the same defect under varying image acquisition conditions?
 
+  \item[\textbf{RQ2.}] How do wall context and geometric alignment contribute to defect re-identification?
 
-We have developed \textsc{CrackID} in order to find out if photographs show the same wall crack: 140 photos from 17 walls that were obtained during one visit (6 of these were used for validation and 11 for testing; 19 test identities are available for matching; $n_{Q}{=}305$). Real photos are used to account for the changes that take place during a single visit, while the features relating to appearance and growth are analysed only with the help of synthetic images. The study of cross-visit performance using real photos will be undertaken in future research. All the accuracy figures are point estimates derived from a small sample grouped by wall.
+  \item[\textbf{RQ3.}] How do two selected approaches perform under synthetic changes in appearance and crack growth?
 
+\end{description}
 
+RQ1 and RQ2 are answered with real single-visit photographs; RQ3 is an exploratory study on synthetic data.
 
-The evaluation looks at ten zero-shot matchers on \textsc{CrackID} by dividing up the candidate retrieval phase from the step where a decision is made about whether or not the defects are the same and by incorporating open-set identification with rejection, since a high rank by itself is not enough to generate a report; it also makes use of the context along with crack-erased control cases to tell the cracks apart from wall-location cues, and a geometric baseline is applied in order to align the walls and then compare the projected masks.
-
-
-
-The study looks at Research Question (RQ1), which is about association in the case of acquisition change; RQ2 is concerned with context and geometric alignment; and RQ3 deals with synthetic appearance or growth change. For RQ1 and RQ2 we use real single-visit photos, whereas RQ3 is an exploratory study based on synthetic data. Future work will focus on ticket-level duplicate reduction and cross-visit evaluation.
-
-
-
-\smallskip
-
-The contributions are as follows: (i) the cross-observation identities for \textsc{CrackID} together with the annotation provenance mentioned in Section~\ref{sec:annotation}; (ii) a benchmark that involves retrieval, making same-defect decisions, and open-set identification (Sections~\ref{sec:protocol} and~\ref{sec:ceiling}); (iii) context controls, geometric reference, and coverage analysis (Sections~\ref{sec:method}, \ref{sec:controls}, and~\ref{sec:coverage}); (iv) a synthetic revisit probe (Section~\ref{sec:hybridbench}).
-
+The contributions are as follows: (i)~the cross-observation identities of \textsc{CrackID}, together with their annotation provenance (Section~\ref{sec:annotation}); (ii)~a benchmark covering retrieval, same-defect decisions, and open-set identification, which addresses RQ1 (Sections~\ref{sec:protocol} and~\ref{sec:ceiling}); (iii)~context controls, a geometric reference, and a coverage analysis, which address RQ2 (Sections~\ref{sec:method}, \ref{sec:controls}, and~\ref{sec:coverage}); and (iv)~a synthetic revisit probe, which addresses RQ3 (Section~\ref{sec:hybridbench}).

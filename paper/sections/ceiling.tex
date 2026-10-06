@@ -2,8 +2,6 @@
 
 \label{sec:ceiling}
 
-
-
 \begin{table*}[t]
 
 \centering
@@ -64,29 +62,21 @@ OSNet~\cite{zhou2019osnet} & re-ID & 0.603 & \best{0.497} & 0.154 & 0.338 & 0.03
 
 \end{table*}
 
-
-
 \subsection{Setup}
 
 \label{sec:setup}
 
-The following ten methods employ crack-centred crops together with a common validity mask: SIFT and ORB combined with Random Sample Consensus (RANSAC) inliers, SuperGlue and LoFTR using pre-trained indoor weights, five embedding methods, and re-ID OSNet with cosine similarity, all of which are applied in a zero-shot manner on \textsc{CrackID}; YOLOv8 makes use of the layer-9 \texttt{yolov8n.pt} features. The input sizes and checkpoints are available in the code. For context control, fixed backbones (OSNet, CLIP) are used: \texttt{@ctx1} increases the size of the instance box by $1\times$ in each direction; \texttt{@ctx1@nocrack} fills in the crack in order to isolate the wall context. \ours{} first aligns the walls and then compares the projected masks (as described in Sec.~\ref{sec:method}); \coverage{} continuously evaluates the registered pairs without examining the cracks. The synthetic tests compare OSNet with context against the \hybrid{} variants.
-
-
+The following ten methods employ crack-centered crops together with a common validity mask: SIFT and ORB combined with Random Sample Consensus (RANSAC) inliers, SuperGlue and LoFTR using pre-trained indoor weights, five embedding methods, and re-ID OSNet with cosine similarity, all of which are applied in a zero-shot manner on \textsc{CrackID}; YOLOv8 makes use of the layer-9 \texttt{yolov8n.pt} features. The input sizes and checkpoints are available in the code. For context control, fixed backbones (OSNet, CLIP) are used: \texttt{@ctx1} increases the size of the instance box by $1\times$ in each direction; \texttt{@ctx1@nocrack} fills in the crack in order to isolate the wall context. \ours{} first aligns the walls and then compares the projected masks (as described in Sec.~\ref{sec:method}); \coverage{} continuously evaluates the registered pairs without examining the cracks. The synthetic tests compare OSNet with context against the \hybrid{} variants.
 
 \subsection{Result: appearance buys almost nothing on the decision}
 
 Table~\ref{tab:main} (11 walls, frozen snapshot, $n_{Q}{=}305$) displays a Rank-1 score ranging from $0.370$ to $0.613$ (with the best result being that of ViT-B/16; the highest mAP is achieved by OSNet at $0.497$; and the best crop performance with DIR at a FAR of $0.1$ is $0.384$ for SuperGlue), although the oracle $F_{1}^{*}$ lies between $0.337$ and $0.374$ and the validation-calibrated $F_{1}^{@v}$ is in the range $0.331$ to $0.338$: therefore, a high ranking does not mean that decisions have been made. The small range of the $F_{1}^{@v}$ values indicates a poor transfer of thresholds across the walls. Since there are 19 matchable test identities, we do not claim to have any fine-grained crop ranking. All the values given are point estimates.
 
-
-
 \subsection{Is it the crack, or the wall behind it?}
 
 \label{sec:controls}
 
-Context contributes to both ranking and open-set performance, but the majority of the improvement is lost when the crack is removed: for OSNet the Rank-1 score rises from $0.603$ to $0.775$ (down to $0.711$ when the crack is erased), the DIR at FAR$=0.1$ goes from $0.154$ to $0.404$ (down to $0.393$ when erased); for CLIP it goes from $0.143$ to $0.311$ (down to $0.286$ when erased). The erased views outperform all the tight crops, suggesting that wall location is the cue. The pairwise $F_{1}^{*}$ remains between $0.307$ and $0.361$ for the base, context, and erased views, although open-set performance improves by +0.250 for OSNet. Within-visit retrieval does work, but reliable automatic decisions do not; ranked lists might help the operators, though more evidence is needed regarding acceptance (Fig.~\ref{fig:ceiling}).
-
-
+Context contributes to both ranking and open-set performance, but most of this gain disappears when the crack is erased: for OSNet the Rank-1 score rises from $0.603$ to $0.775$ (falling to $0.711$ when the crack is erased), the DIR at FAR$=0.1$ goes from $0.154$ to $0.404$ (down to $0.393$ when erased); for CLIP it goes from $0.143$ to $0.311$ (down to $0.286$ when erased). The erased views outperform all the tight crops, suggesting wall location is the cue. The pairwise $F_{1}^{*}$ remains between $0.307$ and $0.361$ for the base, context, and erased views, although open-set performance improves by +0.250 for OSNet. Within-visit retrieval does work, but reliable automatic decisions do not; ranked lists might help the operators, though more evidence is needed regarding acceptance (Fig.~\ref{fig:ceiling}).
 
 \begin{figure}[t]
 
@@ -99,4 +89,3 @@ Context contributes to both ranking and open-set performance, but the majority o
 \label{fig:ceiling}
 
 \end{figure}
-

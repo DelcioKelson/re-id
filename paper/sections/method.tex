@@ -51,8 +51,8 @@ For each image pair, one-to-one assignment follows the Hungarian
 method~\cite{kuhn1955hungarian} with the validation threshold shared by
 all methods; unscored pairs take value $-\infty$ (predicted negative,
 ranked last, as in Sec.~\ref{sec:protocol}). An aligned projection onto
-visibly empty wall is a \textit{licensed negative}—evidence of absence,
-stronger than low embedding similarity—while missed detections,
+visibly empty wall is a \textit{licensed negative} (evidence of absence,
+stronger than low embedding similarity). At the same time, missed detections,
 out-of-frame areas, and registration failures stay unresolved. The
 \ours{} reference targets unchanged damage; progression uses \hybrid{}.
 Performance depends on surface-dependent failures and on
