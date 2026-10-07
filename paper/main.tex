@@ -1,79 +1,40 @@
 \documentclass[conference,a4paper]{IEEEtran}
-
 \usepackage{cite}
-
 \usepackage{amsmath,amssymb}
-
 \usepackage{graphicx}
-
 \usepackage{booktabs}
-
 \usepackage{multirow}
-
 \usepackage{url}
-
 \usepackage{xcolor}
-
 \usepackage[hidelinks]{hyperref}
-
 \newcommand{\best}[1]{\textbf{#1}}
-
 \newcommand{\ours}{\textsc{Reg+Chamfer}}
-
 \newcommand{\hybrid}{\textsc{Hybrid-Skel}}
-
 \newcommand{\coverage}{\textsc{Coverage-only}}
-
 \begin{document}
-
 \title{Benchmark for Crack Re-Identification in Ticket Management Systems}
-
-\author{\IEEEauthorblockN{D\'elcio Ferramenta, C\'atia Loureiro, Ant\'onio Silva, Beatriz Miranda,\\
-Paulo Brito, Ricardo Rodrigues, Duarte Fernandes}
+\author{\IEEEauthorblockN{D\'elcio Ferramenta, C\'atia Loureiro, Ant\'onio Silva, Beatriz Miranda,\\ Paulo Brito, Ricardo Rodrigues, Duarte Fernandes}
 \IEEEauthorblockA{DTx CoLAB}}
-
 \maketitle
-
 \begin{abstract}
-
-When using a ticket management system, one must decide whether a newly reported defect matches an existing ticket or warrants a new one. If the same crack is reported more than once from different viewpoints, record history becomes fragmented and assessment work is repeated. We call this task crack re-identification (re-ID) and introduce \textsc{CrackID}. The frozen benchmark snapshot includes 140 photographs, 17 walls, and 212 identities, with 6 validation walls and 11 test walls, including 19 matchable test identities. We evaluate ten zero-shot crop-based matchers from four families using retrieval, thresholded pairwise decisions, and open-set identification with rejection. Retrieval performance varies, with Rank-1 scores ranging from 0.370 to 0.613. When pairwise decisions are calibrated using the validation set, all methods perform just above the best-constant baseline. The pairwise $F_{1}$ at the validation threshold, $F_{1}^{@v}$, ranges from 0.331 to 0.338, compared to a floor of 0.305, and the oracle $F_{1}^{*}$ ranges from 0.337 to 0.374. Context and crack-erasure controls show that wall-location cues dominate crack appearance. A geometric reference baseline, which aligns the wall texture with cracks removed and compares the projected masks, achieves a detection and identification rate (DIR) of 0.768 at a false alarm rate (FAR) of 0.1 on the 48\% alignable subset. In comparison, the best crop method achieves 0.384. Because all figures are point estimates from a small sample grouped by wall, and a single annotator assigned the labels using homography, the open-set advantage is conditioned on annotation provenance, and ranking considers only within-visit correspondence. This dataset and benchmark focus on the visual association stage. Further work is needed to evaluate across visits and reduce ticket-level duplicates.
-
+In a ticket-based maintenance system, each new photograph of a crack should be assigned to the correct ticket, but if the same crack is photographed from a different angle it may be treated as a new crack, thus breaking its historical record and leading to redundant inspection work. We refer to this as crack re-identification (re-ID), which involves determining whether two photographs depict the same crack. This study presents \textsc{CrackID}, a dataset consisting of 140 photographs of 17 walls and containing 212 distinct crack identities, and uses this dataset to assess ten zero-shot, crop-based matchers drawn from four different families under three scenarios: retrieval, thresholded pairwise decisions, and open-set identification with rejection. The ranking quality varies considerably (Rank-1 scores range from 0.370 to 0.613), although the validation-calibrated pairwise decisions only very slightly exceed the best constant baseline ($F_1$ scores of 0.331 to 0.338 compared to 0.305). Experiments involving context and crack erasure demonstrate that cues related to the wall's location are more important than the appearance of the crack. A geometric reference baseline that aligns the texture of crack-free wall sections and then compares the projected crack masks achieves a detection and identification rate (DIR) of 0.768 at a false alarm rate (FAR) of 0.1 on the 48\% of the images that can be aligned, which is twice the DIR of 0.384 obtained by the best crop-based method. These point estimates are based on a small sample of walls, with each wall group being labelled by a single annotator using homography, so the advantage in the open-set setting depends on the source of the annotations, and the evaluation only considers correspondence within a single visit. These results indicate that good retrieval performance by itself does not guarantee reliable association of cracks and show the value of local visual context and geometric alignment in re-identification. By jointly evaluating retrieval, the matching decisions, and the rejection of unknown defects, \textsc{CrackID} provides a foundation for developing more reliable visual association methods to support defect tracking in ticket management systems, with cross-visit evaluation and ticket-level duplicate reduction being future work.
 \end{abstract}
-
 \begin{IEEEkeywords}
-
 Annotation Quality, Benchmark, Building Maintenance, Crack Re-Identification,
-
 Geometric Alignment, Homography, Structural Inspection
-
 \end{IEEEkeywords}
-
 \input{sections/intro}
-
 \input{sections/related}
-
 \input{sections/dataset}
-
 \input{sections/protocol}
-
 \input{sections/method}
-
 \input{sections/ceiling}
-
 \input{sections/results}
-
 \input{sections/validity}
-
 \input{sections/conclusion}
-
 \section*{Acknowledgment}
-
 This work was supported by ``R2UTechnologies --- modular systems'' (C644876810-00000019), by ``R2UTechnologies'' Consortium, cofinanced by NextGenerationEU, through the Incentive System ``Agendas para a Inova\c{c}\~ao Empresarial'' (``Agendas for Business Innovation''), within the Recovery and Resilience Plan (PRR).
-
 \textit{AI disclosure:} Generative AI was used only for minor language editing. All methods, results, figures, and analyses are original, and the authors take full responsibility for their accuracy.
-
 \bibliographystyle{IEEEtran}
-
 \bibliography{refs}
-
 \end{document}
