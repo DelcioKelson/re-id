@@ -29,4 +29,40 @@ The ablations for registration/ECC/exclusion were carried out on the test set; t
 From five walls, using one seed, ten source photographs show a small warp either under (A) one-tip growth or (B) blur/noise/contrast with the structure remaining unchanged, and then they are matched with the actual images (p90 tilt $75^{\circ}$; procedure as in the code).
 \hybrid{} ($\tau{=}8.0$~px) differs from \ours{} (Table~\ref{tab:main}).
 For ranking/open-set, OSNet+ctx outperforms \hybrid{} (R@1 0.826/0.671 vs 0.275/0.274; DIR 0.739/0.663 vs 0.343/0.342; $F_1^{@v}$ similar at 0.601/0.594 vs 0.569/0.574); assignment-$F_1^a$ shows a narrow reversal (0.646/0.640 vs 0.631/0.609; no pure-homography cell).
-With respect to RQ3, this single-seed probe provides no evidence of real multi-visit robustness, which remains untested (Sec.~\ref{sec:limitations}).
+With respect to RQ3, this single-seed probe provides no evidence of real multi-visit robustness, which remains untested (Sec.~\ref{sec:limitations}). Table~\ref{tab:hybrid} compares \hybrid{} and OSNet+ctx.
+
+\begin{table}[t]
+
+\centering
+
+\footnotesize\setlength{\tabcolsep}{3pt}
+
+ \caption{Synthetic revisit scenario: \hybrid{} versus OSNet+ctx, with the $F_{1}$ score at the validation threshold; one seed and five walls. \hybrid{} differs from \ours{} as in Table~\ref{tab:main}.}
+
+\label{tab:hybrid}
+
+\begin{tabular}{llcccccc}
+
+\toprule
+
+Protocol & Method & $n_{q}$ & R@1 & mAP & DIR & $F_{1}^{@v}$ & $F_{1}^{a}$ \\
+
+& & & & & {\scriptsize @FAR$_{0.1}$} & & \\
+
+\midrule
+
+\multirow{2}{*}{A (growth)} & \hybrid{} & 69 & 0.275 & 0.401 & 0.343 & 0.569 & 0.646 \\
+
+ & OSNet+ctx & 69 & \textbf{0.826} & \textbf{0.647} & \textbf{0.739} & 0.601 & 0.631 \\
+
+\midrule
+
+\multirow{2}{*}{B (appear.)} & \hybrid{} & 82 & 0.274 & 0.403 & 0.342 & 0.574 & 0.640 \\
+
+ & OSNet+ctx & 82 & \textbf{0.671} & \textbf{0.570} & \textbf{0.663} & 0.594 & 0.609 \\
+
+\bottomrule
+
+\end{tabular}
+
+\end{table}
