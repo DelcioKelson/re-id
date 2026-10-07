@@ -13,15 +13,35 @@
 \newcommand{\regonly}{\textsc{Reg-only}}
 \begin{document}
 \title{Benchmark for Crack Re-Identification in Ticket Management Systems}
-\author{\IEEEauthorblockN{D\'elcio Ferramenta, C\'atia Loureiro, Ant\'onio Silva, Beatriz Miranda,\\ Paulo Brito, Ricardo Rodrigues, Duarte Fernandes}
-\IEEEauthorblockA{DTx CoLAB}}
+\author{
+  \IEEEauthorblockN{
+    D\'elcio Ferramenta\IEEEauthorrefmark{1}, 
+    C\'atia Loureiro\IEEEauthorrefmark{1}, 
+    Ant\'onio Silva\IEEEauthorrefmark{1}, 
+    Beatriz Miranda\IEEEauthorrefmark{1}, 
+    Paulo Brito\IEEEauthorrefmark{1},\\
+    Ricardo Rodrigues\IEEEauthorrefmark{1}, 
+    Duarte Fernandes\IEEEauthorrefmark{1}, 
+    Andr\'e Vieira\IEEEauthorrefmark{1}, and 
+    Nuno M. C. Da Costa\IEEEauthorrefmark{1}\IEEEauthorrefmark{2}
+  }
+  \IEEEauthorblockA{\IEEEauthorrefmark{1}DTx CoLAB,  University of Minho, Guimarães, Portugal}
+  \IEEEauthorblockA{\IEEEauthorrefmark{2}ALGORITMI Centre, University of Minho, Guimarães, Portugal}
+}
 \maketitle
 \begin{abstract}
-In a ticket-based maintenance system, each new photograph of a crack should be linked to the correct ticket. However, the same crack photographed from a different angle may be mistaken for a new defect, breaking its history and leading to unnecessary inspection work. We introduce \textsc{CRACKID}, a dataset designed to study this problem of identifying the same physical crack across photographs. The dataset contains 140 photographs from 17 walls, covering 212 distinct crack identities labelled using homography-based annotation. We evaluate ten off-the-shelf image-matching methods across three tasks: finding the correct photograph, deciding whether two photographs show the same crack, and rejecting photographs of previously unseen cracks. Although some methods retrieve the correct crack reasonably well, their decisions about whether two images show the same crack are only slightly better than a simple constant prediction. Experiments with surrounding wall context suggest that much of the matching signal may come not from the crack itself, but from its surroundings, including nearby cracks. A geometric approach that aligns photographs using the surrounding wall surface performs substantially better on the images that can be aligned, highlighting the potential value of geometric information for reliable crack association. These results show that good retrieval performance alone does not guarantee reliable crack association. \textsc{CRACKID} provides a foundation for developing more dependable visual methods for connecting crack photographs across maintenance records, with cross-visit evaluation and ticket-level duplicate reduction as important next steps. 
+In a ticket-based maintenance system, each new photograph of a crack should be assigned to the correct ticket, but if the same crack is photographed from a different angle it may be treated as a new defect, breaking its historical record and leading to redundant inspection work.
+We introduce \textsc{CrackID}, a dataset of 140 photographs from 17 walls containing 212 distinct crack identities, and use it to assess ten zero-shot matchers under three scenarios: retrieval, thresholded pairwise decisions, and open-set identification with rejection.
+Ranking quality varies considerably (Rank-1 0.352--0.654), yet validation-calibrated pairwise decisions only slightly exceed the best constant baseline ($F_1$ 0.293--0.351 vs.~0.305).
+Context and crack-erasure experiments show that wall-context cues matter more than crack appearance.
+A geometric reference that aligns crack-free wall texture and compares projected masks achieves a detection-and-identification rate of 0.768 at a false-alarm rate of 0.1 on the 48\% of pairs that align twice the 0.429 of the best crop-based method.
+These point estimates are from a small wall-clustered sample and cover only single-visit correspondence.
+They indicate that good retrieval alone does not guarantee reliable crack association, and that local visual context and geometric alignment are both needed.
+\textsc{CrackID} provides a foundation for developing more reliable visual association methods, with cross-visit evaluation and ticket-level duplicate reduction as future work.
 \end{abstract}
 \begin{IEEEkeywords}
-Annotation Quality, Benchmark, Building Maintenance, Crack Re-Identification,
-Geometric Alignment, Homography, Structural Inspection
+Benchmark, Building Maintenance, Crack Re-Identification,
+Geometric Alignment, Homography
 \end{IEEEkeywords}
 \input{sections/intro}
 \input{sections/related}
@@ -34,7 +54,7 @@ Geometric Alignment, Homography, Structural Inspection
 \input{sections/conclusion}
 \section*{Acknowledgment}
 This work was supported by ``R2UTechnologies --- modular systems'' (C644876810-00000019), by ``R2UTechnologies'' Consortium, cofinanced by NextGenerationEU, through the Incentive System ``Agendas para a Inova\c{c}\~ao Empresarial'' (``Agendas for Business Innovation''), within the Recovery and Resilience Plan (PRR).
-\textit{AI disclosure:} Generative AI tools were used for language editing, structural consistency review across sections, and assistance editing the figure generation script. Authors reviewed and take responsibility for all content, methods, and results.
+\textit{AI disclosure:} Generative AI was used for language editing. All methods, results, figures, and analyses are original, and the authors take full responsibility for their accuracy.
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
 \end{document}

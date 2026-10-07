@@ -1,14 +1,11 @@
 \section{Conclusion}
 
-
-
 We present \textsc{CrackID}, which consists of 140 photographs from 17 walls, along with a protocol for retrieval, deciding whether defects are the same, and performing open-set identification with rejection.
 
+The main result is negative and structural in character:
+concerning RQ1, ten zero-shot crop matchers outperform random chance, but when a threshold is used, their performance only just exceeds that of the best constant baseline;
+concerning RQ2, the wall context has the biggest effect on the appearance of cracks, and a geometric reference assists with open-set identification in only the 48\% of the alignable subset that has been conditioned on annotation provenance;
+as for RQ3, a small synthetic revisit probe reverses the ranking with no sign of multi-visit robustness.
 
-
-The key results are positive: with regard to (RQ1), ten of the zero-shot crop matchers perform better than random, thus setting a viable baseline for retrieval, while thresholded decisions stay near the level of the best constant baseline and therefore call for a combined assessment of ranking, decisions, and rejection; as for (RQ2), local wall context makes a significant contribution to appearance-based association, and the geometric reference shows how surface alignment and projected crack overlap can assist open-set identification on the 48\% alignable subset; regarding (RQ3), the small synthetic revisit probe makes clear the distinction between within-visit association and multi-visit robustness.
-
-
-
-The fact that good retrieval performance alone is not enough to ensure reliable crack association shows the need for both local visual context and geometric alignment to perform re-identification. Because \textsc{CrackID} makes judgments not only on retrieval but also on matching and on rejecting unknown defects, \textsc{CrackID} forms a basis for the development of more reliable visual association methods to support defect tracking in ticket management systems.
-
+The study focuses on single-visit photographs: the figures are point estimates derived from 19 test identities, grouped by wall and matched using only the labels supplied by one annotator during the visual-association stage.
+The next crucial stage is to conduct an acquisition session to run a cross-visit benchmark at the ticket level.

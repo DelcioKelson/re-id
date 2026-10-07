@@ -1,46 +1,32 @@
 \section{Results and Discussion}
-
-
-
 \label{sec:results}
-
-
 
 \subsection{Main comparison and the open-set gap}
 
-
-
-For the registered cases, which make up 48\% (all 5,722 positive examples), geometry is used to compare masks whereas the crops evaluate all the pairs from different pools. When registration is used alone (with \regonly{} set to a constant value on registered cases and to $-\infty$ in all other cases), the results are a Rank-1 score of 0.515, an mAP of 0.533, and a DIR of 0.000 at a FAR of 0.1; however, when mask comparison is added, the values improve by +0.437 and +0.353 respectively and the DIR reaches 0.768 (as shown in Table~\ref{tab:main}). The DIR scores are 0.768 for geometry, 0.000 for \regonly{} (with tied scores), 0.429 for SuperGlue, and 0.404 for OSNet+ctx (with a chance level of 0.038); there was no wall-clustered test and no claim of separability. The validated $F_1$ excess is +0.038 (compared to 0.582 versus 0.544) over LoFTR's +0.046, indicating that the appearance/geometry contrast is overstated. The advantage obtained through gating would disappear if cross-visit testing were carried out; further research is still needed on the gated-appearance and frame-gap baselines.
-
-
+For the registered cases, which make up 48\% (all 5,722 positive examples), geometry is used to compare masks whereas the crops evaluate all the pairs from different pools.
+When registration is used alone (with \regonly{} set to a constant on registered cases and to $-\infty$ otherwise), the results are Rank-1 0.515, mAP 0.533, and DIR 0.000 at FAR 0.1; when mask comparison is added, the values improve by +0.437 and +0.353 and DIR reaches 0.768 (Table~\ref{tab:main}).
+The DIR scores are 0.768 for geometry, 0.000 for \regonly{} (tied scores), 0.429 for SuperGlue, and 0.404 for OSNet+ctx (chance 0.038); there was no wall-clustered test and no claim of separability.
+The validated $F_1$ excess is +0.038 (0.582 vs 0.544) over LoFTR's +0.046, indicating that the appearance/geometry contrast is overstated.
+The advantage obtained through gating would disappear if cross-visit testing were carried out; further research is still needed on the gated-appearance and frame-gap baselines.
 
 \subsection{Registration rate, failures, and ablations}
-
-
-
 \label{sec:coverage}
-
-
-
 \label{sec:chamferablation}
 
+Unregistered pairs are ranked last and predicted as negative (Sec.~\ref{sec:protocol}).
+The gate is label-informative: among registered pairs, all positives are retained, but 36.8\% of negatives are discarded, increasing prevalence from 0.180 to 0.373 and lifting the $F_1$ floor from 0.305 to 0.544.
 
-
-Unregistered pairs are ranked last and predicted as negative (see Section~\ref{sec:protocol}). The gate is label-informative: among the registered pairs, all positives are retained, but 36.8% of negatives are discarded, increasing prevalence from 0.180 to 0.373 and lifting the $F_1$ floor from 0.305 to 0.544.
-
-
-
-The comparison shows an improvement of +0.112 for Oracle (with an $F_1^*$ of 0.656) but only +0.038 for the validated results (with an $F_1^{@v}$ of 0.582). The failures depend on the wall (as described in Sec.~\ref{sec:dataset}); for adjacent frames,, all 280 queries are answered (the median gap is 1), which is why a frame baseline is required. We define sharpness as the Laplacian variance at quarter scale. A test-only logistic indicates that sharpness is better than gap (with a clustered $z$ value of 5.11 versus -2.78), but the $p$ value overestimates the precision (since there are 11 clusters); the sharpness $\ge 10$ gate is determined post hoc. The scope of the smooth-plaster failure is not quantified. The ablations for registration/ECC/exclusion were carried out on the test set; the geometry settings should be fixed on the validation set before any final comparison.
-
-
+The comparison shows an improvement of +0.112 for Oracle ($F_1^*$ 0.656) but only +0.038 for validated results ($F_1^{@v}$ 0.582).
+The failures depend on the wall (Sec.~\ref{sec:dataset}); for adjacent frames, all 280 queries are answered (median gap is 1), which is why a frame baseline is required.
+We define sharpness as the Laplacian variance at quarter scale.
+A test-only logistic indicates that sharpness is better than gap (clustered $z$ 5.11 vs $-2.78$), but the $p$ value overestimates the precision (11 clusters); the sharpness $\geq 10$ gate is determined post hoc.
+The scope of the smooth-plaster failure is not quantified.
+The ablations for registration/ECC/exclusion were carried out on the test set; the geometry settings should be fixed on the validation set before any final comparison.
 
 \subsection{Synthetic revisit probe}
-
-
-
 \label{sec:hybridbench}
 
-
-
-From five walls, using one seed, ten source photographs show a small warp either under (A) one-tip growth or (B) blur/noise/contrast with the structure remaining unchanged, and then they are matched with the actual images (p90 tilt $75^{\circ}$; procedure as in the code). \hybrid{} ($\tau{=}8.0$~px) differs from \ours{} (see Table~\ref{tab:main}). In the case of ranking/open set, OSNet+ctx outperforms \hybrid{} (R@1 0.826/0.671 versus 0.275/0.274; DIR 0.739/0.663 versus 0.343/0.342; $F_1^{@v}$ is similar at 0.601/0.594 versus 0.569/0.574); assignment-$F_1^a$ shows a narrow reversal (0.646/0.640 versus 0.631/0.609; there is no pure-homography cell). With respect to RQ3, this single-seed probe provides no evidence of real multi-visit robustness, which has not been tested (Sec.~\ref{sec:validity}).
-
+From five walls, using one seed, ten source photographs show a small warp either under (A) one-tip growth or (B) blur/noise/contrast with the structure remaining unchanged, and then they are matched with the actual images (p90 tilt $75^{\circ}$; procedure as in the code).
+\hybrid{} ($\tau{=}8.0$~px) differs from \ours{} (Table~\ref{tab:main}).
+For ranking/open-set, OSNet+ctx outperforms \hybrid{} (R@1 0.826/0.671 vs 0.275/0.274; DIR 0.739/0.663 vs 0.343/0.342; $F_1^{@v}$ similar at 0.601/0.594 vs 0.569/0.574); assignment-$F_1^a$ shows a narrow reversal (0.646/0.640 vs 0.631/0.609; no pure-homography cell).
+With respect to RQ3, this single-seed probe provides no evidence of real multi-visit robustness, which remains untested (Sec.~\ref{sec:limitations}).

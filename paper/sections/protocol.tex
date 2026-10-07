@@ -1,42 +1,30 @@
 \section{Benchmark Protocol}
-
-
-
 \label{sec:protocol}
 
-
-
-The benchmark tests visual association: for a new crack photograph, decide whether it shows a recorded crack. Annotated crack identities stand in for ticket records. Scores therefore measure association accuracy, not ticket-level duplicate reduction.
-
-
+The benchmark assesses visual association by determining, for a new crack observation, whether it matches one of the recorded defects; since annotated identities serve as a stand-in for permanent defect records, the scores indicate the accuracy of the association rather than the reduction of duplicates at the ticket level.
 
 \subsection{Task formulation and candidate records}
 
-
-
-A single identity is established by using photographs of the same physical crack. By 'instance' is meant one mask component in a single photograph; the 'query' is the instance that is being linked; a 'valid pair' is a query and a gallery cell that is accepted by the mask (specifically, the same wall but taken at a different time); a 'photograph block' consists of all the cells from one photograph pair and is the unit used for Hungarian assignment. Search across walls is not permitted. A query is considered 'known' if its gallery includes its identity; otherwise it is 'unknown' (in this case it is a singleton within one photograph only; singletons can differ in size or border distance, so FAR might indicate the rejection of fragments; see Sec.~\ref{sec:validity}). In closed-set retrieval only ranking is performed; in open-set identification links are made to the best ticket or the query is rejected as a new ticket. Pairs are the unit for making decisions; queries are used in retrieval and in open-set identification; photograph pairs are used for registration and assignment. The Hungarian one-to-one matching is applied separately to each photograph pair; the assignment $F_1$ is calculated but is not presented as a headline result.
-
-
-
-Counts for the frozen snapshot (6 validation walls 01--06; 11 test walls 07--17; walls 18--19 excluded): validation has 6 walls / 66 photographs / 66 identities (18 matchable, 439 known queries, 74 open-set); test has 11 walls / 74 photographs / 146 identities (19 matchable, 280 known queries, 258 open-set); positive query--gallery pairs: 26,012 validation / 5,722 test; valid query--gallery pairs: 89,118 / 31,822. Of 301 same-wall test photograph pairs, 255 have valid cells and 97 register successfully. Of 31,822 valid test query--gallery pairs, 15,328 fall inside registered pairs (48\%).
-
-
-
-
-
-
-
-
+There is one physical wall; an identity connects the different observations of the same crack (Section~\ref{sec:annotation}).
+A query refers to one instance of a crack; its gallery includes other instances taken from photos of the same known wall.
+Cross-wall search is not allowed.
+A query is called known if its gallery contains the identity, otherwise it is unknown (meaning it is a genuinely new defect).
+In closed-set retrieval it is assumed that the answer will always be in the gallery and the candidates are only ranked.
+Open-set identification, on the other hand, involves modelling the association of tickets: the system has to either link the query to the best existing ticket or reject it and create a new ticket if no gallery entry scores high enough.
+Each method evaluates query--gallery pairs for the purposes of ranking, makes thresholded decisions and carries out identification with rejection.
+Pairs are the unit for pairwise decisions; queries are the unit for retrieval and for open-set decisions; image pairs are the unit for registration and assignment.
+The Hungarian one-to-one constraint is applied only for each image pair.
 
 \subsection{Test conditions, decisions, and metrics}
 
+The primary test involves actual walk-arounds for each wall, assuming that the morphology remains unaltered; the only variations considered are viewpoint, distance, scale, lighting, and visibility, along with same-wall distractors and unknown queries.
+The validation and test walls are entirely separate.
+All the methods are used exactly as they are on the shared masks without any tuning of \textsc{CrackID} (see Sec.~\ref{sec:setup}); the thresholds determined on the validation set are applied to the test set, considering only within-visit correspondence.
+A synthetic check is carried out to distinguish between photometric effects (condition B: blur/noise/contrast with unchanged structure) and growth effects (condition A: one tip extended) using ten photos taken from five walls with a single seed and a common warp (parameters available with the code), comparing OSNet with context to \hybrid{} ($\tau{=}8.0$~px), which is different from \ours{}: this is only a preliminary check.
 
-
-The main test involves actual walk-arounds assuming that the morphology remains unaltered; the variables included are viewpoint, distance, scale, lighting and visibility, as well as same-wall distractors and unknowns, with no separation being made according to gap, scale or surface. The validation and test walls are not connected. The appearance methods are run using the version released on the shared masks without any \textsc{CrackID} tuning; the geometry settings (tolerance $[2,16]$~px, early-rejection distance, sharpness gate, Random Sample Consensus (RANSAC)~\cite{fischler1987ransac} inliers, scale $[1/16,16]$) are not fixed during validation and should be set before any final comparison. The masks are derived from a UNet++~\cite{zhou2018unetplusplus,ronneberger2015unet} combined with a ResNet-34~\cite{he2016resnet} that was trained on cracks available from the public dataset only (without use of a \textsc{CrackID} wall), and this is taken as given with the error left unmeasured. For ORB/SIFT the RANSAC inliers are used, for SuperGlue/LoFTR the indoor match counts are employed, and for the embeddings the cosine value on L2 crops is taken. The inpainting control makes use of Telea after a 5~px dilation (see Sec.~\ref{sec:ceiling}). The chance value is $2p/(1{+}p)$ together with 200 random matrices: the $F_1$ score is 0.305 at a prevalence of 0.180, 0.544 on the registered subset (0.373), and 0.452 on validation (0.292); for random Rank-1 it is 0.336, the mean average precision (mAP) is 0.385, the detection-and-identification rate (DIR) is 0.038 at a false alarm rate (FAR) of 0.1. The seeds are fixed; the spread is not reported.
-
-
-
-Decisions: pairs above the validation threshold are accepted; open set accepts only the top gallery entry above threshold, else rejects as new ticket. Hungarian applies per block, dropping below-threshold pairs. Unregistered pairs stay in: predicted negative for $F_1$, ranked last; unregistered unknowns count as correct rejections while unregistered knowns count as misses, so FAR uses all 258 unknowns (102 with no registered candidate). Registration failure is absence of evidence, not evidence of a new crack. Metrics are defined in Table~\ref{tab:main} caption; within-visit only. Snapshot: Mendeley DOI in~\cite{ferramenta2026crackid}; score matrices and commit hash to be archived with the camera-ready version.
-
-
-
+Decisions: any pairs that exceed the validation-calibrated threshold are accepted; for open-set identification, only the highest-ranking gallery entry above the threshold is accepted for each query, and a query with nothing above threshold is rejected as a new ticket.
+For each image block, the Hungarian assignment is used with those below the threshold being dropped.
+Unscorable pairs are retained (they are predicted to be negative for $F_1$ and are given the last rank in retrieval); a registration failure is defined as the absence of evidence, not as evidence of a new defect.
+The metrics used are Rank-1 and mean Average Precision (mAP) for closed-set ranking; pairwise $F_1$ compared with the oracle $F_1^{*}$ versus the validation $F_1^{@v}$; assignment-$F_1^{a}$ equal to $2\text{TP}/(2\text{TP}+\text{FP}+\text{FN})$; and, for open-set, detection and identification rate (DIR) at false alarm rate (FAR) of 0.1 that is, the fraction of known queries correctly linked when at most 10\% of unknown queries are wrongly linked together with coverage (the fraction that is scored).
+The references include random ranking and the best-constant $F_1$ $2p/(1+p)$ (0.305 at a prevalence of 0.180; 0.544 on the 0.48 geometric subset; 0.452 in the validation at 0.292); the full chance levels are given in Table~\ref{tab:main}.
+Since there are 11 walls and 19 matchable identities, we provide the point estimates (Sec.~\ref{sec:limitations}).
