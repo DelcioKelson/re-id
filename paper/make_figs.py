@@ -20,10 +20,17 @@ FIGS = os.path.join(HERE, "figs")
 os.makedirs(FIGS, exist_ok=True)
 
 plt.rcParams.update({
-    "font.family": "serif", "font.size": 8, "axes.labelsize": 8,
+    "font.family": "serif",
+    "font.serif": ["DejaVu Serif"],
+    "font.size": 8, "axes.labelsize": 8,
     "axes.titlesize": 8, "xtick.labelsize": 7, "ytick.labelsize": 7,
     "legend.fontsize": 7, "axes.spines.top": False, "axes.spines.right": False,
     "figure.dpi": 300, "savefig.bbox": "tight", "savefig.pad_inches": 0.02,
+    # Camera-ready fonts: pdf.fonttype 42 embeds TrueType as vectors
+    # instead of Type 3 bitmapped. All figure text then embeds (no
+    # Type 3), satisfying IEEE PDF requirements.
+    "pdf.fonttype": 42, "ps.fonttype": 42,
+    "text.usetex": False,
 })
 
 INK   = "#1a1a1a"
@@ -129,7 +136,7 @@ def fig_ceiling():
     # pairs, on which the best-constant predictor is 0.544, not 0.305.
     ax.axhline(COVERAGE_ONLY_F1, color=ACC, ls=(0, (3, 2)), lw=0.8, zorder=2)
     ax.text(len(names) + 0.25, COVERAGE_ONLY_F1 + 0.022,
-            f"floor on its 48% scorable subset: {COVERAGE_ONLY_F1:.3f}",
+            f"floor on its 48% registered pool: {COVERAGE_ONLY_F1:.3f}",
             fontsize=6.0, color=ACC, ha="right", va="bottom")
 
     for k, i in enumerate(order):

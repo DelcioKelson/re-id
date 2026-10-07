@@ -1,59 +1,46 @@
 \section{Results and Discussion}
 
+
+
 \label{sec:results}
+
+
 
 \subsection{Main comparison and the open-set gap}
 
-Geometry attains a Rank-1 score of 0.952 as compared to the best crop result of 0.613 (ViT-B/16) and an mAP of 0.886 compared to 0.497 (OSNet), with a coverage of 0.48 rather than 1.00. After coverage has been exceeded, ranking improvements continue but open-set gains do not: at a FAR of 0.1, DIR is 0.768 as against 0.384 (SuperGlue), 0.404 (the best OSNet+ctx1), and 0.000 for coverage (the chance level being 0.038). In the case of hairline cracks, crop similarities almost never reject, and aligned empty projections function as valid negatives. For cost (timing method in Sec.~\ref{sec:setup}, relative only), LoFTR takes 7.19~s/query versus 0.006~s/query for OSNet, while geometry takes 27.9~s/query and 26.0~s/pair. With regard to RQ2, alignment allows identification beyond coverage, on the condition that we take into account success, surface, and provenance. The point estimates are based on 19 identities.
 
-\subsection{Coverage, failures, and ablations}
+
+For the registered cases, which make up 48\% (all 5,722 positive examples), geometry is used to compare masks whereas the crops evaluate all the pairs from different pools. When registration is used alone (with \regonly{} set to a constant value on registered cases and to $-\infty$ in all other cases), the results are a Rank-1 score of 0.515, an mAP of 0.533, and a DIR of 0.000 at a FAR of 0.1; however, when mask comparison is added, the values improve by +0.437 and +0.353 respectively and the DIR reaches 0.768 (as shown in Table~\ref{tab:main}). The DIR scores are 0.768 for geometry, 0.000 for \regonly{} (with tied scores), 0.429 for SuperGlue, and 0.404 for OSNet+ctx (with a chance level of 0.038); there was no wall-clustered test and no claim of separability. The validated $F_1$ excess is +0.038 (compared to 0.582 versus 0.544) over LoFTR's +0.046, indicating that the appearance/geometry contrast is overstated. The advantage obtained through gating would disappear if cross-visit testing were carried out; further research is still needed on the gated-appearance and frame-gap baselines.
+
+
+
+\subsection{Registration rate, failures, and ablations}
+
+
 
 \label{sec:coverage}
 
+
+
 \label{sec:chamferablation}
 
-Crops achieve 100\% of the pairs while geometry reaches 48\%. Unscored pairs receive a negative score and are assigned the lowest rank. Censoring reduces ranking accuracy. Still, it increases the pairwise $F_{1}$: the scored sets retain 100\% of the positives but only 36.8\% of the negatives (prevalence ranging from 0.180 to 0.373; floor ranging from 0.305 to 0.544). The coverage-only approach yields an $F_{1}$ of 0.544, a mAP of 0.533, and a Rank-1 of 0.515, so almost all of the ranking and pairwise performance comes down to \emph{which pairs align}; the only exception is the open-set lead (0.768 versus 0.000). The failures depend on the wall (zero on two test walls; a per-wall table is provided with the code). Adjacent frames answer all 305 queries, so the ranking is based on a short baseline; the gap sweeps (going from 305 down to 105 at a gap of 3) maintain Rank-1. Registration is determined by sharpness rather than by frame gap (Wald z = 5.11, p = $3.3\times10^{-7}$ versus z = -2.78, p = $5.4\times10^{-3}$); with sharpness at least 10, registration is achieved in 56.1\% of the cases when one wall is removed from the filtered set. Scale-free coverage results in a loss of 0.240 mAP and 0.103 Rank-1 when compared to Chamfer (DIR increased by +0.014). When crack exclusion is disabled, the ranking remains unchanged, but DIR increases by +0.057; masking is retained for independence. ECC contributes approximately 0.03 to Rank-1 and 0.02 to mAP. Geometry totals 7817.3~s over 301 image pairs (26.0~s/pair; 27.9~s/query in Table~\ref{tab:main}), about three times LoFTR and more than 100 times the cheapest embedding (relative, Colab T4; Sec.~\ref{sec:setup}).
 
-\subsection{A synthetic revisit protocol}
+
+Unregistered pairs are ranked last and predicted as negative (see Section~\ref{sec:protocol}). The gate is label-informative: among the registered pairs, all positives are retained, but 36.8% of negatives are discarded, increasing prevalence from 0.180 to 0.373 and lifting the $F_1$ floor from 0.305 to 0.544.
+
+
+
+The comparison shows an improvement of +0.112 for Oracle (with an $F_1^*$ of 0.656) but only +0.038 for the validated results (with an $F_1^{@v}$ of 0.582). The failures depend on the wall (as described in Sec.~\ref{sec:dataset}); for adjacent frames,, all 280 queries are answered (the median gap is 1), which is why a frame baseline is required. We define sharpness as the Laplacian variance at quarter scale. A test-only logistic indicates that sharpness is better than gap (with a clustered $z$ value of 5.11 versus -2.78), but the $p$ value overestimates the precision (since there are 11 clusters); the sharpness $\ge 10$ gate is determined post hoc. The scope of the smooth-plaster failure is not quantified. The ablations for registration/ECC/exclusion were carried out on the test set; the geometry settings should be fixed on the validation set before any final comparison.
+
+
+
+\subsection{Synthetic revisit probe}
+
+
 
 \label{sec:hybridbench}
 
-Ten source photos taken from five walls (with one seed) are subjected to the same minor warp in either case (A) under single-tip growth or (B) due to photometric corruption, and then are matched with the actual images (procedure with code; p90 tilt $75^{\circ}$). \hybrid{} differs from \ours{} as shown in Table~\ref{tab:main}. Table~\ref{tab:hybrid} compares \hybrid{} and OSNet+ctx.
 
-\begin{table}[t]
 
-\centering
+From five walls, using one seed, ten source photographs show a small warp either under (A) one-tip growth or (B) blur/noise/contrast with the structure remaining unchanged, and then they are matched with the actual images (p90 tilt $75^{\circ}$; procedure as in the code). \hybrid{} ($\tau{=}8.0$~px) differs from \ours{} (see Table~\ref{tab:main}). In the case of ranking/open set, OSNet+ctx outperforms \hybrid{} (R@1 0.826/0.671 versus 0.275/0.274; DIR 0.739/0.663 versus 0.343/0.342; $F_1^{@v}$ is similar at 0.601/0.594 versus 0.569/0.574); assignment-$F_1^a$ shows a narrow reversal (0.646/0.640 versus 0.631/0.609; there is no pure-homography cell). With respect to RQ3, this single-seed probe provides no evidence of real multi-visit robustness, which has not been tested (Sec.~\ref{sec:validity}).
 
-\footnotesize\setlength{\tabcolsep}{3pt}
-
- \caption{Synthetic revisit scenario: \hybrid{} versus OSNet+ctx, with the $F_{1}$ score at the validation threshold; one seed and five walls. \hybrid{} differs from \ours{} as in Table~\ref{tab:main}.}
-
-\label{tab:hybrid}
-
-\begin{tabular}{llcccccc}
-
-\toprule
-
-Protocol & Method & $n_{q}$ & R@1 & mAP & DIR & $F_{1}^{@v}$ & $F_{1}^{a}$ \\
-
-& & & & & {\scriptsize @FAR$_{0.1}$} & & \\
-
-\midrule
-
-\multirow{2}{*}{A (growth)} & \hybrid{} & 69 & 0.275 & 0.401 & 0.343 & 0.569 & 0.646 \\
-
- & OSNet+ctx & 69 & \textbf{0.826} & \textbf{0.647} & \textbf{0.739} & 0.601 & 0.631 \\
-
-\midrule
-
-\multirow{2}{*}{B (appear.)} & \hybrid{} & 82 & 0.274 & 0.403 & 0.342 & 0.574 & 0.640 \\
-
- & OSNet+ctx & 82 & \textbf{0.671} & \textbf{0.570} & \textbf{0.663} & 0.594 & 0.609 \\
-
-\bottomrule
-
-\end{tabular}
-
-\end{table}
-
-For ranking/open-set, OSNet+ctx outperforms \hybrid{} (R@1 0.826/0.671 versus 0.275/0.274 and DIR 0.739/0.663 versus 0.343/0.342), while on assignment-$F_{1}^{a}$ the order reverses narrowly (0.646/0.640 versus 0.631/0.609; $F_{1}^{@v}$ remains similar at 0.569/0.574 versus 0.601/0.594); no cell corresponds to the pure homography case (H $=$ 0.0\%). For RQ3, this single-seed synthetic probe (Table~\ref{tab:hybrid}; ten source photos, five walls) provides no evidence for real multi-visit robustness, which remains untested (Sec.~\ref{sec:validity}).

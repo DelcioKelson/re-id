@@ -10,19 +10,11 @@
 
 
 
-The \textsc{CrackID} dataset consists of 140 photographs of 17 exterior walls that were taken at a single site over four half-days using two consumer handheld devices (Mendeley Data~\cite{ferramenta2026crackid}; Fig.~\ref{fig:dataset-examples}). The walls are either stippled render (textured) or smooth painted plaster, and the only features that are visible are cracks. The dataset is divided such that six walls are used for validation (walls 01 to 06; 66 photos, 66 identities) and eleven walls for testing (walls 07 to 17; 74 photos, 146 identities). Only those identities that appear in at least two photographs are included in the answerable queries (18 validation, 19 test; $n_{Q}{=}439$ validation and $305$ test queries). We added Walls 18 and 19 to the dataset afterward and therefore exclude them from all results. Each wall was photographed during a continuous walk-around (median time of 3 seconds between frames and a maximum of 81 seconds); the data include within-visit viewpoint and scale correspondences, providing a more favorable scenario than multi-visit matching, not a formal upper bound.
+The \textsc{CrackID} pilot dataset consists of 140 photographs of 17 walls taken at a single site over four half-days with two consumer handheld devices, archived at Mendeley Data~\cite{ferramenta2026crackid} (frozen snapshot; commit hash in Sec.~\ref{sec:protocol}); see Fig.~\ref{fig:dataset-examples}. Device, resolution and lighting metadata are not archived per photograph. Walls are stippled render (textured) or smooth plaster (feature-poor); no surface roster is archived, so surface is proxied by registration rate and sharpness (variance of Laplacian at quarter scale): walls with median sharpness $\leq 17$ register at 0.00--0.11, walls with $\geq 62$ at 0.29--1.00. Six walls serve for validation (01--06) and eleven for testing (07--17). The test split has 74 photographs forming 301 same-wall pairs, of which 97 register (rate 0.32; 0.00 on walls 10 and 17 to 1.00 on walls 07, 08, 12). Retrieval uses known queries (19 test identities; 280 queries); open set adds queries with no gallery mate (258 on test). Walls 18--19 are excluded; the live labels directory has since diverged and must not be combined with frozen figures without re-running. Code is at \url{https://github.com/DelcioKelson/re-id} (no code licence stated). Each wall was photographed in a continuous walk-around (median 3~s between frames, max 81~s span), an easier setting than multi-visit matching. Cross-wall search is disallowed, so the wall is given for free.
 
 
 
-\smallskip
-
-
-
-For adjacent-frame retrieval, the gallery includes the adjacent frame for all 305 test queries that require an answer. The gap sweeps described in Sec.~\ref{sec:coverage} (involving 305 queries down to 205, then to 149, and finally to 105 for gaps 0–3) maintain Rank-1 as the number of items in the pool decreases, which shows that the method is robust when faced with short baselines.
-
-
-
-\subsection{Annotation, and why it needs auditing}
+\subsection{Annotation and its limits}
 
 
 
@@ -30,7 +22,7 @@ For adjacent-frame retrieval, the gallery includes the adjacent frame for all 30
 
 
 
-The ORB homography method carries every single click from frame to frame and then combines the fragments to form physical-crack identities; the merging process is the greatest risk (since an incorrect merge can turn a hard negative into a false positive). In the frozen snapshot, 95 of the 212 identities (45\%; 70 of 146, 48\% in the test case) result from merges, with median bridged gaps of 228 pixels (test) and 286 pixels (validation). One annotator examined all the clicks and sorted the unclaimed points (107 of the 1,023 were classified as no crack; the details are archived with the code). Although single-annotator triage reduces the merge risk, it does not eliminate it. All the figures refer to the frozen snapshot (Table~\ref{tab:units}); the live \texttt{dataset/labels/} directory includes walls 18--19 and must not be combined with the frozen figures without first re-running the benchmark.
+The annotation process begins with a labelling tool that applies Oriented FAST and Rotated BRIEF (ORB)~\cite{rublee2011orb} homography to propagate each click across the different frames and then combines the resulting fragments into crack identities. There is no gap threshold preserved and no written rule for merging; instead, one annotator decided to combine the propagated fragments that were judged to be part of the same physical crack. Merging represents the greatest risk since a wrong merge can cause a clear negative to be changed into a false positive. In the frozen snapshot, 95 out of the 212 identities (45\%; 70 out of 146, 48\% on the test set) are the result of merges, the median bridged gaps being 286~px (in the validation set) and 228~px (in the test set) where recorded. That annotator looked at all the clicks and categorised the unclaimed points (107 out of 1,023 were classified as no crack); agreement was not assessed and no second annotator carried out labelling without the homography overlays. Since the geometric reference is also aligned by means of homography, its benefit might be in measuring the agreement between two homography pipelines and one annotator's merges rather than in determining crack identity (see Sec.~\ref{sec:validity}). All the figures refer to the frozen Mendeley snapshot. The positive pool in the frozen state is almost degenerate in that 5,718 of the 5,722 positive pairs involve a merged identity. A subset of the data that has been labelled independently by a second annotator is required in order to quantify the error due to merging.
 
 
 
@@ -42,11 +34,11 @@ The ORB homography method carries every single click from frame to frame and the
 
 
 
-\includegraphics[width=0.75\columnwidth]{figs/dataset_examples.pdf}
+\includegraphics[width=0.6\columnwidth]{figs/dataset_examples.pdf}
 
 
 
-\caption{Real \textsc{CrackID} examples. Top: one identity across non-adjacent frames. Bottom: stippled render versus smooth plaster. Labels via homography propagation, unaudited.}
+\caption{\textsc{CrackID} examples. Top: one identity across non-adjacent frames. Bottom: stippled vs smooth plaster. Homography-propagated labels, single annotator, no audit.}
 
 
 

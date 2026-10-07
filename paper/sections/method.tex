@@ -1,59 +1,27 @@
 \section{A Geometric Reference Baseline}
 \label{sec:method}
 
-The baseline tests whether crack locations on the wall drive the
-association: it aligns wall surfaces to a common frame and then compares
-the projected crack masks. It assumes a roughly planar wall and uses no
-\textsc{CrackID} training. The shared masks (trained on public
-crack data only; no \textsc{CrackID} wall in training) use instance extraction at 200~px and 5~px to keep inputs consistent
-across methods. Masks are taken
-as given, and their error is not measured.
+The test examines whether the position of the crack has an effect on the association by aligning the wall surfaces and then comparing the projected masks. It makes the assumption of a roughly planar wall and that there is no \textsc{CrackID} training. This kind of procedure is typical for spatial verification; what is provided here is the protocol, the labels and the controls. The masks (UNet++~\cite{zhou2018unetplusplus,ronneberger2015unet}, ResNet-34~\cite{he2016resnet}, only those that are publicly available, an area of 200~px, with a 5~px closing) are taken as given and the error is not measured.
 
 \subsection{Registration using wall texture}
 
-For $I_a, I_b$, a homography $H$ ($x'\sim Hx$) is estimated from the
-surrounding wall texture with detected cracks dilated and excluded, so
-alignment is driven by surface features independently of the identity
-under test. This independence is conditional on the masks and the succeeding stage, not guaranteed per pair. Full detector settings (Scale-Invariant Feature Transform (SIFT) with Contrast Limited Adaptive Histogram Equalization (CLAHE)~\cite{zuiderveld1994clahe}, ratio test, robust
-estimation) are archived with the code.
+For $I_a$ and $I_b$, we estimate a homography $H$ (such that $x’\sim Hx$) based on the surrounding wall texture, with the cracks enlarged and then omitted, so the alignment relies on surface features without accounting for the crack under examination. This independence comes from the masks and the following stage, not from each individual pair. The complete detector settings (Scale-Invariant Feature Transform (SIFT)~\cite{lowe2004sift} together with Contrast Limited Adaptive Histogram Equalisation (CLAHE)~\cite{zuiderveld1994clahe}, ratio test, robust estimation) are available together with the code.
 
 \subsection{Registration cascade and validity checks}
 
-Textured render generally provides background features, whereas smooth
-plaster does not. A three-stage cascade is used: masked SIFT;
-if too few keypoints remain, unmasked SIFT as fallback (flagged
-per pair, since the crack then aids alignment); finally, Enhanced Correlation Coefficient (ECC)
-photometric alignment. Candidates pass plausibility tests (no mirrored or
-folded quads; scale within $[1/16, 16]$); the surviving stage is recorded
-per pair, and its inlier root-mean-square error (RMSE) sets the comparison tolerance. Unscored
-pairs count as lack of evidence, not evidence of different defects.
+The textured render produces keypoints, whereas smooth plaster does not. For the cascade, masked SIFT is used; if the number of keypoints is too low, a fallback to unmasked SIFT is employed (in this case it is flagged and crack leakage occurs during alignment); finally, photometric alignment is carried out using the Enhanced Correlation Coefficient (ECC)~\cite{evangelidis2008ecc}. The candidate solutions are tested for plausibility (they must not contain mirrored or folded quads; the scale must be within $[1/16,16]$; there is no criterion based on inlier count here). We record the result of each surviving stage for each pair, and the inlier root-mean-square error (RMSE) at that stage determines the comparison tolerance. The absence of a registration for a pair means a lack of evidence, not that the cracks differ.
 
 \subsection{Crack projection and geometric comparison}
 \label{sec:chamfer}
 
-Accepted registrations project instances from $I_a$ into $I_b$ for
-comparison by symmetric mean Chamfer distance in \eqref{eq:chamfer}, which tolerates the small
-misalignments that collapse intersection over union (IoU) on narrow cracks. Let $a,b$ be crack point sets and
-$d(p, b)=\min_{q \in b}\lVert p-q\rVert_2$:
+The Accepted Registrations project instances from $I_a$ into $I_b$ so they can be compared using the symmetric mean Chamfer distance~\cite{barrow1977chamfer} as in \eqref{eq:chamfer}; this method allows small misalignments by using intersection over union (IoU) on narrow cracks. Let $a,b$ be crack point sets and $d(p, b)=\min_{q \in b}\lVert p-q\rVert_2$:
 \begin{equation}
 D(a,b)=\frac{1}{2}\left[\frac{1}{|a|}\sum_{p \in a} d(p, b)+
 \frac{1}{|b|}\sum_{q \in b} d(q, a)\right].
 \label{eq:chamfer}
 \end{equation}
-Early rejection of distant candidates applies. Chamfer coverage (fraction within tolerance $\tau$ of the per-pair RMSE, clamped to
-$[2, 16]$~pixels, default $6$~pixels; \hybrid{} uses $8.0$~pixels) is
-evaluated separately as its scale-free counterpart (see
-Sec.~\ref{sec:chamferablation}).
+We reject candidates that are far away (using distance in the code). Chamfer coverage (i.e., the fraction within the per-pair RMSE, with the distance clamped at [2,16] pixels and a default of 6 pixels) is the scale-free equivalent.
 
 \subsection{Correspondence decisions and limits of spatial evidence}
 
-For each image pair, one-to-one assignment follows the Hungarian
-method~\cite{kuhn1955hungarian} with the validation threshold shared by
-all methods; unscored pairs take value $-\infty$ (predicted negative,
-ranked last, as in Sec.~\ref{sec:protocol}). An aligned projection onto
-visibly empty wall is a \textit{licensed negative} (evidence of absence,
-stronger than low embedding similarity). At the same time, missed detections,
-out-of-frame areas, and registration failures stay unresolved. The
-\ours{} reference targets unchanged damage; progression uses \hybrid{}.
-Performance depends on surface-dependent failures and on
-homography-based annotation provenance.
+For each pair of photographs we carry out a one-to-one matching using the Hungarian method~\cite{kuhn1955hungarian} at the validation threshold; pairs that fail to be registered are given a value of $-\infty$ (Sec.~\ref{sec:protocol}). Alignment of an image with an empty wall acts as evidence of the absence of a target; missed detections, areas that are out of frame, and registration failures still remain unresolved. The reference targets do not show any change in damage; performance is determined by the surface and by the origin of the label.

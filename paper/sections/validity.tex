@@ -1,21 +1,28 @@
 \section{Limitations and Future Work}
 
+
+
 \label{sec:validity}
 
-This study presents the first measurable test of re-identifying a crack in a single visit using a geometric reference. The results are derived from a small number of clustered walls, labels provided by a single annotator, and partial registration coverage. Each of the points listed here corresponds to a finding together with a step for verifying it.
+
+
+To our knowledge, this study is the first measurable single-visit crack re-ID test with a geometric reference. Threats: (i) 19 identities on 11 walls, queries not independent, CIs wide; (ii) labels and winner share homography, possible circularity; (iii) different pools with label-informative gate; (iv) single-threshold $F_1$ at 0.180 near-degenerate with validation/test mismatch; (v) singleton unknowns, unstratified variation, wall given but location, Building Information Modelling (BIM), physical markers, and Structure from Motion (SfM) are unevaluated.
+
+
 
 \begin{enumerate}
 
-\item \textbf{Scale to more walls and visits.} Collect data from more walls, different surface types, and additional annotators to improve the confidence intervals and the reliability of the rankings. Most importantly, include a second session using different distances and lighting conditions to establish a genuine cross-visit benchmark.
+\item \textbf{More walls and visits.} Add walls, surfaces, annotators (CIs, paired tests); add a second session for cross-visit;
 
-\item \textbf{Add provenance-free annotation.} One annotator reviewed all clicks and handled the unclaimed points; agreement was not assessed, and the geometric advantage depends on provenance. To detect the gap independent of provenance, it would help to create a small set of labels without homography and share score matrices per pair for sensitivity to wall-clustered intervals and threshold-free AP/AUROC.
+\item \textbf{Labels without homography.} Small set without overlays ($\kappa$, ARI), re-run all methods, merged-vs-unmerged, plus matrices for CIs and AUROC/AUPRC.
 
-\item \textbf{Close the coverage gap.} The baseline covers 48\% of the pairs (97 out of 301 image pairs; 15,328 out of 31,822 valid cells) and is ineffective when dealing with smooth plaster. By using surface-adaptive registration methods such as learned local features, direct photometric alignment, or sparse depth obtained from consumer devices, a more thorough evaluation could be achieved, and the separate geometry could be better distinguished from the homography-based provenance.
+\item \textbf{Registration coverage.} The reference registers 97 out of 301 of the same-wall test photograph pairs (32\% of the photograph pairs; 48\% of the 15,328 valid query/gallery pairs within those pairs) but does not work on smooth-plaster walls, since the median sharpness in such cases is low (see Section~\ref{sec:dataset}). Coverage could improve with surface-adaptive, photometric, or depth-based registration, which would also separate geometry and labelling; for the FAR measure to assess novelty, matched unknowns from the holdout set are required.
 
-\item \textbf{Learn from geometric supervision.} The baseline is an untrained reference and not a system that has been put into operation. The location benefit could be obtained by using pseudo-labels from the registration process or by fine-tuning a foundation model on homography correspondences, without per-pair registration.
-
-\item \textbf{Assess the ticket lifecycle.} Define task metrics such as the duplicate rate and the missed-new-defect rate, and also test segmentation, re-identification, and joint ticket assignment in a closed-loop simulation of real inspections.
+\item \textbf{Tickets.} No ticket-level duplicate rate is measured, and the problem that is causing concern is stated without referring to any ticket data. The definitions of duplicate rate and missed-new rate should be established, and the segmentation and assignment processes should be tested in a closed loop.
 
 \end{enumerate}
 
-Together, these steps will turn the within-visit reference into a multi-visit re-identification component that can be used operationally for tickets.
+
+
+Together, these turn the within-visit reference into a multi-visit ticket component.
+

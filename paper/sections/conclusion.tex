@@ -1,9 +1,14 @@
 \section{Conclusion}
 
+
+
 We present \textsc{CrackID}, which consists of 140 photographs from 17 walls, along with a protocol for retrieval, deciding whether defects are the same, and performing open-set identification with rejection.
 
-The main findings are constructive: concerning (RQ1), ten zero-shot crop matchers rank above chance, which establishes a working retrieval baseline, while thresholded decisions remain close to the best-constant baseline and motivate joint evaluation of ranking, decisions, and rejection; concerning (RQ2), local wall context contributes substantially to appearance-based association, and the geometric reference demonstrates how surface alignment and projected crack overlap can support open-set identification on the 48\% alignable subset; concerning (RQ3), the small synthetic revisit probe clarifies the boundary between within-visit association and multi-visit robustness.
 
-These findings show that retrieval performance alone does not ensure reliable crack association and highlight the contribution of local visual context and geometric alignment to re-identification. By jointly evaluating retrieval, matching decisions, and rejection of unknown defects, \textsc{CrackID} provides a foundation for developing more reliable visual association methods to support defect tracking in ticket management systems.
 
-Because all figures are point estimates from a small sample grouped by wall, and a single annotator assigned the labels using homography, the open-set advantage depends on provenance, and the ranking measures consider only within-visit correspondence. This dataset and benchmark focus on the visual association stage. Further work is needed to evaluate across visits and reduce ticket-level duplicates.
+The key results are positive: with regard to (RQ1), ten of the zero-shot crop matchers perform better than random, thus setting a viable baseline for retrieval, while thresholded decisions stay near the level of the best constant baseline and therefore call for a combined assessment of ranking, decisions, and rejection; as for (RQ2), local wall context makes a significant contribution to appearance-based association, and the geometric reference shows how surface alignment and projected crack overlap can assist open-set identification on the 48\% alignable subset; regarding (RQ3), the small synthetic revisit probe makes clear the distinction between within-visit association and multi-visit robustness.
+
+
+
+The fact that good retrieval performance alone is not enough to ensure reliable crack association shows the need for both local visual context and geometric alignment to perform re-identification. Because \textsc{CrackID} makes judgments not only on retrieval but also on matching and on rejecting unknown defects, \textsc{CrackID} forms a basis for the development of more reliable visual association methods to support defect tracking in ticket management systems.
+

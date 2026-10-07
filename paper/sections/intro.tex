@@ -1,27 +1,54 @@
 \section{Introduction}
 
-Ticket management systems record reports of physical defects so that they can be inspected, prioritized, repaired, and followed up. Ideally, each ticket holds the history of a single incident. In practice, different users may photograph the same crack more than once, producing duplicate tickets that fragment this history and cause redundant assessment work. Every new observation must therefore either be linked to an existing ticket or open a new ticket for damage that has not yet been recorded.
 
-This is a visual re-identification (re-ID) problem in which (i) the same physical crack must be recognised despite variations in viewpoint, camera distance, field of view, illumination, and partial visibility; (ii) a crack may itself change---by extending, widening, or branching---and must still be matched to its earlier observations, while genuinely new damage must be distinguished from growth of known damage. Errors in either direction lead to duplicate tickets or misattributed history.
 
-Existing work on crack detection and segmentation focuses on single images. Datasets such as CrackSeg9k~\cite{kulkarni2022crackseg9k} and OmniCrack30k~\cite{benz2024omnicrack30k} contain no cross-observation identities, so observations cannot be associated with tickets. Whether techniques from person and object re-ID~\cite{zhou2019osnet,qian2024reidtrends} transfer to cracks is untested, since different defects may look alike while a single defect can vary considerably in appearance.
+Ticket management systems keep records of reports regarding physical defects so that these reports can be examined, given priority, repaired, and followed up on. In principle, each ticket should contain the full history of one particular incident. In reality, different users may take more than one photograph of the same crack, which results in duplicate tickets and breaks up the history of the incident and leads to unnecessary assessment work. A new photograph must therefore either be linked to an existing ticket or a new ticket have to be opened for any damage that has not yet been recorded.
 
-This work introduces CRACKID to evaluate whether photographs depict the same physical wall crack: 140 photographs of 17 walls captured during a single visit. Real photographs capture the acquisition changes that occur within a visit, whereas appearance and growth changes are probed only with synthetic images. Cross-visit evaluation on real photographs and ticket-level duplicate reduction are left for future work. All accuracy figures are point estimates from a small sample grouped by wall.
 
-We assess ten zero-shot matchers using \textsc{CrackID}. The protocol divides the process into two parts: the retrieval of candidate images and the decision as to whether two observations depict the same defect, and it includes open-set identification with rejection---that is, open-set association where the top match is accepted only if its score exceeds a threshold, otherwise the query is rejected as a new ticket---since a high rank by itself is not enough to associate a report with a ticket. To test whether matchers recognize the crack itself or only wall context, we use crack-erased control cases together with a geometric baseline which aligns the wall images and compares the projected crack masks.
+
+This is a case of visual re-identification (re-ID). It is necessary to identify the same physical crack even though there are variations in the angle of view, the distance from the camera, the field of view, the lighting conditions, and partial visibility. Furthermore, a crack may change by extending, widening or branching, although such changes are not considered here: the protocol supposes that the morphology remains unaltered during a single visit and only assesses associations. Genuine new damage must be differentiated from existing damage. Making errors in either direction results in duplicate tickets or in the incorrect assignment of a damage history. A crack identity consists of the set of photographs of a single physical crack. In practice, one crack identity corresponds to one ticket, but this benchmark focuses on visual association rather than on reducing duplicates at the ticket level.
+
+
+
+Existing work on crack detection and segmentation focuses on single photographs. Datasets such as CrackSeg9k~\cite{kulkarni2022crackseg9k} and OmniCrack30k~\cite{benz2024omnicrack30k} contain no cross-photograph identities, so photographs cannot be associated with tickets. It is unclear whether person and object re-ID techniques~\cite{zhou2019osnet,qian2024reidtrends} transfer to cracks: different cracks can look alike, and one crack can change appearance considerably.
+
+
+
+This study presents \textsc{CrackID} as a method for determining whether photographs show the same physical crack: it includes 140 photographs taken of 17 walls during one visit. Since the photographs are real, they include the changes that occur during the visit. The accuracy figures given are point estimates based on a small sample, with the samples grouped by wall.
+
+
+
+We use \textsc{CrackID} to evaluate ten off-the-shelf matchers. The protocol divides the process into two parts: retrieving the gallery candidates and then deciding whether two photographs display the same crack. It involves open-set identification with rejection, meaning that the top match is only accepted if it exceeds a certain threshold, and in all other cases the query is treated as a new ticket. Having a high rank by itself is not sufficient to link a report to a ticket. In order to determine whether the matchers recognise the crack itself or merely the surrounding surface context, we employ crack-erased controls together with a geometric reference that aligns the wall photographs and compares the projected crack masks.
+
+
 
 Three research questions guide the study:
 
+
+
 \begin{description}
 
-  \item[\textbf{RQ1.}] Can the evaluated methods associate observations of the same defect under varying image acquisition conditions?
 
-  \item[\textbf{RQ2.}] How do wall context and geometric alignment contribute to defect re-identification?
+
+  \item[\textbf{RQ1.}] Can the evaluated methods associate photographs of the same crack taken under different acquisition conditions?
+
+
+
+  \item[\textbf{RQ2.}] How do wall context and geometric alignment contribute to re-identification within a single visit?
+
+
 
   \item[\textbf{RQ3.}] How do two selected approaches perform under synthetic changes in appearance and crack growth?
 
+
+
 \end{description}
 
-RQ1 and RQ2 are answered with real single-visit photographs; RQ3 is an exploratory study on synthetic data.
 
-The contributions are as follows: (i)~the cross-observation identities of \textsc{CrackID}, together with their annotation provenance (Section~\ref{sec:annotation}); (ii)~a benchmark covering retrieval, same-defect decisions, and open-set identification, which addresses RQ1 (Sections~\ref{sec:protocol} and~\ref{sec:ceiling}); (iii)~context controls, a geometric reference, and a coverage analysis, which address RQ2 (Sections~\ref{sec:method}, \ref{sec:controls}, and~\ref{sec:coverage}); and (iv)~a synthetic revisit probe, which addresses RQ3 (Section~\ref{sec:hybridbench}).
+
+RQ1 and RQ2 use real single-visit photographs; RQ3 is an exploratory synthetic probe.
+
+
+
+The following points make up our contribution: (1) \textsc{CrackID}: 140 photographs, 17 walls, 212 identities (37 of which are matchable), along with a wall-disjoint protocol for retrieval and open-set identification with rejection (RQ1); (2) a registration-plus-Chamfer reference that maintains the alignment target (i.e. the wall texture excluding the cracks) separate from the identified target (i.e. the projected crack masks), together with context controls and coverage analysis (RQ2); (3) an evaluation of ten off-the-shelf matchers using controls that isolate crack appearance from the surrounding surface context; and (4) a synthetic revisit probe for RQ3. The accuracy figures are point estimates obtained from a small sample of wall-clustered data; the effective sample consists of the walls, not the queries or pairs.
+

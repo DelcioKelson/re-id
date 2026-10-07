@@ -88,6 +88,11 @@ X.~Sun and P.~Chang, ``Robust perspective correction for real-world crack
 S.~Liao, Z.~Mo, Y.~Hu, and S.~Z. Li, ``Open-set person re-identification,''
   arXiv:1408.0872 [cs.CV], 2014.
 
+\bibitem{zheng2015market1501}
+L.~Zheng, L.~Shen, L.~Tian, S.~Wang, J.~Wang, and Q.~Tian, ``Scalable person
+  re-identification: A benchmark,'' in \emph{IEEE Int. Conference on Computer
+  Vision (ICCV)}, 2015, pp. 1116--1124.
+
 \bibitem{lowe2004sift}
 D.~G. Lowe, ``Distinctive image features from scale-invariant keypoints,''
   \emph{International Journal of Computer Vision}, vol.~60, no.~2, pp. 91--110,
@@ -131,13 +136,8 @@ M.~Oquab, T.~Darcet, T.~Moutakanni \emph{et~al.}, ``{DINOv2}: Learning robust
   Research}, 2024.
 
 \bibitem{jocher2023ultralytics}
-G.~Jocher, A.~Chaurasia, and J.~Qiu, ``{Ultralytics YOLOv8},'' Available:
-  \url{https://github.com/ultralytics/ultralytics}, 2023.
-
-\bibitem{lindenberger2023lightglue}
-P.~Lindenberger, P.-E. Sarlin, and M.~Pollefeys, ``{LightGlue}: Local feature
-  matching at light speed,'' in \emph{IEEE/CVF Int. Conference on Computer
-  Vision (ICCV)}, 2023, pp. 17\,627--17\,638.
+G.~Jocher, A.~Chaurasia, and J.~Qiu, ``{Ultralytics YOLOv8 (software)},''
+  Available: \url{https://github.com/ultralytics/ultralytics}, 2023.
 
 \bibitem{arandjelovic2016netvlad}
 R.~Arandjelovi{\'c}, P.~Gronat, A.~Torii, T.~Pajdla, and J.~Sivic, ``{NetVLAD}:
@@ -185,8 +185,9 @@ R.~Hartley and A.~Zisserman, \emph{Multiple View Geometry in Computer Vision},
 \bibitem{fischler1987ransac}
 M.~A. Fischler and R.~C. Bolles, ``Random sample consensus: A paradigm for
   model fitting with applications to image analysis and automated
-  cartography,'' in \emph{Readings in Computer Vision}.\hskip 1em plus 0.5em
-  minus 0.4em\relax Morgan Kaufmann, 1987, pp. 726--740.
+  cartography,'' \emph{Communications of the ACM}, vol.~24, no.~6, pp.
+  381--395, 1981, reprinted in Readings in Computer Vision, Morgan Kaufmann,
+  1987.
 
 \bibitem{barath2019magsac}
 D.~Barath, J.~Matas, and J.~Noskova, ``{MAGSAC}: Marginalizing sample
@@ -198,17 +199,54 @@ G.~D. Evangelidis and E.~Z. Psarakis, ``Parametric image alignment using
   enhanced correlation coefficient maximization,'' \emph{IEEE Trans. Pattern
   Analysis and Machine Intelligence}, vol.~30, no.~10, pp. 1858--1865, 2008.
 
+\bibitem{philbin2007object}
+J.~Philbin, O.~Chum, M.~Isard, J.~Sivic, and A.~Zisserman, ``Object retrieval
+  with large vocabularies and fast spatial matching,'' in \emph{IEEE Conf.
+  Computer Vision and Pattern Recognition (CVPR)}, 2007, pp. 1--8.
+
+\bibitem{radenovic2018revisiting}
+F.~Radenovi{\'c}, G.~Tolias, and O.~Chum, ``Revisiting {Oxford} and {Paris}:
+  Large-scale image retrieval benchmarking,'' in \emph{IEEE Conf. Computer
+  Vision and Pattern Recognition (CVPR)}, 2018, pp. 5706--5715.
+
 \bibitem{ferramenta2026crackid}
 D.~Ferramenta, ``{CrackID},'' Mendeley Data, Version 1, Available:
   \url{https://doi.org/10.17632/t749fc4x44.1}, 2026.
+
+\bibitem{zhou2018unetplusplus}
+Z.~Zhou, M.~M.~R. Siddiquee, N.~Tajbakhsh, and J.~Liang, ``{UNet++}: A nested
+  {U-Net} architecture for medical image segmentation,'' in \emph{Deep Learning
+  in Medical Image Analysis and Multimodal Learning for Clinical Decision
+  Support}, 2018, pp. 3--11.
+
+\bibitem{ronneberger2015unet}
+O.~Ronneberger, P.~Fischer, and T.~Brox, ``{U-Net}: Convolutional networks for
+  biomedical image segmentation,'' in \emph{Medical Image Computing and
+  Computer-Assisted Intervention (MICCAI)}, 2015, pp. 234--241.
+
+\bibitem{he2016resnet}
+K.~He, X.~Zhang, S.~Ren, and J.~Sun, ``Deep residual learning for image
+  recognition,'' in \emph{IEEE Conf. Computer Vision and Pattern Recognition
+  (CVPR)}, 2016, pp. 770--778.
 
 \bibitem{zuiderveld1994clahe}
 K.~Zuiderveld, ``Contrast limited adaptive histogram equalization,'' in
   \emph{Graphics Gems IV}.\hskip 1em plus 0.5em minus 0.4em\relax Academic
   Press, 1994, pp. 474--485.
 
+\bibitem{barrow1977chamfer}
+H.~G. Barrow, J.~M. Tenenbaum, R.~C. Bolles, and H.~C. Wolf, ``Parametric
+  correspondence and chamfer matching: Two new techniques for image matching,''
+  in \emph{Int. Joint Conf. Artificial Intelligence (IJCAI)}, 1977, pp.
+  659--663.
+
 \bibitem{kuhn1955hungarian}
 H.~W. Kuhn, ``The {H}ungarian method for the assignment problem,'' \emph{Naval
   Research Logistics Quarterly}, vol.~2, no. 1-2, pp. 83--97, 1955.
+
+\bibitem{lindenberger2023lightglue}
+P.~Lindenberger, P.-E. Sarlin, and M.~Pollefeys, ``{LightGlue}: Local feature
+  matching at light speed,'' in \emph{IEEE/CVF Int. Conference on Computer
+  Vision (ICCV)}, 2023, pp. 17\,627--17\,638.
 
 \end{thebibliography}

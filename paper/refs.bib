@@ -52,11 +52,13 @@
   title = {Multiple View Geometry in Computer Vision},
   edition = {2}, publisher = {Cambridge University Press}, year = {2004}
 }
-@incollection{fischler1987ransac,
+@article{fischler1987ransac,
   author = {Fischler, Martin A. and Bolles, Robert C.},
   title = {Random Sample Consensus: A Paradigm for Model Fitting with Applications to Image Analysis and Automated Cartography},
-  booktitle = {Readings in Computer Vision}, publisher = {Morgan Kaufmann},
-  pages = {726--740}, year = {1987}
+  journal = {Communications of the ACM},
+  volume = {24}, number = {6}, pages = {381--395},
+  year = {1981},
+  note = {Reprinted in Readings in Computer Vision, Morgan Kaufmann, 1987}
 }
 % Homography robustness survey omitted: the planar assumption is stated
 % as a limitation (Sec.~\ref{sec:method}, \ref{sec:validity}), not a robustness claim.
@@ -162,6 +164,33 @@
   journal = {Naval Research Logistics Quarterly},
   volume = {2}, number = {1-2}, pages = {83--97},
   year = {1955}
+}
+
+% ---------------------------------------------------------------------------
+% Retrieval / place recognition / re-ID protocol precedents (Sec. II).
+% ---------------------------------------------------------------------------
+@inproceedings{philbin2007object,
+  author = {Philbin, James and Chum, Ond{\v r}ej and Isard, Michael and Sivic, Josef and Zisserman, Andrew},
+  title = {Object Retrieval with Large Vocabularies and Fast Spatial Matching},
+  booktitle = {IEEE Conf. Computer Vision and Pattern Recognition (CVPR)},
+  pages = {1--8},
+  year = {2007}
+}
+
+@inproceedings{radenovic2018revisiting,
+  author = {Radenovi{\'c}, Filip and Tolias, Giorgos and Chum, Ond{\v r}ej},
+  title = {Revisiting {Oxford} and {Paris}: Large-Scale Image Retrieval Benchmarking},
+  booktitle = {IEEE Conf. Computer Vision and Pattern Recognition (CVPR)},
+  pages = {5706--5715},
+  year = {2018}
+}
+
+@inproceedings{zheng2015market1501,
+  author = {Zheng, Liang and Shen, Liyue and Tian, Lu and Wang, Shengjin and Wang, Jingdong and Tian, Qi},
+  title = {Scalable Person Re-Identification: A Benchmark},
+  booktitle = {IEEE Int. Conference on Computer Vision (ICCV)},
+  pages = {1116--1124},
+  year = {2015}
 }
 
 % ---------------------------------------------------------------------------
@@ -271,9 +300,37 @@
 % locate, and YOLOv8 is a detector family rather than a paper.
 @misc{jocher2023ultralytics,
   author = {Jocher, Glenn and Chaurasia, Ayush and Qiu, Jing},
-  title = {{Ultralytics YOLOv8}},
+  title = {{Ultralytics YOLOv8 (software)}},
   howpublished = {Available: \url{https://github.com/ultralytics/ultralytics}},
   year = {2023}
+}
+
+@inproceedings{ronneberger2015unet,
+  author = {Ronneberger, Olaf and Fischer, Philipp and Brox, Thomas},
+  title = {{U-Net}: Convolutional Networks for Biomedical Image Segmentation},
+  booktitle = {Medical Image Computing and Computer-Assisted Intervention (MICCAI)},
+  pages = {234--241}, year = {2015}
+}
+
+@inproceedings{zhou2018unetplusplus,
+  author = {Zhou, Zongwei and Siddiquee, Md Mahfuzur Rahman and Tajbakhsh, Nima and Liang, Jianming},
+  title = {{UNet++}: A Nested {U-Net} Architecture for Medical Image Segmentation},
+  booktitle = {Deep Learning in Medical Image Analysis and Multimodal Learning for Clinical Decision Support},
+  pages = {3--11}, year = {2018}
+}
+
+@inproceedings{he2016resnet,
+  author = {He, Kaiming and Zhang, Xiangyu and Ren, Shaoqing and Sun, Jian},
+  title = {Deep Residual Learning for Image Recognition},
+  booktitle = {IEEE Conf. Computer Vision and Pattern Recognition (CVPR)},
+  pages = {770--778}, year = {2016}
+}
+
+@inproceedings{barrow1977chamfer,
+  author = {Barrow, Harry G. and Tenenbaum, Jay M. and Bolles, Robert C. and Wolf, Helen C.},
+  title = {Parametric Correspondence and Chamfer Matching: Two New Techniques for Image Matching},
+  booktitle = {Int. Joint Conf. Artificial Intelligence (IJCAI)},
+  pages = {659--663}, year = {1977}
 }
 
 @misc{ferramenta2026crackid,
