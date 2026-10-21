@@ -32,9 +32,9 @@
 \begin{abstract}
 In a ticket-based maintenance system, each new photograph of a crack should be assigned to the correct ticket, but if the same crack is photographed from a different angle it may be treated as a new defect, breaking its historical record and leading to redundant inspection work.
 We introduce \textsc{CrackID}, a dataset of 140 photographs from 17 walls containing 212 distinct crack identities, and use it to assess ten zero-shot matchers under three scenarios: retrieval, thresholded pairwise decisions, and open-set identification with rejection.
-Ranking quality varies considerably (Rank-1 0.352--0.654), yet validation-calibrated pairwise decisions only slightly exceed the best constant baseline ($F_1$ 0.293--0.351 vs.~0.305).
+Ranking quality varies considerably (Rank-1 0.352--0.654), yet validation-calibrated pairwise decisions stay close to the best constant baseline ($F_1$ 0.293--0.351 vs.~0.305).
 Context and crack-erasure experiments show that wall-context cues matter more than crack appearance.
-A geometric reference that aligns crack-free wall texture and compares projected masks achieves a detection-and-identification rate of 0.768 at a false-alarm rate of 0.1 on the 48\% of pairs that align twice the 0.429 of the best crop-based method.
+A geometric reference that aligns crack-free wall texture and compares projected masks achieves a detection-and-identification rate of 0.768 at a false-alarm rate of 0.1 on the 48\% of pairs that can be aligned, compared with 0.429 for the best crop-based method.
 These point estimates are from a small wall-clustered sample and cover only single-visit correspondence.
 They indicate that good retrieval alone does not guarantee reliable crack association, and that local visual context and geometric alignment are both needed.
 \textsc{CrackID} provides a foundation for developing more reliable visual association methods, with cross-visit evaluation and ticket-level duplicate reduction as future work.
