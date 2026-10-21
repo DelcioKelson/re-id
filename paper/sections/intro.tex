@@ -5,11 +5,11 @@ Ideally, each ticket holds the history of a single incident.
 In practice, different users may photograph the same crack more than once, producing duplicate tickets that fragment this history and cause redundant assessment work.
 Every new observation must therefore either be linked to an existing ticket or open a new ticket for damage that has not yet been recorded.
 
-This is a visual re-identification (re-ID) problem in which (i) the same physical crack must be recognised despite variations in viewpoint, camera distance, field of view, illumination, and partial visibility; (ii) a crack may itself change by extending, widening, or branching and must still be matched to its earlier observations, while genuinely new damage must be distinguished from growth of known damage.
+This is a visual re-identification (re-ID) problem in which (i) the same physical crack must be recognized despite variations in viewpoint, camera distance, field of view, illumination, and partial visibility; (ii) a crack may itself change by extending, widening, or branching and must still be matched to its earlier observations, while genuinely new damage must be distinguished from growth of known damage.
 Errors in either direction lead to duplicate tickets or misattributed history.
 Existing work on crack detection and segmentation focuses on single images.
 Datasets such as CrackSeg9k~\cite{kulkarni2022crackseg9k} and OmniCrack30k~\cite{benz2024omnicrack30k} contain no cross-observation identities, so observations cannot be associated with tickets.
-Whether techniques from person and object re-ID~\cite{zhou2019osnet,qian2024reidtrends} transfer to cracks is untested, since different defects may look alike while a single defect can vary considerably in appearance.
+It remains unclear whether techniques developed for person and object re-ID~\cite{zhou2019osnet,qian2024reidtrends} generalize to cracks, since different defects may have similar appearances, while the same defect may vary considerably in appearance across observations.
 
 This work introduces \textsc{CrackID} to evaluate whether photographs depict the same physical wall crack: 140 photographs of 17 walls captured during a single visit.
 Real photographs capture the acquisition changes that occur within a visit, whereas appearance and growth changes are probed only with synthetic images.
