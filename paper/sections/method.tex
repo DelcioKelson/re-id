@@ -24,7 +24,7 @@ Absence of registration means lack of evidence, not that the cracks differ.
 \label{sec:chamfer}
 
 Accepted registrations project instances from $I_a$ into $I_b$ and compare them using the symmetric mean Chamfer distance~\cite{barrow1977chamfer} as in \eqref{eq:chamfer}; this allows small misalignments by using IoU on narrow cracks.
-Let $a,b$ be crack point sets and $d(p, b)=\min_{q \in b}\lVert p-q\rVert_2$:
+Let $a and b$ be crack point sets and $d(p, b)=\min_{q \in b}\lVert p-q\rVert_2$:
 \begin{equation}
 D(a,b)=\frac{1}{2}\left[\frac{1}{|a|}\sum_{p \in a} d(p, b)+
 \frac{1}{|b|}\sum_{q \in b} d(q, a)\right].
