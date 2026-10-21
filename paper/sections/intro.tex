@@ -17,8 +17,7 @@ Cross-visit evaluation on real photographs and ticket-level duplicate reduction 
 All accuracy figures are point estimates from a small sample grouped by wall.
 
 We assess ten zero-shot matchers using \textsc{CrackID}.
-The protocol divides the process into two parts: the retrieval of candidate images and the decision as to whether two observations depict the same defect, and it includes open-set identification with rejection, that is, the top match is accepted only if its score exceeds a threshold, otherwise the query is rejected as a new ticket, since a high rank by itself is not enough to associate a report with a ticket.
-To test whether matchers recognize the crack itself or only wall context, we use crack-erased control cases together with a geometric baseline which aligns the wall images and compares the projected crack masks.
+The protocol separates candidate image retrieval from the decision of whether two observations depict the same defect, while incorporating open-set identification with rejection. The system accepts the top-ranked match only if its score exceeds a predefined threshold; otherwise, it rejects the query and treats it as a new ticket. This rejection mechanism is necessary because a high ranking alone does not provide sufficient evidence to link a report to an existing ticket.
 
 Three research questions guide the study:
 \begin{description}
