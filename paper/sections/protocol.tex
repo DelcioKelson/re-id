@@ -5,15 +5,15 @@ The benchmark assesses visual association by determining, for a new crack observ
 
 \subsection{Task formulation and candidate records}
 
-There is one physical wall; an identity connects the different observations of the same crack (Section~\ref{sec:annotation}).
-A query refers to one instance of a crack; its gallery includes other instances taken from photos of the same known wall.
+Every query and its gallery come from a single physical wall, and an identity links all observations of the same physical crack (Section~\ref{sec:annotation}).
+A query is a crack instance in one photograph; its gallery contains instances from the other photographs of the same wall.
 Cross-wall search is not allowed.
-A query is called known if its gallery contains the identity, otherwise it is unknown (meaning it is a genuinely new defect).
-In closed-set retrieval it is assumed that the answer will always be in the gallery and the candidates are only ranked.
-Open-set identification, on the other hand, involves modelling the association of tickets: the system has to either link the query to the best existing ticket or reject it and create a new ticket if no gallery entry scores high enough.
-Each method evaluates query--gallery pairs for the purposes of ranking, makes thresholded decisions and carries out identification with rejection.
+A query is known if its gallery contains another instance of the same identity, and unknown otherwise (a genuinely new defect).
+In closed-set retrieval, the true match is always in the gallery, so candidates are only ranked.
+Open-set identification mirrors ticket association: the system must either link the query to the best existing ticket or reject it and open a new one if no gallery entry scores high enough.
+Each method scores query--gallery pairs, and these scores are used for ranking, thresholded decisions, and identification with rejection.
 Pairs are the unit for pairwise decisions; queries are the unit for retrieval and for open-set decisions; image pairs are the unit for registration and assignment.
-The Hungarian one-to-one constraint is applied only for each image pair.
+The Hungarian one-to-one constraint is applied only within each image pair.
 
 \subsection{Test conditions, decisions, and metrics}
 
