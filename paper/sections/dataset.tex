@@ -18,7 +18,8 @@ Of the 301 same-wall test photograph pairs, 255 contain valid cells and 97 regis
 \subsection{Annotation, and why it needs auditing}
 \label{sec:annotation}
 
-The ORB homography method carries every single click from frame to frame and then combines the fragments to form physical-crack identities; the merging process is the greatest risk (since an incorrect merge can turn a hard negative into a false positive).
+The labelling pipeline propagates each annotator click frame-to-frame using ORB-based homographies, then merges the resulting fragments into physical-crack identities; this labelling procedure differs from the ORB matcher benchmarked in Table~\ref{tab:main}.
+Merging is the main source of label risk, since an incorrect merge can turn a hard negative into a false positive.
 In the frozen snapshot, 95 of the 212 identities (45\%; 70 of 146, 48\% in the test case) result from merges, with median bridged gaps of 228~px (test) and 286~px (validation).
 One annotator examined all the clicks and sorted the unclaimed points (107 of 1,023 were classified as no crack); agreement was not assessed.
 Although single-annotator triage reduces the merge risk, it does not eliminate it. The live dataset must not be combined with the frozen figures without first re-running the benchmark.
