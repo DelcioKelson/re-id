@@ -7,6 +7,7 @@ The shared masks (trained on public crack data only; no \textsc{CrackID} wall in
 Masks are taken as given, and their error is not measured.
 
 \subsection{Registration using wall texture}
+\label{sec:registration}
 
 For $I_a$, $I_b$, a homography $H$ ($x' \sim Hx$) is estimated from the surrounding wall texture with detected cracks dilated and excluded, so alignment is driven by surface features independently of the identity under test.
 This independence is conditional on the masks and the succeeding stage, not guaranteed per pair.
