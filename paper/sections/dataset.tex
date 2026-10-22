@@ -20,13 +20,13 @@ Of the 301 same-wall test photograph pairs, 255 contain valid cells and 97 regis
 
 The labelling pipeline propagates each annotator click frame-to-frame using ORB-based homographies, then merges the resulting fragments into physical-crack identities; this labelling procedure differs from the ORB matcher benchmarked in Table~\ref{tab:main}.
 Merging is the main source of label risk, since an incorrect merge can turn a hard negative into a false positive.
-In the frozen snapshot, 95 of the 212 identities (45\%; 70 of 146, 48\% in the test case) result from merges, with median bridged gaps of 228~px (test) and 286~px (validation).
-One annotator examined all the clicks and sorted the unclaimed points (107 of 1,023 were classified as no crack); agreement was not assessed.
-Although single-annotator triage reduces the merge risk, it does not eliminate it. The live dataset must not be combined with the frozen figures without first re-running the benchmark.
+In the frozen snapshot, 95 of the 212 identities (45\%) result from merges, including 70 of the 146 test identities (48\%), with median bridged gaps of 228~px (test) and 286~px (validation).
+One annotator reviewed all clicks and the unclaimed points (clicks not assigned to any identity), classifying 107 of 1,023 as not a crack; inter-annotator agreement was not assessed.
+Although this single-annotator review reduces the merge risk, it does not eliminate it. The live dataset must not be combined with the frozen figures without first re-running the benchmark.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.6\columnwidth]{figs/dataset_examples.pdf}
-\caption{\textsc{CrackID} examples. Top: one identity across non-adjacent frames. Bottom: stippled render versus smooth plaster. Labels via homography propagation, unaudited.}
+\caption{\textsc{CrackID} examples. Top: one identity across non-adjacent frames. Bottom: stippled render versus smooth plaster. Labels via homography propagation, reviewed by a single annotator.}
 \label{fig:dataset-examples}
 \end{figure}
