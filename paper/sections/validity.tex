@@ -12,7 +12,7 @@ Most importantly, include a second session using different distances and lightin
 One annotator reviewed all clicks and handled the unclaimed points; agreement was not assessed, and the geometric advantage depends on provenance.
 To detect the gap independent of provenance, create a small set of labels without homography and share score matrices per pair for sensitivity to wall-clustered intervals and threshold-free AP/AUROC.
 \item \textit{Close the coverage gap.}
-The baseline covers 48\% of the pairs (97 of 301 image pairs; 15,328 of 31,822 valid cells) and is ineffective on smooth plaster.
+The baseline covers 48\% of the valid query--gallery pairs (15,328 of 31,822), corresponding to 97 of the 301 same-wall image pairs, and is ineffective on smooth plaster.
 By using surface-adaptive registration such as learned local features, direct photometric alignment, or sparse depth from consumer devices, a more thorough evaluation could be achieved, and separate geometry could be better distinguished from homography-based provenance.
 \item \textit{Learn from geometric supervision.}
 The baseline is an untrained reference and not a system that has been put into operation.
