@@ -17,9 +17,10 @@ The Hungarian one-to-one constraint is applied only within each image pair.
 
 \subsection{Test conditions, decisions, and metrics}
 
-The primary test involves actual walk-arounds for each wall, assuming that the morphology remains unaltered; the only variations considered are viewpoint, distance, scale, lighting, and visibility, along with same-wall distractors and unknown queries.
+The primary test involves walk-arounds for each wall, assuming the morphology remains unaltered; the only variations are viewpoint, distance, scale, lighting, and visibility; the galleries also include same-wall distractors, and some queries are unknown.
 The validation and test walls are entirely separate.
-All the methods are used exactly as they are on the shared masks without any tuning of \textsc{CrackID} (see Sec.~\ref{sec:setup}); the thresholds determined on the validation set are applied to the test set, considering only within-visit correspondence.
+All methods are applied off the shelf to the shared masks, without tuning on \textsc{CrackID} (Sec.~\ref{sec:setup}).
+Thresholds are calibrated on the validation walls and applied unchanged to the test walls; only within-visit correspondence is considered.
 A synthetic check is carried out to distinguish between photometric effects (condition B: blur/noise/contrast with unchanged structure) and growth effects (condition A: one tip extended) using ten photos taken from five walls with a single seed and a common warp (parameters available with the code), comparing OSNet with context to \hybrid{} ($\tau{=}8.0$~px), which is different from \ours{}: this is only a preliminary check.
 
 Decisions: any pairs that exceed the validation-calibrated threshold are accepted; for open-set identification, only the highest-ranking gallery entry above the threshold is accepted for each query, and a query with nothing above threshold is rejected as a new ticket.
