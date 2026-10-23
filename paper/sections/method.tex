@@ -3,14 +3,15 @@
 
 The baseline tests whether crack locations on the wall drive the association: it aligns wall surfaces to a common frame and then compares the projected crack masks.
 It assumes a roughly planar wall and uses no \textsc{CrackID} training.
-The shared masks (trained on public crack data only; no \textsc{CrackID} wall in training) use instance extraction at 200~px and 5~px to keep inputs consistent across methods.
+The shared masks come from a segmentation model trained on public crack data only (no \textsc{CrackID} wall was used in training).
+Crack instances are extracted with a minimum area of 200~px and a 5~px closing kernel so that all methods receive consistent inputs.
 Masks are taken as given, and their error is not measured.
 
 \subsection{Registration using wall texture}
 \label{sec:registration}
 
-For $I_a$, $I_b$, a homography $H$ ($x' \sim Hx$) is estimated from the surrounding wall texture with detected cracks dilated and excluded, so alignment is driven by surface features independently of the identity under test.
-This independence is conditional on the masks and the succeeding stage, not guaranteed per pair.
+For a pair of images $I_a$ and $I_b$, a homography $H$ ($x' \sim Hx$) is estimated from the surrounding wall texture with detected cracks dilated and excluded, so alignment is driven by surface features independently of the identity under test.
+This independence is conditional on the masks and on the cascade stage at which registration succeeds, not guaranteed per pair.
 Full detector settings (SIFT with CLAHE~\cite{zuiderveld1994clahe}, ratio test, robust estimation) are archived with the code.
 
 \subsection{Registration cascade and validity checks}
