@@ -17,9 +17,9 @@ Full detector settings (SIFT with CLAHE~\cite{zuiderveld1994clahe}, ratio test, 
 \subsection{Registration cascade and validity checks}
 
 Textured render generally provides background features, whereas smooth plaster does not.
-A three-stage cascade is used: masked SIFT; if too few keypoints remain, unmasked SIFT (flagged, crack leakage occurs); finally, photometric ECC~\cite{evangelidis2008ecc}.
-Candidate solutions are tested for plausibility (no mirrored or folded quads; scale within $[1/16,16]$; no inlier-count criterion).
-We record the surviving stage per pair, and the inlier RMSE at that stage determines the comparison tolerance.
+The cascade has three stages: masked SIFT; unmasked SIFT if too few keypoints remain (flagged, because crack features can then influence the alignment); and, finally, photometric ECC~\cite{evangelidis2008ecc}.
+Candidate solutions are checked for plausibility: the quadrilateral must not be mirrored or folded, and the scale must lie within $[1/16,16]$; no minimum inlier count is imposed.
+We record the stage at which registration succeeds per pair, and the inlier RMSE at that stage determines the comparison tolerance.
 Absence of registration means lack of evidence, not that the cracks differ.
 
 \subsection{Crack projection and geometric comparison}
