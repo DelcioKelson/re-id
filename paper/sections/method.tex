@@ -32,8 +32,8 @@ D(a,b)=\frac{1}{2}\left[\frac{1}{|a|}\sum_{p \in a} d(p, b)+
 \frac{1}{|b|}\sum_{q \in b} d(q, a)\right].
 \label{eq:chamfer}
 \end{equation}
-We reject candidates that are far away.
-Chamfer coverage (fraction within the per-pair RMSE, distance clamped at $[2,16]$~px, default 6~px) is the scale-free equivalent.
+Candidates whose Chamfer distance exceeds the validation threshold are rejected.
+A scale-free alternative is the Chamfer coverage, i.e., the fraction of crack points lying within the per-pair RMSE of the other mask; the tolerance is clamped to $[2,16]$~px, with a default of $6$~px.
 
 \subsection{Correspondence decisions and limits of spatial evidence}
 
