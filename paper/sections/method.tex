@@ -38,5 +38,5 @@ A scale-free alternative is the Chamfer coverage, i.e., the fraction of crack po
 \subsection{Correspondence decisions and limits of spatial evidence}
 
 For each pair of photographs we carry out one-to-one matching using the Hungarian method~\cite{kuhn1955hungarian} at the validation threshold; unregistered pairs score $-\infty$ (Sec.~\ref{sec:protocol}).
-Alignment of an image with an empty wall acts as evidence of absence; missed detections, out-of-frame areas, and registration failures remain unresolved.
-The reference targets show no change in damage; performance is determined by the surface and by the origin of the label.
+A successful alignment onto a crack-free wall region counts as evidence of absence, whereas missed detections, out-of-frame areas, and registration failures leave the question unresolved.
+The reference assumes that damage does not change; its performance depends on the wall surface and on label provenance (Sec.~\ref{sec:annotation}).
