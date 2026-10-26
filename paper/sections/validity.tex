@@ -1,23 +1,22 @@
 \section{Limitations and Future Work}
 \label{sec:limitations}
 
-This study presents the first measurable test of re-identifying a crack in a single visit using a geometric reference.
-The results are derived from a small number of clustered walls, labels provided by a single annotator, and partial registration coverage.
-Each of the points listed here corresponds to a finding together with a step for verifying it.
+This study presents the first quantitative evaluation of re-identifying a crack in a single visit using a geometric reference.
+The results are limited by the small number of clustered walls, single-annotator labels, and partial registration coverage.
+Each item pairs a finding with a verification step.
 \begin{enumerate}
 \item \textit{Scale to more walls and visits.}
-Collect data from more walls, different surface types, and additional annotators to improve the confidence intervals and the reliability of the rankings.
-Most importantly, include a second session using different distances and lighting conditions to establish a genuine cross-visit benchmark.
+Collect data from more walls and surface types and annotations from additional annotators, tightening wall-clustered confidence intervals and making rankings more reliable; report leave-one-wall-out results over all 17 walls instead of the 6/11 split.
+Most importantly, add a second session with different distances and lighting for a genuine cross-visit benchmark.
 \item \textit{Add provenance-free annotation.}
-One annotator reviewed all clicks and the unclaimed points (clicks not assigned to any identity); inter-annotator agreement was not assessed, and the geometric advantage depends on provenance.
-To detect the gap independent of provenance, create a small set of labels without homography and share score matrices per pair for sensitivity to wall-clustered intervals and threshold-free AP/AUROC.
+Labels come from a single annotator (Section~\ref{sec:annotation}) and were built by homography propagation, so the geometric advantage may depend on provenance. To test whether it persists independently of label provenance, create labels that do not rely on homography propagation and release per-pair score matrices for wall-clustered confidence intervals and threshold-free metrics (AUROC, AP).
 \item \textit{Close the coverage gap.}
-The baseline covers 48\% of the valid query--gallery pairs (15,328 of 31,822), corresponding to 97 of the 301 same-wall image pairs, and is ineffective on smooth plaster.
-By using surface-adaptive registration such as learned local features, direct photometric alignment, or sparse depth from consumer devices, a more thorough evaluation could be achieved, and separate geometry could be better distinguished from homography-based provenance.
+The geometric reference covers 48\% of valid query--gallery pairs (15,328 of 31,822), from the 97 of 301 same-wall image pairs (32\%) that register. It tends to fail on smooth plaster, with extent unquantified.
+Surface-adaptive registration (learned local features, direct photometric alignment, or sparse depth from consumer devices) would allow a more thorough evaluation and better separate geometric evidence from homography-based provenance.
 \item \textit{Learn from geometric supervision.}
-The baseline is an untrained reference and not a system that has been put into operation.
-The location benefit could be obtained by using pseudo-labels from the registration process or by fine-tuning a foundation model on homography correspondences, without per-pair registration.
+The geometric reference is untrained and not deployed.
+Location cues could be obtained without per-pair registration at inference time via registration-derived pseudo-labels or fine-tuning a foundation model on homography correspondences.
 \item \textit{Assess the ticket lifecycle.}
-Define task metrics such as the duplicate rate and the missed-new-defect rate, and also test segmentation, re-identification, and joint ticket assignment in a closed-loop simulation of real inspections.
+Define task metrics such as duplicate rate and missed-new-defect rate, and test segmentation, re-identification, and joint ticket assignment in a closed-loop simulation.
 \end{enumerate}
-Together, these steps will turn the within-visit reference into a multi-visit re-identification component that can be used operationally for tickets.
+Together, these steps would turn the within-visit reference into a multi-visit component usable in operational ticket systems.

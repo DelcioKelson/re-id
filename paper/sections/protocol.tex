@@ -1,29 +1,29 @@
 \section{Benchmark Protocol}
 \label{sec:protocol}
 
-The benchmark assesses visual association by determining, for a new crack observation, whether it matches one of the recorded defects; since annotated identities serve as a stand-in for permanent defect records, the scores indicate the accuracy of the association rather than the reduction of duplicates at the ticket level.
+The benchmark determines whether a new crack observation matches a recorded defect. Annotated identities stand in for permanent records, so scores indicate association accuracy, not ticket-level duplicate reduction.
 
 \subsection{Task formulation and candidate records}
 
-Every query and its gallery come from a single physical wall, and an identity links all observations of the same physical crack (Section~\ref{sec:annotation}).
+Every query and its gallery come from one wall, and an identity links all observations of the same crack (Section~\ref{sec:annotation}). Cross-wall search is disallowed; the wall identity is supplied to every method.
 A query is a crack instance in one photograph; its gallery contains instances from the other photographs of the same wall.
-Cross-wall search is not allowed.
 A query is known if its gallery contains another instance of the same identity, and unknown otherwise (a genuinely new defect).
 In closed-set retrieval, the true match is always in the gallery, so candidates are only ranked.
-Open-set identification mirrors ticket association: the system must either link the query to the best existing ticket or reject it and open a new one if no gallery entry scores high enough.
-Each method scores query--gallery pairs, and these scores are used for ranking, thresholded decisions, and identification with rejection.
-Pairs are the unit for pairwise decisions; queries are the unit for retrieval and for open-set decisions; image pairs are the unit for registration and assignment.
+Open-set identification mirrors ticket association: link the query to the best existing ticket or reject it and open a new one.
+Method scores drive ranking, thresholded decisions, and identification with rejection.
+Pairs are the unit for same-defect decisions; queries are the unit for retrieval and for open-set decisions; image pairs are the unit for registration and assignment.
 The Hungarian one-to-one constraint is applied only within each image pair.
 
 \subsection{Test conditions, decisions, and metrics}
 
-The primary test involves walk-arounds for each wall, assuming the morphology remains unaltered; the only variations are viewpoint, distance, scale, lighting, and visibility; the galleries also include same-wall distractors, and some queries are unknown.
+The primary test uses a walk-around of each wall, during which crack morphology does not change. The only variations are viewpoint, distance, scale, lighting, and visibility; the galleries also contain same-wall distractors, and some queries are unknown.
 The validation and test walls are entirely separate.
-All methods are applied off the shelf to the shared masks, without tuning on \textsc{CrackID} (Sec.~\ref{sec:setup}).
+All methods are applied off the shelf to the shared masks (Section~\ref{sec:method}), without fine-tuning on \textsc{CrackID} (Section~\ref{sec:setup}).
 Thresholds are calibrated on the validation walls and applied unchanged to the test walls; only within-visit correspondence is considered.
-A separate synthetic check distinguishes growth (condition A: one crack tip extended) from photometric change (condition B: blur, noise, and contrast changes with unchanged structure). It uses ten source photographs from five walls, a single random seed, and a common warp (parameters are available with the code), and compares OSNet with context against \hybrid{} ($\tau{=}8.0$~px); unlike \ours{}, which performs registration-gated Chamfer mask comparison only, \hybrid{} blends the alignment-based comparison with a crack-skeleton structural score when homography is available and falls back to skeleton-based matching otherwise. This check is only preliminary.
+A separate synthetic probe isolates growth (condition A: one crack tip extended) from photometric change (condition B: blur, noise, and contrast changes with unchanged structure), comparing OSNet with context (OSNet+ctx, Section~\ref{sec:setup}) against \hybrid{} (Chamfer tolerance $\tau=8.0$~px). Unlike \ours{} (Section~\ref{sec:method}), which performs registration-gated Chamfer comparison only, \hybrid{} blends alignment-based comparison with a crack-skeleton score when homography is available and falls back to skeleton matching otherwise. The probe is preliminary.
 
-Decisions: Pairs whose score exceeds the validation-calibrated threshold are accepted. For open-set identification, only the highest-ranked gallery entry is accepted, and only if its score exceeds the threshold; a query with no such entry is rejected as a new ticket. For each image pair, a Hungarian one-to-one assignment is computed, and matches scoring below the threshold are discarded. Unscorable pairs are retained (they are predicted to be negative for $F_1$ and are given the last rank in retrieval); a registration failure is defined as the absence of evidence, not as evidence of a new defect.
-The metrics used are Rank-1 accuracy and mean Average Precision (mAP) for closed-set ranking; pairwise $F_1$ at the oracle threshold ($F_1^{*}$) and at the validation-calibrated threshold ($F_1^{@v}$); assignment $F_1$ ($F_1^{a} = 2\text{TP}/(2\text{TP}+\text{FP}+\text{FN})$); and, for open-set identification, the detection and identification rate (DIR) at a false alarm rate (FAR) of 0.1, i.e., the fraction of known queries correctly linked when at most 10\% of unknown queries are wrongly linked, together with coverage (the fraction of queries that are scored).
-The reference levels comprise random ranking and the best constant predictor, which labels every pair as positive and achieves $F_1 = 2p/(1+p)$, where $p$ is the prevalence of positive pairs. This yields $F_1 = 0.305$ on the full test set ($p = 0.180$), $F_1 = 0.544$ on the geometric subset ($p = 0.373$; $48\%$ of valid pairs), and $F_1 = 0.452$ on the validation set ($p = 0.292$). The full reference results are reported in Table~\ref{tab:main}.
-Because only 11 walls and 19 matchable identities are available, we report point estimates only (Sec.~\ref{sec:limitations}).
+\textit{Decisions.} Pairs scoring above the validation-calibrated threshold are accepted. For open-set identification, only the highest-ranked entry is accepted, and only above the threshold; otherwise the query is rejected as a new ticket. Within each image pair, a Hungarian one-to-one assignment is computed and matches below the threshold are discarded. Unscorable pairs (for example, unregistered) are retained: they are predicted negative for $F_1$ and ranked last; a registration failure is absence of evidence, not evidence of a new defect.
+
+\textit{Metrics.} Closed-set ranking uses Rank-1 and mean average precision (mAP); thresholded decisions use pairwise $F_1$ at the oracle threshold ($F_1^{*}$; the test-set $F_1$ maximizer) and at the validation-calibrated threshold ($F_1^{@v}$); assignment uses $F_1^{a} = 2\text{TP}/(2\text{TP}+\text{FP}+\text{FN})$, where TP, FP, and FN denote true positives, false positives, and false negatives. Open-set identification uses the detection and identification rate (DIR) at a false-alarm rate (FAR) of 0.1 (the fraction of known queries correctly linked when at most 10\% of unknown queries are wrongly linked), plus coverage (the fraction of valid query--gallery pairs scored).
+Reference levels are random ranking and the constant baseline, which labels every pair as positive and achieves $F_1 = 2p/(1+p)$, where $p$ is positive prevalence. This yields $F_1 = 0.305$ on the full test set ($p = 0.180$), $0.544$ on the geometric subset ($p = 0.373$; $48\%$ of valid pairs), and $0.452$ on validation ($p = 0.292$). Test-set reference levels are in Table~\ref{tab:main}.
+Because only 11 walls and 19 matchable identities are available, we report point estimates only (Section~\ref{sec:limitations}).

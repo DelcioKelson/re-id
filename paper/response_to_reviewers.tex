@@ -1,0 +1,83 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\setlist[itemize]{leftmargin=1.5em,itemsep=0.3em,topsep=0.3em}
+\setlength{\emergencystretch}{2em}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Cover Letter: Response to Reviewers}\\[0.6em]
+{\large Submission 241}\\[0.3em]
+{\large Benchmark for Crack Re-Identification in Ticket Management Systems}
+\end{center}
+
+\vspace{0.3em}
+
+We thank both reviewers for their positive assessments and careful reading.
+Neither review requested specific changes. Their main concerns, namely the small
+dataset (11 test walls and 19 matchable identities), single-visit acquisition,
+single-annotator labels, and partial registration coverage, are the central
+limitations of the study and are stated in Section~VIII, the Abstract, and the
+Conclusion. New walls, visits, and annotations could not be collected within the
+camera-ready period, so no experiments were re-run and all reported results are
+unchanged. The revision instead makes the preliminary scope of the findings
+clearer, as Reviewer~2 asked:
+
+\begin{itemize}
+  \item \textbf{Claims calibrated to the evidence.} Validated F1 now ``stays
+  close to'' rather than ``slightly exceeds'' the constant baseline; ``outperform
+  chance'' is restricted to Rank-1; and statements about wall context and
+  geometric alignment are phrased as suggestive (``suggest'', ``may'') rather
+  than conclusive.
+  \item \textbf{Corrections.} The registration gate is now correctly described
+  as retaining 36.8\% of negatives (not discarding them), and the abstract's
+  ``twice'' comparison is replaced by the two DIR values (0.768 and 0.429), with
+  a note that they are computed over different candidate pools.
+  \item \textbf{Clarifications from existing data and code.} We added the
+  breakdown of the unclaimed annotation points, the synthetic-warp parameters, a
+  definition of HYBRID-SKEL, and a citation for the inpainting method~[39]; we
+  also clarified the purpose of the sharpness threshold and the construction of
+  the reference-level baselines.
+  \item \textbf{Consistency.} Terminology was harmonized (registered pairs, valid
+  pairs, coverage, within-visit versus cross-visit), and citations and
+  cross-references were verified.
+\end{itemize}
+
+\section*{Reviewer 1}
+
+We thank the reviewer for the positive assessment of the problem, the dataset,
+and the reporting of negative results. We agree that a larger dataset and a real
+cross-visit evaluation would strengthen the contribution; both are the main
+directions for future work (Section~VIII). The paper is positioned as an initial
+benchmark and a negative result, and the current results are not presented as
+cross-visit evidence.
+
+\section*{Reviewer 2}
+
+We thank the reviewer for the assessment of the open-set protocol and of the
+context and geometry analyses. We agree that the small sample, single-annotator
+labels, limited registration coverage, and absence of cross-visit evaluation bound
+the generalizability of the conclusions. In line with the reviewer's condition
+that the preliminary nature of the findings be clearly communicated, we toned down
+the claims listed above and kept the point-estimate and single-visit caveats in
+the Abstract, Section~VIII, and the Conclusion.
+
+\vspace{0.5em}
+
+We thank the reviewers again for their time and feedback.
+
+\medskip
+
+Sincerely,\\
+The authors
+
+\end{document}

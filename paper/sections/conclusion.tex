@@ -1,11 +1,11 @@
 \section{Conclusion}
 
-We present \textsc{CrackID}, which consists of 140 photographs from 17 walls, along with a protocol for retrieval, deciding whether defects are the same, and performing open-set identification with rejection.
+We present \textsc{CrackID}, which consists of 140 photographs from 17 walls, along with a protocol for retrieval, same-defect decisions, and open-set identification with rejection.
 
-The main result is negative and structural in character:
-concerning RQ1, ten zero-shot crop matchers outperform random chance, but when a threshold is used, their performance only just exceeds that of the best constant baseline;
-concerning RQ2, the wall context has the biggest effect on the appearance of cracks, and a geometric reference assists with open-set identification in only the 48\% of the alignable subset that has been conditioned on annotation provenance;
-as for RQ3, a small synthetic revisit probe reverses the ranking with no sign of multi-visit robustness.
+The main finding is negative.
+For RQ1, ten zero-shot crop matchers exceed chance Rank-1 in point estimates, but with a validation-calibrated threshold their $F_1$ stays near the constant baseline.
+For RQ2, wall context appears to contribute more than crack appearance, and the geometric reference improves open-set identification only on the 48\% of alignable valid pairs, with results that may depend on annotation provenance.
+For RQ3, the small synthetic revisit probe provides no evidence of multi-visit robustness; OSNet+ctx leads on retrieval and open-set identification, whereas \hybrid{} is marginally better on assignment $F_1$.
 
-The study focuses on single-visit photographs: the figures are point estimates derived from 19 test identities, grouped by wall and matched using only the labels supplied by one annotator during the visual-association stage.
-The next crucial stage is to conduct an acquisition session to run a cross-visit benchmark at the ticket level.
+The study focuses on single-visit photographs: the figures are point estimates derived from 19 matchable test identities, grouped by wall and evaluated against labels from a single annotator.
+The next step is a second acquisition session to build a cross-visit benchmark, followed by ticket-level evaluation.

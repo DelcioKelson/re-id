@@ -1,34 +1,34 @@
 \section{Introduction}
 
-Ticket management systems record reports of physical defects so that they can be inspected, prioritized, repaired, and followed up.
-Ideally, each ticket holds the history of a single incident.
-In practice, different users may photograph the same crack more than once, producing duplicate tickets that fragment this history and cause redundant assessment work.
-Every new observation must therefore either be linked to an existing ticket or open a new ticket for damage that has not yet been recorded.
+Ticket management systems record physical defects for inspection, prioritization, repair, and follow-up.
+Ideally, each ticket holds one incident's history, but users often photograph the same crack more than once, creating duplicate tickets that fragment this history and cause redundant work.
+Each new observation must therefore be linked to an existing ticket or open one for unrecorded damage.
 
-This is a visual re-identification (re-ID) problem in which (i) the same physical crack must be recognized despite variations in viewpoint, camera distance, field of view, illumination, and partial visibility; (ii) a crack may itself change by extending, widening, or branching and must still be matched to its earlier observations, while genuinely new damage must be distinguished from growth of known damage.
+This is a visual re-identification (re-ID) problem: the same crack must be recognized despite changes in viewpoint, distance, field of view, illumination, and visibility, and despite growth by extension, widening, or branching, while new damage must be distinguished from known damage.
 Errors in either direction lead to duplicate tickets or misattributed history.
-Existing work on crack detection and segmentation focuses on single images.
-Datasets such as CrackSeg9k~\cite{kulkarni2022crackseg9k} and OmniCrack30k~\cite{benz2024omnicrack30k} contain no cross-observation identities, so observations cannot be associated with tickets.
-It remains unclear whether techniques developed for person and object re-ID~\cite{zhou2019osnet,qian2024reidtrends} generalize to cracks, since different defects may look similar, while the same defect can vary considerably across observations.
+Crack detection and segmentation work focuses on single images.
+CrackSeg9k~\cite{kulkarni2022crackseg9k} and OmniCrack30k~\cite{benz2024omnicrack30k} contain no cross-observation identities, so observations cannot be associated with tickets.
+Whether person and object re-ID~\cite{zhou2019osnet,qian2024reidtrends} transfers to cracks is unclear: distinct defects may look alike while one defect can vary greatly.
 
-This work introduces \textsc{CrackID} to evaluate whether photographs depict the same physical wall crack: 140 photographs of 17 walls captured during a single visit.
-Real photographs capture the acquisition changes that occur within a visit, whereas appearance and growth changes are probed only with synthetic images.
-Cross-visit evaluation on real photographs and ticket-level duplicate reduction are left for future work.
-All accuracy figures are point estimates from a small sample grouped by wall.
+This work introduces \textsc{CrackID} to evaluate whether photographs depict the same wall crack: 140 photographs of 17 walls, each photographed during a single visit.
+Real photographs capture within-visit acquisition changes; photometric and growth changes are probed only synthetically.
+Cross-visit evaluation and ticket-level duplicate reduction are left for future work.
+All accuracy figures are point estimates from a small wall-clustered sample.
 
 We assess ten zero-shot matchers using \textsc{CrackID}.
-The protocol separates candidate image retrieval from the decision of whether two observations depict the same defect, while incorporating open-set identification with rejection. The system accepts the top-ranked match only if its score exceeds a predefined threshold; otherwise, it rejects the query and treats it as a new ticket. This rejection mechanism is necessary because a high ranking alone does not provide sufficient evidence to link a report to an existing ticket.
+The protocol separates retrieval from the same-defect decision and includes open-set identification with rejection: the top-ranked match is accepted only above a validation-calibrated threshold, otherwise the query is rejected as a new ticket. Rejection is necessary because a high ranking alone is insufficient evidence for a link.
+To test whether matchers recognize the crack or only wall context, we use crack-erased controls and a geometric reference that aligns wall images and compares projected crack masks.
 
 Three research questions guide the study:
 \begin{description}
   \item[\textbf{RQ1.}] Can the evaluated methods associate observations of the same defect under varying image acquisition conditions?
   \item[\textbf{RQ2.}] How do wall context and geometric alignment contribute to defect re-identification?
-  \item[\textbf{RQ3.}] How do two selected approaches perform under synthetic changes in appearance and crack growth?
+  \item[\textbf{RQ3.}] How do two selected approaches perform under synthetic photometric and growth changes?
 \end{description}
-RQ1 and RQ2 are answered with real single-visit photographs; RQ3 is an exploratory study on synthetic data.
+RQ1 and RQ2 use real single-visit photographs; RQ3 is exploratory synthetic work.
 
 The contributions are as follows:
 (i) the cross-observation identities of \textsc{CrackID}, together with their annotation provenance (Section~\ref{sec:annotation});
-(ii) a benchmark covering retrieval, same-defect decisions, and open-set identification, which addresses RQ1 (Sections~\ref{sec:protocol},~\ref{sec:baselines}, and~\ref{sec:results});
-(iii) context controls, a geometric reference, and a coverage analysis, which address RQ2 (Sections~\ref{sec:dataset},~\ref{sec:controls}, and~\ref{sec:coverage}); and
-(iv) a synthetic revisit probe, which addresses RQ3 (Section~\ref{sec:hybridbench}).
+(ii) a benchmark for retrieval, same-defect decisions, and open-set identification, addressing RQ1 (Sections~\ref{sec:protocol},~\ref{sec:baselines}, and~\ref{sec:results});
+(iii) context controls, a geometric reference, and coverage analysis, addressing RQ2 (Sections~\ref{sec:dataset},~\ref{sec:method},~\ref{sec:controls}, and~\ref{sec:coverage}); and
+(iv) a synthetic revisit probe for RQ3 (Section~\ref{sec:hybridbench}).

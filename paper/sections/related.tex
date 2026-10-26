@@ -1,14 +1,14 @@
 \section{Related Work}
 \label{sec:related}
 
-Most crack-analysis research focuses on detecting or segmenting cracks in individual images~\cite{zou2012cracktree,liu2019deepcrack,eisenbach2017gaps}.
-Consolidated datasets~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k} retain this image-level formulation and do not provide identity annotations across observations.
-Although multi-view pipelines establish geometric correspondences to fuse images acquired during a single inspection into surface models or aggregated segmentations~\cite{benz2025crackstructures}, they do not explicitly represent persistent crack identities across observations.
-Structural-health monitoring tracks cracks over time using fixed cameras and designated locations~\cite{parente2022monitoring,harb2025multitemporal,sun2025perspective} or guided setups~\cite{nec2019guide}, where crack identities are assigned at construction time; unlike our open-set association task, they track known cracks.
+Most crack analysis detects or segments cracks in individual images~\cite{zou2012cracktree,liu2019deepcrack,eisenbach2017gaps}.
+Consolidated datasets~\cite{kulkarni2022crackseg9k,benz2024omnicrack30k} keep this image-level formulation without cross-observation identities.
+Multi-view pipelines fuse images from one inspection into surface models or segmentations~\cite{benz2025crackstructures} but do not represent persistent identities across observations.
+Structural health monitoring tracks known cracks over time with fixed cameras, designated locations~\cite{parente2022monitoring,harb2025multitemporal,sun2025perspective}, or guided setups~\cite{nec2019guide}, assigning identities when monitoring is set up; our task is open-set association.
 
 Our setting combines object re-ID~\cite{qian2024reidtrends} with open-set identification~\cite{liao2014openset}.
-The methods assessed in this study are SIFT~\cite{lowe2004sift} and ORB~\cite{rublee2011orb}, learned correspondences such as SuperGlue~\cite{sarlin2020superglue} and LoFTR~\cite{sun2021loftr}, and region embeddings~\cite{zhou2019osnet,dosovitskiy2021vit,touvron2021deit,radford2021clip,oquab2024dinov2}; all are applied zero-shot, without fine-tuning on \textsc{CrackID} (Sec.~\ref{sec:setup}).
-LightGlue~\cite{lindenberger2023lightglue} and NetVLAD~\cite{arandjelovic2016netvlad} are mentioned as future retrieval baselines.
-Vehicle-damage re-ID across claims~\cite{maiano2023antifraud} follows the same open-set protocol as ours, whereas other vehicle-damage studies focus on detection and severity rather than association~\cite{hasan2025review,perez2024assessment,mallios2023multiview}.
-Aligning first and then reasoning about presence or absence is the approach of change detection~\cite{sakurada2015changedetection,alcantarilla2018street}, which relies on planar registration~\cite{hartley2004mvg,fischler1987ransac,barath2019magsac}; we add an enhanced correlation coefficient (ECC)~\cite{evangelidis2008ecc} fallback of our own (Sec.~\ref{sec:registration}).
-Our key distinction is that the alignment and the matching targets must be disjoint: the homography is estimated from the wall, not from the crack being re-identified.
+The methods assessed in this study are SIFT~\cite{lowe2004sift} and ORB~\cite{rublee2011orb}, learned correspondences such as SuperGlue~\cite{sarlin2020superglue} and LoFTR~\cite{sun2021loftr}, and crop embeddings~\cite{zhou2019osnet,dosovitskiy2021vit,touvron2021deit,radford2021clip,oquab2024dinov2,jocher2023ultralytics}; all are applied zero-shot, without fine-tuning on \textsc{CrackID} (Section~\ref{sec:setup}).
+LightGlue~\cite{lindenberger2023lightglue} and NetVLAD~\cite{arandjelovic2016netvlad} are left as future baselines (Section~\ref{sec:setup}).
+Vehicle-damage re-ID across claims~\cite{maiano2023antifraud} follows our open-set protocol, whereas other studies focus on detection and severity rather than association~\cite{hasan2025review,perez2024assessment,mallios2023multiview}.
+Aligning first and then reasoning about presence or absence is the approach of change detection~\cite{sakurada2015changedetection,alcantarilla2018street}, which relies on planar registration~\cite{hartley2004mvg,fischler1987ransac,barath2019magsac}; we add a fallback based on enhanced correlation coefficient (ECC) maximization~\cite{evangelidis2008ecc} (Section~\ref{sec:cascade}).
+Our key distinction is that alignment and matching targets must be disjoint: the homography is estimated from the wall, not the crack.
