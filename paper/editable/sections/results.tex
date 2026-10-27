@@ -6,7 +6,7 @@
 The geometric reference scores only registered pairs (48\% of valid query--gallery pairs, containing all 5,722 positive pairs), whereas crop-based methods score all valid pairs; the two result sets use different candidate pools.
 With \regonly{} (a constant on registered pairs, $-\infty$ otherwise), Rank-1 is 0.515, mAP 0.533, and DIR 0.000 at FAR 0.1 (zero because all registered pairs score equally). Adding mask comparison improves Rank-1 and mAP by 0.437 and 0.353, respectively, and raises DIR to 0.768 (Table~\ref{tab:main}). The highest crop-based DIR values are 0.429 (SuperGlue) and 0.404 (OSNet+ctx) (Section~\ref{sec:controls}), against chance 0.038.
 No wall-clustered confidence intervals are reported.
-At the validation-calibrated threshold, it exceeds its constant baseline by only 0.038 (0.582 vs.\ 0.544), compared with 0.112 at the oracle threshold ($F_1^{*} = 0.656$). This excess is smaller than LoFTR's 0.046 over its 0.305 baseline, suggesting that the contrast seen in ranking and DIR overstates the difference in thresholded decisions.
+At the validation-calibrated threshold, \ours{} exceeds its constant baseline by only 0.038 (0.582 vs.\ 0.544), compared with 0.112 at the oracle threshold ($F_1^{*} = 0.656$). This excess is smaller than LoFTR's 0.046 over its 0.305 baseline, suggesting that the contrast seen in ranking and DIR overstates the difference in thresholded decisions.
 Registration gating may not help across visits; an appearance baseline restricted to registered pairs and the frame-gap baseline (ranking by the number of frames between photographs) remain to be evaluated.
 
 \subsection{Registration rate (Section~\ref{sec:acquisition}) and failure modes}
