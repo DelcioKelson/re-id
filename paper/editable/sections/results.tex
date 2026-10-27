@@ -18,7 +18,7 @@ The registration gate is label-informative: it retains all positives but only 36
 Registration failures depend on wall surface (Section~\ref{sec:cascade}); their extent on smooth plaster is unquantified. All 280 known queries have a true match in an adjacent frame (median gap 1), motivating the frame-gap baseline.
 
 We define sharpness as the variance of the Laplacian of the image at quarter resolution.
-A logistic regression on the test set suggests sharpness has a larger standardized association with registration success than frame gap ($|z| = 5.11$ vs.\ $2.78$); with 11 clusters, however, the $p$-values overstate precision, and the sharpness threshold of 10, used to predict registration success, was chosen post hoc.
+A logistic regression on the test set suggests sharpness has a larger standardized association with registration success than frame gap (wall-clustered $z = 5.11$ vs.\ $-2.78$); with 11 clusters, however, the $p$-values overstate precision, and the sharpness threshold of 10, used to predict registration success, was chosen post hoc.
 Registration, ECC, and crack-exclusion ablations were run on the test set and are not reported here; geometry settings should be fixed on validation before any final comparison.
 
 \subsection{Synthetic revisit probe}
@@ -27,7 +27,7 @@ Registration, ECC, and crack-exclusion ablations were run on the test set and ar
 Ten photographs from five walls were altered by a small common warp under condition A or B (Section~\ref{sec:protocol}), with one random seed.
 Altered images were matched against real photographs. The warp is small (scale 1.08, rotation 6$^{\circ}$, out-of-plane tilt 4$^{\circ}$), whereas real test pairs reach 75$^{\circ}$ out-of-plane tilt at the 90th percentile (procedure in the code).
 Table~\ref{tab:hybrid} compares \hybrid{} and OSNet+ctx.
-For ranking and open-set identification (A/B), OSNet+ctx outperforms \hybrid{} (Rank-1 0.826/0.671 vs.\ 0.275/0.274; DIR 0.739/0.663 vs.\ 0.343/0.342; $F_1^{@v}$ 0.601/0.594 vs.\ 0.569/0.574); assignment $F_1^{a}$ reverses narrowly (0.631/0.609 vs.\ 0.646/0.640), and no pair was scored by homography alone, so the reversal does not come from a homography-only path.
+For ranking and open-set identification (A/B), OSNet+ctx outperforms \hybrid{} (Rank-1 0.826/0.671 vs.\ 0.275/0.274; DIR 0.739/0.663 vs.\ 0.343/0.342; $F_1^{@v}$ similar at 0.601/0.594 vs.\ 0.569/0.574); assignment $F_1^{a}$ reverses narrowly (0.631/0.609 vs.\ 0.646/0.640), and no pair was scored by homography alone, so the reversal does not come from a homography-only path.
 For RQ3, this single-seed probe provides no evidence of real multi-visit robustness, which remains untested (Section~\ref{sec:limitations}).
 
 \begin{table}[t]
