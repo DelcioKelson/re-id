@@ -15,10 +15,10 @@ Registration gating may not help across visits; an appearance baseline restricte
 
 The registration gate is label-informative: it retains all positives but only 36.8\% of negatives, which raises the prevalence from 0.180 to 0.373 and the constant-baseline $F_1$ from 0.305 to 0.544.
 
-Registration failures depend on wall surface (Section~\ref{sec:cascade}); their extent on smooth plaster is unquantified. All 280 known queries have a true match in an adjacent frame (median gap 1), motivating the frame-gap baseline.
+Registration failures depend on wall surface (Section~\ref{sec:cascade}); their extent on smooth plaster is unquantified. All 280 known queries have a true match in an adjacent frame, motivating the frame-gap baseline.
 
 We define sharpness as the variance of the Laplacian of the image at quarter resolution.
-A logistic regression on the test set suggests sharpness has a larger standardized association with registration success than frame gap (wall-clustered $z = 5.11$ vs.\ $-2.78$); with 11 clusters, however, the $p$-values overstate precision, and the sharpness threshold of 10, used to predict registration success, was chosen post hoc.
+A logistic regression on the test set suggests sharpness has a larger standardized association with registration success than frame gap (wall-clustered $z = 5.11$ vs.\ $-2.78$); with 11 clusters, however, the $p$-values overstate precision. A sharpness cutoff of 10 was examined post hoc as an admission gate; no admission gate is applied to the results in Table~\ref{tab:main}.
 Registration, ECC, and crack-exclusion ablations were run on the test set and are not reported here; geometry settings should be fixed on validation before any final comparison.
 
 \subsection{Synthetic revisit probe}
