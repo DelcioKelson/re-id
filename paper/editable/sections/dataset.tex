@@ -4,11 +4,11 @@
 \subsection{Acquisition and composition}
 \label{sec:acquisition}
 
-The \textsc{CrackID} dataset~\cite{ferramenta2026crackid} consists of 140 photographs of 17 exterior walls taken at a single site over four half-days using two consumer handheld devices (Fig.~\ref{fig:dataset-examples}).
+The frozen \textsc{CrackID} snapshot used in this paper consists of 140 photographs of 17 walls taken at a single site over four half-days using two consumer handheld devices (Fig.~\ref{fig:dataset-examples}).
 The walls are either stippled render (textured) or smooth painted plaster, and the only visible defects are cracks.
 Six walls are used for validation (01--06; 66 photographs, 66 identities) and eleven for testing (07--17; 74 photographs, 146 identities).
 Only identities in at least two photographs are \emph{matchable} (18 validation, 19 test); their queries are the known (answerable) ones.
-The \emph{frozen snapshot}, used for all results, has 17 walls (01--17). The \emph{live dataset} (released Version~1~\cite{ferramenta2026crackid}) has 19 walls: walls 18 and 19 were split from walls 02 and 05 after the snapshot was frozen and are excluded from all results.
+The \emph{frozen snapshot}, used for all results, has 17 walls (01--17). The \emph{live dataset} (released Version~1~\cite{ferramenta2026crackid}) has 19 walls: walls 18 and 19 were split from walls 02 and 05 after the snapshot was frozen; the frozen snapshot treats them as part of walls 02 and 05, so they do not appear as separate walls in any result.
 Each wall was photographed in a continuous walk-around (median 3~s between frames, max 81~s), so the data include within-visit viewpoint and scale changes.
 This is more favorable than multi-visit matching, though not a formal upper bound.
 The frozen snapshot has 439 known and 74 unknown validation queries, and 280 known and 258 unknown test queries. Positive query--gallery pairs number 26,012 (validation) and 5,722 (test); valid pairs (both instances annotated) number 89,118 and 31,822.
