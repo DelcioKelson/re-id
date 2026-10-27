@@ -20,7 +20,7 @@ Of 301 same-wall test image pairs, 255 contain valid query--gallery pairs and 97
 The labeling pipeline propagates each click frame-to-frame with ORB homographies, then merges fragments into physical-crack identities; this differs from the ORB matcher benchmarked in Table~\ref{tab:main}.
 Merging is the main source of label risk, since an incorrect merge can turn a hard negative pair into a falsely labeled positive.
 In the frozen snapshot, 95 of the 212 identities (45\%) result from merges, including 70 of the 146 test identities (48\%), with median bridged gaps of 228~px (test) and 286~px (validation).
-One annotator reviewed all 2,095 clicks in the live labels, including 1,023 unclaimed points (not assigned to any identity): 45 were not cracks, 62 were placed off the crack on the surrounding wall, and 916 were cracks missed by the mask (Section~\ref{sec:method}). Inter-annotator agreement was not assessed.
+One annotator reviewed all 2,095 clicks in the live labels (which cover the same 140 photographs as the frozen snapshot, so the review applies to the labels behind Table~\ref{tab:main}), including 1,023 unclaimed points (not assigned to any identity): 45 were not cracks, 62 were placed off the crack on the surrounding wall, and 916 were cracks missed by the mask (Section~\ref{sec:method}). Inter-annotator agreement was not assessed.
 The live review reduces but does not eliminate merge risk. Live and frozen figures must not be combined without re-running the benchmark.
 
 \begin{figure}[t]
